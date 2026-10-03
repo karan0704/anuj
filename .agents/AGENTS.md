@@ -59,6 +59,7 @@ Only open the file that matches your current situation:
     ├── commit-format.md      [about to write a git commit]
     ├── feature-docs.md       [shipping a feature/bugfix, need docs]
     ├── code-integrity.md     [editing existing code / adding a feature]
+    ├── clean-code.md         [writing or reviewing any code — everyday readability and design habits]
     ├── action-tracing.md     [marking a feature/fix complete — pre-commit gate]
     └── bug-trace.md          [diagnosing a reported bug — write the call-chain trace]
 ```
