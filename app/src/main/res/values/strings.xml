@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Anuj</string>
+
+    <!-- Bottom bar -->
+    <string name="nav_home">Home</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Home -->
+    <string name="home_empty_title">Nothing here yet</string>
+    <string name="home_empty_body">Your tasks for today will show up here.</string>
+
+    <!-- Lock -->
+    <string name="lock_title">Anuj is locked</string>
+    <string name="lock_body">Unlock to see your tasks and notes.</string>
+    <string name="lock_unlock">Unlock</string>
+    <string name="lock_prompt_title">Unlock Anuj</string>
+    <string name="lock_prompt_subtitle">Use your fingerprint, face or screen lock</string>
+    <string name="lock_prompt_confirm_title">Turn on app lock</string>
+    <string name="lock_prompt_confirm_subtitle">Confirm it is you</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_welcome_title">Hi, I am Anuj</string>
+    <string name="onboarding_welcome_body">I remember things so you do not have to. Two quick choices and you are in.</string>
+    <string name="onboarding_start">Get started</string>
+    <string name="onboarding_notifications_title">Let me remind you</string>
+    <string name="onboarding_notifications_body">I need permission to show notifications, or my reminders stay silent. You choose later which ones you want and how loud.</string>
+    <string name="onboarding_notifications_allow">Allow notifications</string>
+    <string name="onboarding_lock_title">Keep it private</string>
+    <string name="onboarding_lock_body">Lock the app with your fingerprint, face or screen lock. Your data is stored encrypted on this phone either way.</string>
+    <string name="onboarding_lock_unavailable">This phone has no screen lock set, so app lock cannot be used yet. You can turn it on later in Settings.</string>
+    <string name="onboarding_lock_enable">Turn on app lock</string>
+    <string name="onboarding_not_now">Not now</string>
+    <string name="onboarding_continue">Continue</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_text_size">Text size</string>
+    <string name="settings_app_lock">App lock</string>
+    <string name="settings_app_lock_on">Asks for your fingerprint after a minute away</string>
+    <string name="settings_app_lock_off">Off</string>
+    <string name="settings_app_lock_unavailable">Set a screen lock on this phone first</string>
+    <string name="settings_text_size_preview">This is how text will look.</string>
+
+    <string name="theme_system">Same as phone</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+
+    <string name="text_small">Small</string>
+    <string name="text_normal">Normal</string>
+    <string name="text_large">Large</string>
+    <string name="text_extra_large">Extra large</string>
+</resources>

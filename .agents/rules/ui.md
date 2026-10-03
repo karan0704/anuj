@@ -35,6 +35,15 @@ The app must be handy: usable one-handed, by taps and by voice, with the user wr
 * Swipe right = done, swipe left = snooze / carry over.
 * Undo snackbar instead of "Are you sure?" dialogs, except for irreversible actions.
 
+## Layout That Stays Aligned (the Instagram / Discord feel)
+* **Every full screen sits in `AnujScaffold`** (`core/ui/components/AnujScaffold.kt`). It draws edge to edge, keeps content clear of the status and navigation bars, and lifts content above the keyboard. Do not use a bare `Scaffold` or hand-rolled inset padding in a feature.
+* **Keyboard never covers the focused field or its action button.** The bottom tab bar stays under the keyboard; it does not ride up with it. This is the Compose equivalent of React Native's `KeyboardAvoidingView`.
+* **Short input and choices open in `AnujBottomSheet`** (`core/ui/components/AnujBottomSheet.kt`), the equivalent of an RBSheet: opens fully in one motion, closes on swipe down or tap outside, content moves up with the keyboard.
+* **Shared controls, not one-off ones**: `PrimaryButton`, `SecondaryButton`, `ChoiceChips` and `MinTouchTarget` from `core/ui/components/Controls.kt`, so spacing and sizes match on every screen.
+* **Consistent spacing**: 24dp screen side padding, 16dp between groups, 8dp between related items.
+* **Bottom tab bar for top-level areas**; a new area adds one entry to `TopLevelDestination` in `app/.../navigation/AnujApp.kt`.
+* **All user-visible text comes from `strings.xml`**, never a literal in a Composable.
+
 ## Calm, Clear Screens
 * One primary action per screen. Focus mode shows exactly one task.
 * Icon and colour on every task and tracker; text is secondary.
@@ -48,3 +57,5 @@ The app must be handy: usable one-handed, by taps and by voice, with the user wr
 4. Does it work one-handed with the thumb?
 5. Does every field have a sensible default?
 6. Is there an undo?
+7. With the keyboard open, are the focused field and its button both visible?
+8. Does it still fit at the Extra large text size and in dark theme?

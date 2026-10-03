@@ -6,7 +6,16 @@ Everything runs on the phone. There is no server, and the core features need no 
 
 ## Status
 
-Planning is complete; no app code has been written yet. Phase 0 (foundation) is next.
+Phase 0 (foundation) is built: the app opens, walks through first-run setup, can lock with fingerprint or screen lock, has light and dark themes and adjustable text size, and stores data in an encrypted database. Phase 1 (tasks) is next.
+
+## Build
+
+```
+./gradlew assembleDebug          # APK at app/build/outputs/apk/debug/
+./gradlew :core:domain:test      # unit tests
+```
+
+Needs JDK 17 and the Android SDK (platform 36).
 
 ## Stack
 
