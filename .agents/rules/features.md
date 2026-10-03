@@ -16,7 +16,11 @@
 
 App language and speech language: English only.
 
-## Planned Module Layout (not built yet)
+Library versions are pinned in `gradle/libs.versions.toml`. They are a known-working mid-2025 set (Kotlin 2.1.20, AGP 8.12.0, Gradle 9.0.0, Compose BOM 2025.06.01, Room 2.7.2, Hilt 2.56.2), chosen because they were already cached on this machine and are known to work together — not the newest available. Upgrade them together, as its own change, not in the middle of a feature.
+
+## Module Layout
+
+`app` and the four `core` modules below it exist (phase 0). `core/backup` and every `feature/` module are planned and not built yet. Package root: `com.karan.anuj` (**assumption pending confirmation**). minSdk 26, also an assumption.
 
 ```
 app/                      navigation, Hilt entry point
@@ -192,7 +196,7 @@ Each phase must end in an installable, usable app (see Phased Independent Testab
 
 | Phase | Name | What gets built | Usable result | Status |
 |---|---|---|---|---|
-| 0 | Foundation | Project + modules, encrypted Room database with base columns and change history, navigation, theme with dark mode and text size, app lock, permissions onboarding, test setup | App opens, locks, and has an empty home screen | Not started |
+| 0 | Foundation | Project + modules, encrypted Room database with base columns and change history, navigation, theme with dark mode and text size, app lock, permissions onboarding, test setup | App opens, locks, and has an empty home screen | Built and unit-tested; not yet run on a phone |
 | 1 | Tasks | Area A, plus backup and restore | A full to-do app with nesting, carry-over, search, tags and safe data | Not started |
 | 2 | Reminders | Area B (except leave-by) | Tasks remind and nag reliably, without overwhelming | Not started |
 | 3 | Tracking | Area C (except mood log and watch import) | Sleep, water, food, weight, BP, journal, doctor export | Not started |

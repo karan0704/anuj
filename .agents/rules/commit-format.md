@@ -23,6 +23,7 @@
   Branch: <name>
   Karan
   ```
+* **Never Commit Straight To `main`**: `main` only ever receives merged pull requests (the one exception was the first commit, which had to exist before any branch could). Work on a branch per phase or fix — `phase-<n>-<name>` (e.g. `phase-0-foundation`) or `fix/<short-name>` — push that branch, and open a pull request into `main`.
 * **Footer Metadata**:
   - `Branch: <Branch Name (e.g. main)>`
   - `Karan`
