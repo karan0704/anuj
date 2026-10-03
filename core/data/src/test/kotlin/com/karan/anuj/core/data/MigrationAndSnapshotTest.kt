@@ -13,6 +13,8 @@ import com.karan.anuj.core.data.db.ChecklistItemEntity
 import com.karan.anuj.core.data.db.DatabaseSnapshot
 import com.karan.anuj.core.data.db.Migrations
 import com.karan.anuj.core.data.db.NoteEntity
+import com.karan.anuj.core.data.db.ReminderEntity
+import com.karan.anuj.core.data.db.ReminderEventEntity
 import com.karan.anuj.core.data.db.SnapshotFormat
 import com.karan.anuj.core.data.db.StampColumns
 import com.karan.anuj.core.data.db.TagEntity
@@ -115,6 +117,39 @@ class MigrationAndSnapshotTest {
     }
 
     @Test
+    fun `a version 2 database upgrades with its tasks kept and reminders working`() = runTest {
+        createDatabaseAtVersion(2, "upgrade2.db") {
+            it.execSQL(
+                "INSERT INTO task (id, name, description, daysOff, priority, carryCount, createdAt, updatedAt) " +
+                    "VALUES ('t', 'Buy milk', '', 0, 'NONE', 0, 1, 1)",
+            )
+        }
+
+        val upgraded = openCurrent("upgrade2.db")
+
+        assertEquals(listOf("Buy milk"), upgraded.snapshotDao().tasks().map { it.name })
+        upgraded.reminderDao().upsert(listOf(ReminderEntity(id = "r", taskId = "t", schedule = "TASK;0", stamps = stamps)))
+        assertEquals(listOf("t"), upgraded.reminderDao().taskIdsEverReminded())
+        assertEquals(AnujDatabase.VERSION, upgraded.openHelper.readableDatabase.version)
+    }
+
+    @Test
+    fun `removing a task for good takes its reminders with it and leaves the standing ones`() = runTest {
+        val database = openCurrent("cascade.db")
+        database.taskDao().save(listOf(TaskEntity(id = "t", name = "Call mum", stamps = stamps)), emptyList())
+        database.reminderDao().upsert(
+            listOf(
+                ReminderEntity(id = "of-task", taskId = "t", schedule = "TASK;0", stamps = stamps),
+                ReminderEntity(id = "standing", title = "Drink water", schedule = "EVERY;120;540;1260;0", stamps = stamps),
+            ),
+        )
+
+        database.snapshotDao().clearTasks()
+
+        assertEquals(listOf("standing"), database.reminderDao().getLive().map { it.id })
+    }
+
+    @Test
     fun `a migrated database and a fresh one have the same tables and indexes`() = runTest {
         createDatabaseAtVersion(1, "migrated.db") {}
         val migrated = openCurrent("migrated.db")
@@ -154,9 +189,18 @@ class MigrationAndSnapshotTest {
         attachments = listOf(AttachmentEntity("a", "parent", "photo.jpg", stamps)),
         occurrences = listOf(TaskOccurrenceEntity("o", "parent", 19_999, "DONE", 77)),
         changeHistory = listOf(ChangeHistoryEntity(7, "task", "parent", "name", "Tripp", "Trip", 9)),
+        reminders = listOf(
+            ReminderEntity(
+                id = "r", taskId = "parent", schedule = "TASK;15", category = "ALARM", style = "ALARM",
+                nagEveryMinutes = 10, nagTimes = 3, toneUri = "content://tone", lastOccurrenceAt = 4, lastFiredAt = 5,
+                nagsSent = 1, snoozedUntil = 6, answeredAt = 7, stamps = stamps,
+            ),
+            ReminderEntity(id = "water", title = "Drink water", schedule = "EVERY;120;540;1260;0", enabled = false, stamps = stamps),
+        ),
+        reminderEvents = listOf(ReminderEventEntity("e", "r", "parent", "Trip", "SNOOZED", 8, minutes = 10, reason = "Busy")),
     )
 
-    private fun DatabaseSnapshot.sorted() = copy(tasks = tasks.sortedBy { it.id })
+    private fun DatabaseSnapshot.sorted() = copy(tasks = tasks.sortedBy { it.id }, reminders = reminders.sortedBy { it.id })
 
     @Test
     fun `a backup written to a file and restored into an empty database gives back every row`() = runTest {
@@ -176,12 +220,14 @@ class MigrationAndSnapshotTest {
         val database = openCurrent("replace.db")
         database.taskDao().save(listOf(TaskEntity(id = "old", name = "Old task", stamps = stamps)), emptyList())
         database.checklistDao().upsert(listOf(ChecklistItemEntity("oc", "old", "old line", stamps = stamps)))
+        database.reminderDao().upsert(listOf(ReminderEntity(id = "old-standing", title = "Old", schedule = "TIMES;480;0", stamps = stamps)))
 
         database.snapshotDao().replaceWith(fullSnapshot())
 
         val after = database.snapshotDao().read(AnujDatabase.VERSION)
         assertEquals(setOf("child", "parent"), after.tasks.map { it.id }.toSet())
         assertEquals(listOf("c"), after.checklistItems.map { it.id })
+        assertEquals("a standing reminder from before the restore must not survive it", setOf("r", "water"), after.reminders.map { it.id }.toSet())
         assertTrue("replaced text is gone from search", database.taskDao().search("old*", 10).isEmpty())
     }
 

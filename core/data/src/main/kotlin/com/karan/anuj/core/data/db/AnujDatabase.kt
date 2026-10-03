@@ -8,7 +8,9 @@ import androidx.room.RoomDatabase
  * number and a migration; the exported schema under `core/data/schemas` shows
  * what each version looked like.
  *
- * Version 2 adds the task tables and their search indexes (see [Migrations]).
+ * Version 3 adds the reminder table and the reminder log (see [Migrations]).
+ * Version 2 added the task tables and their search indexes; its entity list
+ * was everything below up to `ChecklistItemFtsEntity`.
  * Version 1, kept for comparison, held only the change history:
  *
  *     @Database(
@@ -30,6 +32,8 @@ import androidx.room.RoomDatabase
         TaskFtsEntity::class,
         NoteFtsEntity::class,
         ChecklistItemFtsEntity::class,
+        ReminderEntity::class,
+        ReminderEventEntity::class,
     ],
     version = AnujDatabase.VERSION,
     exportSchema = true,
@@ -42,9 +46,10 @@ abstract class AnujDatabase : RoomDatabase() {
     abstract fun tagDao(): TagDao
     abstract fun attachmentDao(): AttachmentDao
     abstract fun snapshotDao(): SnapshotDao
+    abstract fun reminderDao(): ReminderDao
 
     companion object {
         const val FILE_NAME = "anuj.db"
-        const val VERSION = 2
+        const val VERSION = 3
     }
 }
