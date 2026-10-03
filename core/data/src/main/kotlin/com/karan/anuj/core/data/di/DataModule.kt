@@ -1,12 +1,12 @@
 package com.karan.anuj.core.data.di
 
-import android.content.Context
-import androidx.room.Room
+// import android.content.Context  // used only by provideDatabase, now in DatabaseModule
+// import androidx.room.Room  // used only by provideDatabase, now in DatabaseModule
 import com.karan.anuj.core.data.db.AnujDatabase
 import com.karan.anuj.core.data.db.AttachmentDao
 import com.karan.anuj.core.data.db.ChangeHistoryDao
 import com.karan.anuj.core.data.db.ChecklistDao
-import com.karan.anuj.core.data.db.Migrations
+// import com.karan.anuj.core.data.db.Migrations  // used only by provideDatabase, now in DatabaseModule
 import com.karan.anuj.core.data.db.NoteDao
 import com.karan.anuj.core.data.db.SnapshotDao
 import com.karan.anuj.core.data.db.TagDao
@@ -31,19 +31,19 @@ import com.karan.anuj.core.domain.task.TagRepository
 import com.karan.anuj.core.domain.task.TaskPreferencesRepository
 import com.karan.anuj.core.domain.task.TaskRepository
 import com.karan.anuj.core.domain.time.TimeSource
-import com.karan.anuj.core.security.DatabasePassphraseProvider
+// import com.karan.anuj.core.security.DatabasePassphraseProvider  // used only by provideDatabase, now in DatabaseModule
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
+// import dagger.hilt.android.qualifiers.ApplicationContext  // used only by provideDatabase, now in DatabaseModule
 import dagger.hilt.components.SingletonComponent
 import java.util.UUID
 import javax.inject.Qualifier
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
+// import net.zetetic.database.sqlcipher.SupportOpenHelperFactory  // used only by provideDatabase, now in DatabaseModule
 
 /** The dispatcher for database and file work. */
 @Qualifier
@@ -97,31 +97,22 @@ abstract class DataModule {
         fun provideIdGenerator(): IdGenerator = IdGenerator { UUID.randomUUID().toString() }
 
         /**
-         * The database file is encrypted with SQLCipher. Building it reads the
-         * passphrase from the keystore, so this provider is only ever reached
-         * from the IO dispatcher (see the repositories, which take their DAO
-         * lazily).
+         * The database itself is now provided by [DatabaseModule], so tests
+         * can replace only that. It used to be provided here:
          *
-         * Every migration is registered, so an older installed database is
-         * upgraded in place. Before version 2 there were none to register:
-         *
-         *     return Room.databaseBuilder(context, AnujDatabase::class.java, AnujDatabase.FILE_NAME)
-         *         .openHelperFactory(SupportOpenHelperFactory(passphrase.passphrase()))
-         *         .build()
+         *     @Provides
+         *     @Singleton
+         *     fun provideDatabase(
+         *         @ApplicationContext context: Context,
+         *         passphrase: DatabasePassphraseProvider,
+         *     ): AnujDatabase {
+         *         System.loadLibrary("sqlcipher")
+         *         return Room.databaseBuilder(context, AnujDatabase::class.java, AnujDatabase.FILE_NAME)
+         *             .openHelperFactory(SupportOpenHelperFactory(passphrase.passphrase()))
+         *             .addMigrations(*Migrations.ALL)
+         *             .build()
+         *     }
          */
-        @Provides
-        @Singleton
-        fun provideDatabase(
-            @ApplicationContext context: Context,
-            passphrase: DatabasePassphraseProvider,
-        ): AnujDatabase {
-            System.loadLibrary("sqlcipher")
-            return Room.databaseBuilder(context, AnujDatabase::class.java, AnujDatabase.FILE_NAME)
-                .openHelperFactory(SupportOpenHelperFactory(passphrase.passphrase()))
-                .addMigrations(*Migrations.ALL)
-                .build()
-        }
-
         @Provides
         fun provideChangeHistoryDao(database: AnujDatabase): ChangeHistoryDao = database.changeHistoryDao()
 

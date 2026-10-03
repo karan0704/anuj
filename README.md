@@ -6,13 +6,15 @@ Everything runs on the phone. There is no server, and the core features need no 
 
 ## Status
 
-Phase 0 (foundation) is built: the app opens, walks through first-run setup, can lock with fingerprint or screen lock, has light and dark themes and adjustable text size, and stores data in an encrypted database. Phase 1 (tasks) is next.
+Phases 0 and 1 are built. Phase 0 is the foundation: first-run setup, fingerprint or screen-lock app lock, light and dark themes, adjustable text size, encrypted database. Phase 1 is tasks: nested tasks with checklists, notes, photos, tags and priority; repeating tasks with days off; carry-over rules for unfinished tasks; an inbox, search and trash; ready-made routines; backup and restore. Phase 2 (reminders) is next.
+
+Neither phase has been run on a phone yet; both are tested on the computer.
 
 ## Build
 
 ```
 ./gradlew assembleDebug          # APK at app/build/outputs/apk/debug/
-./gradlew :core:domain:test      # unit tests
+./gradlew :core:domain:test testDebugUnitTest   # all tests, including the end-to-end app journey
 ```
 
 Needs JDK 17 and the Android SDK (platform 36).

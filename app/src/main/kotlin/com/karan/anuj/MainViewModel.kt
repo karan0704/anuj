@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.karan.anuj.core.domain.settings.AppSettings
 import com.karan.anuj.core.domain.settings.ObserveSettingsUseCase
 import com.karan.anuj.core.domain.settings.UpdateSettingUseCase
+import com.karan.anuj.core.domain.task.RollOverTasksUseCase
 import com.karan.anuj.core.security.AppLockController
 import com.karan.anuj.core.security.LockState
+import com.karan.anuj.feature.task.common.DayClock
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,12 +28,30 @@ class MainViewModel @Inject constructor(
     observeSettings: ObserveSettingsUseCase,
     private val updateSetting: UpdateSettingUseCase,
     private val appLock: AppLockController,
+    private val rollOverTasks: RollOverTasksUseCase,
 ) : ViewModel() {
 
     /** Null until the saved settings have been read, so nothing is drawn with the wrong theme or before the lock is known. */
     val state: StateFlow<RootState?> =
         combine(observeSettings(), appLock.state) { settings, lock -> RootState(settings, lock) }
             .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    /**
+     * Unfinished tasks are carried over once for each new day: when the app
+     * starts, and again at midnight if it is still open. Collecting the
+     * day rather than calling this from a screen means it runs whichever
+     * tab the user happens to be on.
+     */
+    private val clock = DayClock(viewModelScope)
+
+    init {
+        viewModelScope.launch {
+            clock.day.collect { day -> rollOverTasks(day.date) }
+        }
+    }
+
+    /** The phone may have slept through midnight or changed time zone; re-reading the day catches both. */
+    fun onForeground() = clock.refresh()
 
     fun onUnlocked() = appLock.unlock()
 

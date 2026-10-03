@@ -31,6 +31,8 @@ import com.karan.anuj.core.domain.settings.ThemeMode
 import com.karan.anuj.core.ui.components.AnujBottomSheet
 import com.karan.anuj.core.ui.components.ChoiceChips
 import com.karan.anuj.core.ui.components.MinTouchTarget
+import com.karan.anuj.core.ui.components.SectionTitle
+import com.karan.anuj.feature.task.settings.TaskSettingsRows
 
 @StringRes
 private fun ThemeMode.labelRes(): Int = when (this) {
@@ -77,6 +79,7 @@ fun SettingsScreen(
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
         )
+        SectionTitle(stringResource(R.string.settings_section_display))
 
         ListItem(
             headlineContent = { Text(stringResource(R.string.settings_theme)) },
@@ -117,6 +120,20 @@ fun SettingsScreen(
             },
             modifier = Modifier.heightIn(min = MinTouchTarget),
         )
+
+        /**
+         * Each feature draws its own rows; this screen only gives them a
+         * heading and a place, so adding a feature's settings never means
+         * editing another feature's.
+         */
+        HorizontalDivider()
+        SectionTitle(stringResource(R.string.settings_section_tasks))
+        TaskSettingsRows()
+
+        HorizontalDivider()
+        SectionTitle(stringResource(R.string.settings_section_backup))
+        BackupSettingsRows()
+        Spacer(Modifier.height(24.dp))
     }
 
     when (openSheet) {
