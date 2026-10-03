@@ -7,6 +7,7 @@ import androidx.room.Insert
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.Serializable
 
 /**
  * One row per changed field. History rows are written once and never edited
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.Flow
  * The index matches the only read this table serves: the history of one row,
  * newest first.
  */
+@Serializable
 @Entity(
     tableName = "change_history",
     indices = [Index(value = ["tableName", "rowId", "changedAt"])],
