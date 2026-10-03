@@ -163,6 +163,12 @@ class AppJourneyTest {
         // Open the task and set its priority by tapping a chip.
         tapText("Buy milk")
         waitForText("If not done on its day")
+        /** A new task has no steps, notes or photos, so only the controls that add them show, with no heading above nothing. */
+        waitForText("Add a step")
+        waitForText("Add a note")
+        waitForNoText("Steps")
+        waitForNoText("Notes")
+        waitForNoText("Photos")
         tapText("High")
         tapLabel("Back")
         waitForText("Today · High")
@@ -205,6 +211,15 @@ class AppJourneyTest {
         tapText("Settings")
         waitForText("Unfinished tasks")
         waitForText("Backup folder")
+
+        // Values that used to be fixed in code are settings: the lock delay, the times of day, the backups kept.
+        waitForText("Lock again after")
+        waitForText("Times of day")
+        waitForText("8:00 am · 1:00 pm · 6:00 pm · 9:00 pm")
+        waitForText("Backups kept")
+        tapText("Lock again after")
+        tapText("5 min away")
+        waitForText("Straight away")
     }
 
     private companion object {

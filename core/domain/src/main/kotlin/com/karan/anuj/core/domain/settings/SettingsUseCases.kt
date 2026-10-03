@@ -34,6 +34,8 @@ class UpdateSettingUseCase @Inject constructor(
 
     suspend fun onboardingDone(done: Boolean) = tracked { repository.setOnboardingDone(done) }
 
+    suspend fun lockAfter(seconds: Int) = tracked { repository.setLockAfterSeconds(seconds.coerceAtLeast(0)) }
+
     private suspend fun tracked(change: suspend () -> Unit) {
         val before = repository.settings.first()
         change()
@@ -53,5 +55,6 @@ class UpdateSettingUseCase @Inject constructor(
         "textScale" to textScale.name,
         "appLockEnabled" to appLockEnabled.toString(),
         "onboardingDone" to onboardingDone.toString(),
+        "lockAfterSeconds" to lockAfterSeconds.toString(),
     )
 }

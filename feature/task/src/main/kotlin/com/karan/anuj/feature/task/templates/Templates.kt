@@ -2,17 +2,17 @@ package com.karan.anuj.feature.task.templates
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+// import androidx.compose.foundation.layout.ExperimentalLayoutApi  // the chip row is now the shared ToggleChips
+// import androidx.compose.foundation.layout.FlowRow  // the chip row is now the shared ToggleChips
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+// import androidx.compose.foundation.layout.fillMaxWidth  // the chip row is now the shared ToggleChips
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
+// import androidx.compose.foundation.layout.heightIn  // the chip row is now the shared ToggleChips
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.FilterChip
+// import androidx.compose.material3.FilterChip  // the chip row is now the shared ToggleChips
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +33,7 @@ import com.karan.anuj.core.domain.task.TagActions
 import com.karan.anuj.core.ui.components.AnujBottomSheet
 import com.karan.anuj.core.ui.components.PrimaryButton
 import com.karan.anuj.core.ui.components.SecondaryButton
+import com.karan.anuj.core.ui.components.ToggleChips
 import com.karan.anuj.feature.task.R
 import com.karan.anuj.feature.task.common.Day
 import com.karan.anuj.feature.task.common.WriteScope
@@ -61,22 +62,36 @@ class TemplatesViewModel @Inject constructor(
 }
 
 /** The routines as chips; any number can be switched on. Keys are saved as text so the choice survives rotation. */
-@OptIn(ExperimentalLayoutApi::class)
+/**
+ * Drawn with the shared [ToggleChips], which leaves a gap between wrapped
+ * rows. This file used to lay the chips out itself with no gap between the
+ * rows, so the second row of routines touched the first:
+ *
+ *     FlowRow(
+ *         modifier = modifier.fillMaxWidth(),
+ *         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+ *     ) {
+ *         BuiltInTemplates.all.forEach { template ->
+ *             FilterChip(
+ *                 selected = template.key in selected,
+ *                 onClick = { onToggle(template.key) },
+ *                 label = { Text(template.name, style = MaterialTheme.typography.titleSmall) },
+ *                 modifier = Modifier.heightIn(min = 48.dp),
+ *             )
+ *         }
+ *     }
+ */
 @Composable
 private fun TemplateChips(selected: Set<String>, onToggle: (String) -> Unit, modifier: Modifier = Modifier) {
-    FlowRow(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-    ) {
-        BuiltInTemplates.all.forEach { template ->
-            FilterChip(
-                selected = template.key in selected,
-                onClick = { onToggle(template.key) },
-                label = { Text(template.name, style = MaterialTheme.typography.titleSmall) },
-                modifier = Modifier.heightIn(min = 48.dp),
-            )
-        }
-    }
+    val names = BuiltInTemplates.all.associate { it.key to it.name }
+    ToggleChips(
+        options = BuiltInTemplates.all.map { it.key },
+        selected = selected,
+        label = { names.getValue(it) },
+        onToggle = onToggle,
+        modifier = modifier,
+        centered = true,
+    )
 }
 
 @Composable

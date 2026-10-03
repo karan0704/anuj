@@ -17,6 +17,8 @@ import com.karan.anuj.core.domain.task.TagId
 import com.karan.anuj.core.domain.task.Task
 import com.karan.anuj.core.domain.task.TaskDetail
 import com.karan.anuj.core.domain.task.TaskId
+import com.karan.anuj.core.domain.task.TaskPreferences
+import com.karan.anuj.core.domain.task.TaskPreferencesUseCase
 import com.karan.anuj.core.domain.task.UpdateTaskUseCase
 import com.karan.anuj.feature.task.common.Day
 import com.karan.anuj.feature.task.common.DayClock
@@ -39,7 +41,12 @@ sealed interface TaskDetailUiState {
     /** The task was removed for good, or is in the trash. */
     data object Gone : TaskDetailUiState
 
-    data class Loaded(val detail: TaskDetail, val day: Day) : TaskDetailUiState
+    /** @property preferences the user's own chip choices: the times of day and the lengths offered */
+    data class Loaded(
+        val detail: TaskDetail,
+        val day: Day,
+        val preferences: TaskPreferences = TaskPreferences(),
+    ) : TaskDetailUiState
 }
 
 /** A checklist line, note or photo just removed from the task, and how to bring it back. */
@@ -56,15 +63,16 @@ class TaskDetailViewModel @Inject constructor(
     private val photos: AttachmentActions,
     private val duplicateTask: DuplicateTaskUseCase,
     private val actions: TaskActions,
+    preferences: TaskPreferencesUseCase,
 ) : TaskActionsViewModel(actions) {
 
     private val taskId = TaskId(checkNotNull(savedState.get<String>(TASK_ID_ARG)) { "Task screen opened without a task id" })
     private val clock = DayClock(viewModelScope)
 
     val state: StateFlow<TaskDetailUiState> =
-        combine(observeDetail(taskId), clock.day) { detail, day ->
+        combine(observeDetail(taskId), clock.day, preferences.observe()) { detail, day, prefs ->
             if (detail == null || detail.task.stamps.isDeleted) TaskDetailUiState.Gone
-            else TaskDetailUiState.Loaded(detail, day)
+            else TaskDetailUiState.Loaded(detail, day, prefs)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TaskDetailUiState.Loading)
 
     private val removedChannel = Channel<RemovedPart>(Channel.BUFFERED)

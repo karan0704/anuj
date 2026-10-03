@@ -141,4 +141,12 @@ class TaskPreferencesUseCase @Inject constructor(
     suspend fun setDefaultCarryOver(rule: CarryOverRule) = repository.setDefaultCarryOver(rule)
 
     suspend fun setCarryLimit(limit: Int) = repository.setCarryLimit(limit.coerceIn(1, 99))
+
+    suspend fun setDayParts(parts: DayParts) = repository.setDayParts(parts)
+
+    /** Kept shortest first and without repeats; an empty list is refused so the chips never vanish. */
+    suspend fun setEstimateChoices(minutes: List<Int>) {
+        val cleaned = minutes.filter { it > 0 }.distinct().sorted()
+        if (cleaned.isNotEmpty()) repository.setEstimateChoices(cleaned)
+    }
 }

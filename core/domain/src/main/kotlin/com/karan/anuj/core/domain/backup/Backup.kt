@@ -12,6 +12,7 @@ enum class BackupSchedule { OFF, DAILY, WEEKLY }
  * @property passwordSet whether backups are written password-protected
  * @property lastBackupAt when the last backup that worked was written
  * @property lastAttemptFailed true when the most recent attempt did not work
+ * @property keepCount how many backup files stay in the folder; older ones are removed
  */
 data class BackupSettings(
     val folderUri: String? = null,
@@ -20,7 +21,13 @@ data class BackupSettings(
     val passwordSet: Boolean = false,
     val lastBackupAt: Long? = null,
     val lastAttemptFailed: Boolean = false,
-)
+    val keepCount: Int = DEFAULT_KEEP_COUNT,
+) {
+    companion object {
+        const val DEFAULT_KEEP_COUNT = 10
+        val KEEP_COUNT_RANGE: IntRange = 1..50
+    }
+}
 
 enum class BackupFailure {
     /** No backup folder has been chosen yet. */
@@ -57,6 +64,8 @@ interface BackupRepository {
     /** @param password null or blank switches password protection off */
     suspend fun setPassword(password: String?)
 
+    suspend fun setKeepCount(count: Int)
+
     /** Writes a backup of everything into the chosen folder. */
     suspend fun backUpNow(): BackupResult
 
@@ -77,6 +86,9 @@ class BackupUseCase @Inject constructor(
     suspend fun setSchedule(schedule: BackupSchedule) = repository.setSchedule(schedule)
 
     suspend fun setPassword(password: String?) = repository.setPassword(password?.takeIf { it.isNotBlank() })
+
+    suspend fun setKeepCount(count: Int) =
+        repository.setKeepCount(count.coerceIn(BackupSettings.KEEP_COUNT_RANGE.first, BackupSettings.KEEP_COUNT_RANGE.last))
 
     suspend fun backUpNow(): BackupResult = repository.backUpNow()
 

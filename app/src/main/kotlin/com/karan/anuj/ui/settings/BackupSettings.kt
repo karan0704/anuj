@@ -37,6 +37,7 @@ import com.karan.anuj.core.ui.components.ChoiceChips
 import com.karan.anuj.core.ui.components.FieldRow
 import com.karan.anuj.core.ui.components.PrimaryButton
 import com.karan.anuj.core.ui.components.SecondaryButton
+import com.karan.anuj.core.ui.components.Stepper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Instant
 import java.time.ZoneId
@@ -105,6 +106,10 @@ class BackupViewModel @Inject constructor(
         viewModelScope.launch { backup.setPassword(password) }
     }
 
+    fun setKeepCount(count: Int) {
+        viewModelScope.launch { backup.setKeepCount(count) }
+    }
+
     fun backUpNow() = run(onSuccess = BackupMessage.BACKED_UP, fileUri = null) { backup.backUpNow() }
 
     fun restore(fileUri: String, password: String?) =
@@ -146,7 +151,7 @@ private fun BackupSchedule.labelRes(): Int = when (this) {
     BackupSchedule.WEEKLY -> R.string.backup_schedule_weekly
 }
 
-private enum class BackupSheet { NONE, SCHEDULE, PASSWORD }
+private enum class BackupSheet { NONE, SCHEDULE, PASSWORD, KEEP }
 
 /**
  * The backup rows of the Settings screen. The folder and the file to restore
@@ -182,6 +187,11 @@ fun BackupSettingsRows(viewModel: BackupViewModel = hiltViewModel()) {
         label = stringResource(R.string.backup_password),
         value = stringResource(if (settings.passwordSet) R.string.backup_password_set else R.string.backup_password_none),
         onClick = { sheet = BackupSheet.PASSWORD },
+    )
+    FieldRow(
+        label = stringResource(R.string.backup_keep),
+        value = stringResource(R.string.backup_keep_value, settings.keepCount),
+        onClick = { sheet = BackupSheet.KEEP },
     )
     FieldRow(
         label = stringResource(R.string.backup_now),
@@ -231,6 +241,21 @@ fun BackupSettingsRows(viewModel: BackupViewModel = hiltViewModel()) {
             },
             onDismiss = { sheet = BackupSheet.NONE },
         )
+        BackupSheet.KEEP -> AnujBottomSheet(
+            onDismiss = { sheet = BackupSheet.NONE },
+            title = stringResource(R.string.backup_keep),
+        ) {
+            Stepper(
+                value = settings.keepCount,
+                onChange = viewModel::setKeepCount,
+                range = BackupSettings.KEEP_COUNT_RANGE,
+                lessLabel = stringResource(R.string.backup_keep_less),
+                moreLabel = stringResource(R.string.backup_keep_more),
+                valueText = stringResource(R.string.backup_keep_value, settings.keepCount),
+            )
+            Spacer(Modifier.height(16.dp))
+            PrimaryButton(text = stringResource(R.string.backup_ok), onClick = { sheet = BackupSheet.NONE })
+        }
     }
 
     confirmRestoreOf?.let { fileUri ->

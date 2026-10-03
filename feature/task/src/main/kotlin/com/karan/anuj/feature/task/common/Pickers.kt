@@ -46,6 +46,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.karan.anuj.core.domain.task.CarryOverRule
+import com.karan.anuj.core.domain.task.DayParts
 import com.karan.anuj.core.domain.task.Repetition
 import com.karan.anuj.core.ui.components.AnujBottomSheet
 import com.karan.anuj.core.ui.components.MinTouchTarget
@@ -64,11 +65,15 @@ import java.time.ZoneOffset
  * the usual case never needs the keyboard.
  */
 
-/** The clock times behind the part-of-day chips. */
-private val Morning: LocalTime = LocalTime.of(8, 0)
-private val Afternoon: LocalTime = LocalTime.of(13, 0)
-private val Evening: LocalTime = LocalTime.of(18, 0)
-private val Night: LocalTime = LocalTime.of(21, 0)
+/**
+ * The clock times behind the part-of-day chips are the user's own, passed in
+ * as [DayParts] and changed in Settings. They used to be fixed here:
+ *
+ *     private val Morning: LocalTime = LocalTime.of(8, 0)
+ *     private val Afternoon: LocalTime = LocalTime.of(13, 0)
+ *     private val Evening: LocalTime = LocalTime.of(18, 0)
+ *     private val Night: LocalTime = LocalTime.of(21, 0)
+ */
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -156,13 +161,18 @@ fun DateChips(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun TimeChips(time: LocalTime?, onChange: (LocalTime?) -> Unit, modifier: Modifier = Modifier) {
+fun TimeChips(
+    time: LocalTime?,
+    onChange: (LocalTime?) -> Unit,
+    modifier: Modifier = Modifier,
+    parts: DayParts = DayParts(),
+) {
     var showClock by rememberSaveable { mutableStateOf(false) }
     val named = listOf(
-        Morning to stringResource(R.string.task_morning),
-        Afternoon to stringResource(R.string.task_afternoon),
-        Evening to stringResource(R.string.task_evening),
-        Night to stringResource(R.string.task_night),
+        parts.morning to stringResource(R.string.task_morning),
+        parts.afternoon to stringResource(R.string.task_afternoon),
+        parts.evening to stringResource(R.string.task_evening),
+        parts.night to stringResource(R.string.task_night),
     )
 
     FlowRow(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -177,7 +187,7 @@ fun TimeChips(time: LocalTime?, onChange: (LocalTime?) -> Unit, modifier: Modifi
     }
 
     if (showClock) {
-        TimePickDialog(initial = time ?: Morning, onPicked = onChange, onDismiss = { showClock = false })
+        TimePickDialog(initial = time ?: parts.morning, onPicked = onChange, onDismiss = { showClock = false })
     }
 }
 
@@ -190,11 +200,12 @@ fun DueSheet(
     onDateChange: (LocalDate?) -> Unit,
     onTimeChange: (LocalTime?) -> Unit,
     onDismiss: () -> Unit,
+    dayParts: DayParts = DayParts(),
 ) {
     AnujBottomSheet(onDismiss = onDismiss, title = stringResource(R.string.detail_when)) {
         DateChips(date, today, onDateChange, allowNoDate = allowNoDate)
         Spacer(Modifier.height(16.dp))
-        TimeChips(time, onTimeChange)
+        TimeChips(time, onTimeChange, parts = dayParts)
         Spacer(Modifier.height(16.dp))
         PrimaryButton(text = stringResource(R.string.task_ok), onClick = onDismiss)
     }

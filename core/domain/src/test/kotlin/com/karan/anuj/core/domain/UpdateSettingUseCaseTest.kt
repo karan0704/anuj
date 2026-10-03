@@ -48,6 +48,7 @@ class UpdateSettingUseCaseTest {
         override suspend fun setTextScale(scale: TextScale) = state.update { it.copy(textScale = scale) }
         override suspend fun setAppLockEnabled(enabled: Boolean) = state.update { it.copy(appLockEnabled = enabled) }
         override suspend fun setOnboardingDone(done: Boolean) = state.update { it.copy(onboardingDone = done) }
+        override suspend fun setLockAfterSeconds(seconds: Int) = state.update { it.copy(lockAfterSeconds = seconds) }
     }
 
     private class FakeHistoryRepository : ChangeHistoryRepository {

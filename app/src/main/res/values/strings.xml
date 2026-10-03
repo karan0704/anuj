@@ -40,7 +40,11 @@
     <string name="settings_theme">Theme</string>
     <string name="settings_text_size">Text size</string>
     <string name="settings_app_lock">App lock</string>
-    <string name="settings_app_lock_on">Asks for your fingerprint after a minute away</string>
+    <string name="settings_app_lock_on">Asks for your fingerprint when you come back</string>
+    <string name="settings_lock_after">Lock again after</string>
+    <string name="lock_after_now">Straight away</string>
+    <string name="lock_after_seconds">%1$d seconds away</string>
+    <string name="lock_after_minutes">%1$d min away</string>
     <string name="settings_app_lock_off">Off</string>
     <string name="settings_app_lock_unavailable">Set a screen lock on this phone first</string>
     <string name="settings_text_size_preview">This is how text will look.</string>
@@ -63,6 +67,10 @@
     <string name="backup_password_warning">Without this password a protected backup cannot be opened by anyone, including you. Write it down somewhere safe.</string>
     <string name="backup_password_save">Save password</string>
     <string name="backup_password_remove">Remove password</string>
+    <string name="backup_keep">Backups kept</string>
+    <string name="backup_keep_value">The newest %1$d</string>
+    <string name="backup_keep_less">Keep one fewer</string>
+    <string name="backup_keep_more">Keep one more</string>
     <string name="backup_now">Back up now</string>
     <string name="backup_now_never">No backup yet</string>
     <string name="backup_now_last">Last backup: %1$s</string>

@@ -73,6 +73,7 @@ import com.karan.anuj.core.domain.task.Priority
 import com.karan.anuj.core.domain.task.Task
 import com.karan.anuj.core.domain.task.TaskDetail
 import com.karan.anuj.core.domain.task.TaskId
+import com.karan.anuj.core.domain.task.TaskPreferences
 import com.karan.anuj.core.ui.components.ChoiceChips
 import com.karan.anuj.core.ui.components.FieldRow
 import com.karan.anuj.core.ui.components.MinTouchTarget
@@ -102,8 +103,12 @@ import java.time.LocalDate
 import java.time.ZoneId
 import kotlinx.coroutines.launch
 
-/** The time estimates offered as chips, in minutes. */
-private val EstimateChoices: List<Int?> = listOf(null, 5, 15, 30, 60, 120)
+/**
+ * The time estimates offered as chips come from the user's settings
+ * ([TaskPreferences.estimateChoices]). They used to be fixed here:
+ *
+ *     private val EstimateChoices: List<Int?> = listOf(null, 5, 15, 30, 60, 120)
+ */
 
 /** Which sheet is open over the task. */
 private enum class DetailSheet { NONE, NAME, DESCRIPTION, DUE, REPEAT, TAGS, CARRY, ADD_STEP, ADD_NOTE }
@@ -147,7 +152,8 @@ fun TaskDetailScreen(
                         .padding(ScreenPadding),
                 )
             }
-            is TaskDetailUiState.Loaded -> LoadedTask(current.detail, current.day, viewModel, onBack, onOpenTask)
+            is TaskDetailUiState.Loaded ->
+                LoadedTask(current.detail, current.day, current.preferences, viewModel, onBack, onOpenTask)
         }
     }
 }
@@ -212,6 +218,7 @@ private fun DetailHeader(
 private fun LoadedTask(
     detail: TaskDetail,
     day: Day,
+    preferences: TaskPreferences,
     viewModel: TaskDetailViewModel,
     onBack: () -> Unit,
     onOpenTask: (TaskId) -> Unit,
@@ -289,7 +296,8 @@ private fun LoadedTask(
                 }
                 ChipField(stringResource(R.string.detail_estimate)) {
                     ChoiceChips(
-                        options = (EstimateChoices + task.estimatedMinutes).distinct(),
+                        /** "None" first, then the user's lengths; a length no longer offered still shows while this task has it. */
+                        options = (listOf<Int?>(null) + preferences.estimateChoices + task.estimatedMinutes).distinct(),
                         selected = task.estimatedMinutes,
                         label = { if (it == null) stringResource(R.string.task_none) else estimateLabel(it) },
                         onSelect = { choice -> viewModel.update { it.copy(estimatedMinutes = choice) } },
@@ -304,13 +312,26 @@ private fun LoadedTask(
             }
         }
 
-        item(key = "checklist-title") { SectionTitle(stringResource(R.string.detail_checklist)) }
+        /**
+         * A section's heading is only drawn once the section has something
+         * in it. On a task with no checklist, steps, notes or photos the
+         * headings used to sit above nothing; now only the "add" controls
+         * show, each of which says what it adds. The four headings used to
+         * be unconditional, each written like this one:
+         *
+         *     item(key = "steps-title") { SectionTitle(stringResource(R.string.detail_steps)) }
+         */
+        if (detail.checklist.isNotEmpty()) {
+            item(key = "checklist-title") { SectionTitle(stringResource(R.string.detail_checklist)) }
+        }
         items(detail.checklist, key = { "check-${it.id}" }) { line ->
             ChecklistRow(line, onChecked = { viewModel.setChecked(line, it) }, onRemove = { viewModel.removeChecklistLine(line) })
         }
         item(key = "checklist-add") { ChecklistAddRow(onAdd = viewModel::addChecklistLine) }
 
-        item(key = "steps-title") { SectionTitle(stringResource(R.string.detail_steps)) }
+        if (detail.children.isNotEmpty()) {
+            item(key = "steps-title") { SectionTitle(stringResource(R.string.detail_steps)) }
+        }
         items(detail.children, key = { "step-${it.id.value}" }) { step ->
             TaskRow(
                 task = step,
@@ -326,7 +347,9 @@ private fun LoadedTask(
             }
         }
 
-        item(key = "notes-title") { SectionTitle(stringResource(R.string.detail_notes)) }
+        if (detail.notes.isNotEmpty()) {
+            item(key = "notes-title") { SectionTitle(stringResource(R.string.detail_notes)) }
+        }
         items(detail.notes, key = { "note-${it.id}" }) { note ->
             NoteRow(note, today = today, onRemove = { viewModel.removeNote(note) })
         }
@@ -336,7 +359,9 @@ private fun LoadedTask(
             }
         }
 
-        item(key = "photos-title") { SectionTitle(stringResource(R.string.detail_photos)) }
+        if (detail.attachments.isNotEmpty()) {
+            item(key = "photos-title") { SectionTitle(stringResource(R.string.detail_photos)) }
+        }
         item(key = "photos") {
             PhotoSection(
                 photos = detail.attachments,
@@ -375,6 +400,7 @@ private fun LoadedTask(
             onDateChange = { date -> viewModel.update { it.copy(dueDate = date, missedAt = null) } },
             onTimeChange = { time -> viewModel.update { it.copy(dueTime = time) } },
             onDismiss = closeSheet,
+            dayParts = preferences.dayParts,
         )
         DetailSheet.REPEAT -> RepeatSheet(
             rule = task.repetition,

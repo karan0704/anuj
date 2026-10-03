@@ -47,6 +47,9 @@ class AppLockController @Inject constructor(
     private var lockEnabled: Boolean? = null
     private var backgroundedAt: Long? = null
 
+    /** The user's "lock again after" delay; the built-in one until the setting has been read. */
+    private var graceMillis: Long = AppLockPolicy.DEFAULT_GRACE_MILLIS
+
     /** Called once from the Application so the lock covers every entry into the app. */
     fun attach() {
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
@@ -55,6 +58,12 @@ class AppLockController @Inject constructor(
                 .map { it.appLockEnabled }
                 .distinctUntilChanged()
                 .collect(::onLockSettingChanged)
+        }
+        scope.launch {
+            observeSettings()
+                .map { it.lockAfterSeconds }
+                .distinctUntilChanged()
+                .collect { seconds -> graceMillis = seconds * MILLIS_PER_SECOND }
         }
     }
 
@@ -83,8 +92,12 @@ class AppLockController @Inject constructor(
     override fun onStart(owner: LifecycleOwner) {
         val enabled = lockEnabled ?: return
         val leftAt = backgroundedAt ?: return
-        if (policy.shouldLock(enabled, leftAt, time.nowMillis())) {
+        if (policy.shouldLock(enabled, leftAt, time.nowMillis(), graceMillis)) {
             _state.value = LockState.LOCKED
         }
+    }
+
+    private companion object {
+        const val MILLIS_PER_SECOND = 1_000L
     }
 }

@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.karan.anuj.core.domain.settings.AppSettings
@@ -37,6 +38,7 @@ class DataStoreSettingsRepository @Inject constructor(
                 textScale = enumOr(prefs[TEXT_SCALE], TextScale.NORMAL),
                 appLockEnabled = prefs[APP_LOCK] ?: false,
                 onboardingDone = prefs[ONBOARDING_DONE] ?: false,
+                lockAfterSeconds = prefs[LOCK_AFTER_SECONDS] ?: AppSettings.DEFAULT_LOCK_AFTER_SECONDS,
             )
         }
         .distinctUntilChanged()
@@ -57,6 +59,10 @@ class DataStoreSettingsRepository @Inject constructor(
         context.settingsStore.edit { it[ONBOARDING_DONE] = done }
     }
 
+    override suspend fun setLockAfterSeconds(seconds: Int) {
+        context.settingsStore.edit { it[LOCK_AFTER_SECONDS] = seconds }
+    }
+
     /** A value saved by a newer version of the app that this one does not know falls back to the default. */
     private inline fun <reified T : Enum<T>> enumOr(stored: String?, default: T): T =
         enumValues<T>().firstOrNull { it.name == stored } ?: default
@@ -66,5 +72,6 @@ class DataStoreSettingsRepository @Inject constructor(
         val TEXT_SCALE = stringPreferencesKey("text_scale")
         val APP_LOCK = booleanPreferencesKey("app_lock_enabled")
         val ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
+        val LOCK_AFTER_SECONDS = intPreferencesKey("lock_after_seconds")
     }
 }

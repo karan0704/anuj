@@ -15,18 +15,24 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.karan.anuj.core.domain.task.CarryOverRule
+import com.karan.anuj.core.domain.task.DayParts
 import com.karan.anuj.core.domain.task.TaskPreferences
 import com.karan.anuj.core.domain.task.TaskPreferencesUseCase
 import com.karan.anuj.core.ui.components.AnujBottomSheet
 import com.karan.anuj.core.ui.components.FieldRow
 import com.karan.anuj.core.ui.components.PrimaryButton
 import com.karan.anuj.core.ui.components.Stepper
+import com.karan.anuj.core.ui.components.ToggleChips
 import com.karan.anuj.feature.task.R
 import com.karan.anuj.feature.task.common.CarryOverSheet
 import com.karan.anuj.feature.task.common.Day
+import com.karan.anuj.feature.task.common.TimePickDialog
 import com.karan.anuj.feature.task.common.WriteScope
 import com.karan.anuj.feature.task.common.carryOverLabel
+import com.karan.anuj.feature.task.common.estimateLabel
+import com.karan.anuj.feature.task.common.timeLabel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.LocalTime
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -48,9 +54,28 @@ class TaskSettingsViewModel @Inject constructor(
     fun setCarryLimit(limit: Int) {
         writes.launch { preferences.setCarryLimit(limit) }
     }
+
+    fun setDayParts(parts: DayParts) {
+        writes.launch { preferences.setDayParts(parts) }
+    }
+
+    fun toggleEstimateChoice(minutes: Int) {
+        val current = state.value.estimateChoices
+        writes.launch { preferences.setEstimateChoices(if (minutes in current) current - minutes else current + minutes) }
+    }
 }
 
-private enum class TaskSettingSheet { NONE, CARRY_OVER, CARRY_LIMIT }
+private enum class TaskSettingSheet { NONE, CARRY_OVER, CARRY_LIMIT, DAY_PARTS, ESTIMATES }
+
+/** One of the four named parts of the day: its label, its time, and how to store a new time for it. */
+private class DayPartRow(val label: Int, val time: LocalTime, val with: (LocalTime) -> DayParts)
+
+private fun DayParts.rows(): List<DayPartRow> = listOf(
+    DayPartRow(R.string.task_morning, morning) { copy(morning = it) },
+    DayPartRow(R.string.task_afternoon, afternoon) { copy(afternoon = it) },
+    DayPartRow(R.string.task_evening, evening) { copy(evening = it) },
+    DayPartRow(R.string.task_night, night) { copy(night = it) },
+)
 
 /**
  * The task rows of the Settings screen. The settings screen itself belongs
@@ -62,6 +87,8 @@ fun TaskSettingsRows(viewModel: TaskSettingsViewModel = hiltViewModel()) {
     val prefs by viewModel.state.collectAsStateWithLifecycle()
     val today = Day.now().date
     var sheet by rememberSaveable { mutableStateOf(TaskSettingSheet.NONE) }
+    /** Which part of the day's clock is open, as its position in [rows]; saved so it survives rotation. */
+    var editingPart by rememberSaveable { mutableStateOf<Int?>(null) }
 
     FieldRow(
         label = stringResource(R.string.carry_default_title),
@@ -72,6 +99,16 @@ fun TaskSettingsRows(viewModel: TaskSettingsViewModel = hiltViewModel()) {
         label = stringResource(R.string.carry_limit_title),
         value = stringResource(R.string.carry_limit_value, prefs.carryLimit),
         onClick = { sheet = TaskSettingSheet.CARRY_LIMIT },
+    )
+    FieldRow(
+        label = stringResource(R.string.settings_day_parts),
+        value = prefs.dayParts.rows().joinToString(" · ") { timeLabel(it.time) },
+        onClick = { sheet = TaskSettingSheet.DAY_PARTS },
+    )
+    FieldRow(
+        label = stringResource(R.string.settings_estimates),
+        value = prefs.estimateChoices.map { estimateLabel(it) }.joinToString(" · "),
+        onClick = { sheet = TaskSettingSheet.ESTIMATES },
     )
 
     when (sheet) {
@@ -100,5 +137,41 @@ fun TaskSettingsRows(viewModel: TaskSettingsViewModel = hiltViewModel()) {
             Spacer(Modifier.height(16.dp))
             PrimaryButton(text = stringResource(R.string.task_ok), onClick = { sheet = TaskSettingSheet.NONE })
         }
+        TaskSettingSheet.DAY_PARTS -> AnujBottomSheet(
+            onDismiss = { sheet = TaskSettingSheet.NONE },
+            title = stringResource(R.string.settings_day_parts),
+        ) {
+            prefs.dayParts.rows().forEachIndexed { index, part ->
+                FieldRow(
+                    label = stringResource(part.label),
+                    value = timeLabel(part.time),
+                    onClick = { editingPart = index },
+                )
+            }
+            Spacer(Modifier.height(16.dp))
+            PrimaryButton(text = stringResource(R.string.task_ok), onClick = { sheet = TaskSettingSheet.NONE })
+        }
+        TaskSettingSheet.ESTIMATES -> AnujBottomSheet(
+            onDismiss = { sheet = TaskSettingSheet.NONE },
+            title = stringResource(R.string.settings_estimates),
+        ) {
+            ToggleChips(
+                options = (TaskPreferences.ESTIMATE_CANDIDATES + prefs.estimateChoices).distinct().sorted(),
+                selected = prefs.estimateChoices.toSet(),
+                label = { estimateLabel(it) },
+                onToggle = viewModel::toggleEstimateChoice,
+            )
+            Spacer(Modifier.height(16.dp))
+            PrimaryButton(text = stringResource(R.string.task_ok), onClick = { sheet = TaskSettingSheet.NONE })
+        }
+    }
+
+    editingPart?.let { index ->
+        val part = prefs.dayParts.rows()[index]
+        TimePickDialog(
+            initial = part.time,
+            onPicked = { viewModel.setDayParts(part.with(it)) },
+            onDismiss = { editingPart = null },
+        )
     }
 }

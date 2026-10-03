@@ -1,5 +1,6 @@
 package com.karan.anuj.core.domain.task
 
+import java.time.LocalTime
 import kotlinx.coroutines.flow.Flow
 
 /** Supplies a new unique id for a record. Behind an interface so tests get predictable ids. */
@@ -107,14 +108,37 @@ interface AttachmentFileStore {
     suspend fun delete(fileNames: List<String>)
 }
 
+/**
+ * The clock times behind the "Morning", "Afternoon", "Evening" and "Night"
+ * chips, so a part of the day means what it means in the user's own day.
+ */
+data class DayParts(
+    val morning: LocalTime = LocalTime.of(8, 0),
+    val afternoon: LocalTime = LocalTime.of(13, 0),
+    val evening: LocalTime = LocalTime.of(18, 0),
+    val night: LocalTime = LocalTime.of(21, 0),
+)
+
 data class TaskPreferences(
     val defaultCarryOver: CarryOverRule = CarryOverRule.NextDay,
     /** After this many carries the app asks what to do with the task. */
     val carryLimit: Int = 3,
-)
+    val dayParts: DayParts = DayParts(),
+    /** The lengths offered as "Time needed" chips on a task, in minutes. */
+    val estimateChoices: List<Int> = DEFAULT_ESTIMATE_CHOICES,
+) {
+    companion object {
+        val DEFAULT_ESTIMATE_CHOICES: List<Int> = listOf(5, 15, 30, 60, 120)
+
+        /** Every length that can be switched on as a "Time needed" chip, in minutes. */
+        val ESTIMATE_CANDIDATES: List<Int> = listOf(2, 5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240)
+    }
+}
 
 interface TaskPreferencesRepository {
     val preferences: Flow<TaskPreferences>
     suspend fun setDefaultCarryOver(rule: CarryOverRule)
     suspend fun setCarryLimit(limit: Int)
+    suspend fun setDayParts(parts: DayParts)
+    suspend fun setEstimateChoices(minutes: List<Int>)
 }

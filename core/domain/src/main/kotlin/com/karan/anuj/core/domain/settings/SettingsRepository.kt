@@ -9,4 +9,5 @@ interface SettingsRepository {
     suspend fun setTextScale(scale: TextScale)
     suspend fun setAppLockEnabled(enabled: Boolean)
     suspend fun setOnboardingDone(done: Boolean)
+    suspend fun setLockAfterSeconds(seconds: Int)
 }

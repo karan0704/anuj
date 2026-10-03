@@ -141,6 +141,8 @@ class FakeTaskPreferences(initial: TaskPreferences = TaskPreferences()) : TaskPr
     override val preferences: Flow<TaskPreferences> = state
     override suspend fun setDefaultCarryOver(rule: CarryOverRule) = state.update { it.copy(defaultCarryOver = rule) }
     override suspend fun setCarryLimit(limit: Int) = state.update { it.copy(carryLimit = limit) }
+    override suspend fun setDayParts(parts: DayParts) = state.update { it.copy(dayParts = parts) }
+    override suspend fun setEstimateChoices(minutes: List<Int>) = state.update { it.copy(estimateChoices = minutes) }
 }
 
 /** Everything a task use-case test needs, wired together. */

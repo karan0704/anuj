@@ -7,6 +7,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -58,6 +59,7 @@ class DefaultBackupRepository @Inject constructor(
                 passwordSet = prefs[PASSWORD_SET] ?: false,
                 lastBackupAt = prefs[LAST_BACKUP_AT],
                 lastAttemptFailed = prefs[LAST_ATTEMPT_FAILED] ?: false,
+                keepCount = prefs[KEEP_COUNT] ?: BackupSettings.DEFAULT_KEEP_COUNT,
             )
         }
         .distinctUntilChanged()
@@ -89,6 +91,10 @@ class DefaultBackupRepository @Inject constructor(
         Unit
     }
 
+    override suspend fun setKeepCount(count: Int) {
+        context.backupStore.edit { it[KEEP_COUNT] = count }
+    }
+
     override suspend fun backUpNow(): BackupResult = withContext(io) {
         val result = writeBackup()
         context.backupStore.edit {
@@ -110,7 +116,7 @@ class DefaultBackupRepository @Inject constructor(
             val output = context.contentResolver.openOutputStream(file.uri)
                 ?: return BackupResult.Failure(BackupFailure.FOLDER_UNAVAILABLE)
             output.use { engine.writeTo(it, secrets.get(PASSWORD_SECRET)?.toCharArray()) }
-            removeOldBackups(folder)
+            removeOldBackups(folder, keep = settings.first().keepCount)
             BackupResult.Success
         } catch (failure: Exception) {
             /** A backup that stopped half-way is worse than none: it looks usable and is not. */
@@ -130,12 +136,16 @@ class DefaultBackupRepository @Inject constructor(
         if (failure == null) BackupResult.Success else BackupResult.Failure(failure)
     }
 
-    /** Keeps the newest few backups; the file names sort by date, so the oldest are the first in name order. */
-    private fun removeOldBackups(folder: DocumentFile) {
+    /**
+     * Keeps the newest [keep] backups; the file names sort by date, so the
+     * oldest are the first in name order. The number is the user's setting;
+     * it used to be the fixed `BACKUPS_TO_KEEP = 10`.
+     */
+    private fun removeOldBackups(folder: DocumentFile, keep: Int) {
         folder.listFiles()
             .filter { it.isFile && it.name?.startsWith(FILE_PREFIX) == true }
             .sortedByDescending { it.name }
-            .drop(BACKUPS_TO_KEEP)
+            .drop(keep)
             .forEach { it.delete() }
     }
 
@@ -149,11 +159,12 @@ class DefaultBackupRepository @Inject constructor(
         val PASSWORD_SET = booleanPreferencesKey("password_set")
         val LAST_BACKUP_AT = longPreferencesKey("last_backup_at")
         val LAST_ATTEMPT_FAILED = booleanPreferencesKey("last_attempt_failed")
+        val KEEP_COUNT = intPreferencesKey("keep_count")
 
         const val PASSWORD_SECRET = "backup_password"
         const val MIME_ZIP = "application/zip"
         const val FILE_PREFIX = "anuj-backup-"
-        const val BACKUPS_TO_KEEP = 10
+        // const val BACKUPS_TO_KEEP = 10  // now BackupSettings.keepCount, set in Settings
         val FILE_STAMP: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")
     }
 }

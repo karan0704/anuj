@@ -97,7 +97,7 @@
     <string name="detail_estimate">Time needed</string>
     <string name="detail_carry">If not done on its day</string>
     <string name="detail_checklist">Checklist</string>
-    <string name="detail_checklist_hint">Add a line</string>
+    <string name="detail_checklist_hint">Add a checklist line</string>
     <string name="detail_checklist_remove">Remove %1$s</string>
     <string name="detail_steps">Steps</string>
     <string name="detail_add_step">Add a step</string>
@@ -164,6 +164,8 @@
     <string name="carry_default_title">Unfinished tasks</string>
     <string name="carry_limit_title">Ask what to do after</string>
     <string name="carry_limit_value">%1$d carries</string>
+    <string name="settings_day_parts">Times of day</string>
+    <string name="settings_estimates">Lengths offered for \"Time needed\"</string>
 
     <!-- Tags -->
     <string name="tags_title">Tags</string>
