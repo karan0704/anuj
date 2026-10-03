@@ -1,0 +1,10 @@
+# Trigger: marking a feature/fix complete (pre-commit gate)
+
+## End-to-End Action Tracing Protocol
+* **Mandatory Pre-Commit Action Tracing**: After implementing any feature, bugfix, or UI enhancement, ALWAYS trace every interactive element (buttons, chips, swipes, bottom sheets, notification actions, widget/tile taps, voice commands) through every layer:
+  1. **UI Action Tracing**: Trace every Compose event (`onClick`, `onValueChange`, swipe, navigation call) to the ViewModel function it invokes, the UI state it changes, and the navigation route it targets.
+  2. **Domain & Data Tracing**: From the ViewModel, audit every use case, repository interface method, DAO query and Room entity/column touched, plus the Flow that carries the result back to the screen.
+  3. **Outside-The-App Entry Points**: For anything that can start without the app open — alarm, notification action, geofence, Wi-Fi change, boot, widget, tile, wake name — trace the `BroadcastReceiver` / `Service` / `Worker`, the permission it needs, and what happens when that permission is denied.
+  4. **Tap + Voice Parity Check**: confirm the action has both a tap path and a `VoiceCommand` handler and that both end in the same use case (see `rules/ui.md`).
+  5. **Proactive Error Catching & Compilation Gate**: Run `./gradlew assembleDebug` and `./gradlew testDebugUnitTest`, then `graphify update .`, to verify zero compile errors, failing tests or unhandled exceptions before declaring completion.
+  6. **Sibling Implementation Tracing**: if the fix touches one implementation of a shared interface (`Trigger`, `VoiceCommand`, `TrackerType`, `CarryOverRule`), check whether the same bug or missing case exists in the sibling implementations before declaring the feature complete — fixing one does not fix the others.

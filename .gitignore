@@ -1,0 +1,37 @@
+# Gradle
+.gradle/
+build/
+**/build/
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Local machine config and signing — never commit
+local.properties
+keystore.properties
+*.jks
+*.keystore
+google-services.json
+
+# Kotlin
+.kotlin/
+
+# Generated
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+*.log
+
+# Graphify output is rebuilt locally
+graphify-out/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
