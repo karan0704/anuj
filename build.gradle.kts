@@ -4,6 +4,24 @@ import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 import kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension
 
+/**
+ * The coverage and dependency plugins are built with a newer Kotlin and pull
+ * its compiler-helper client onto the build's classpath. The Kotlin plugin
+ * used here (see `kotlin` in libs.versions.toml) cannot talk to that one: it
+ * gives up on its fast compiler helper and compiles the slow way, with an
+ * error in the log. Holding these pieces at the build's own Kotlin version
+ * keeps the helper working.
+ */
+buildscript {
+    configurations.named("classpath") {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "org.jetbrains.kotlin" && requested.name in setOf("kotlin-daemon-client", "kotlin-daemon-embeddable")) {
+                useVersion(libs.versions.kotlin.get())
+            }
+        }
+    }
+}
+
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
