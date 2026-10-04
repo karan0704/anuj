@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!-- Library versions are pinned on purpose and upgraded together, as their own change. -->
+    <issue id="GradleDependency" severity="ignore" />
+    <issue id="NewerVersionAvailable" severity="ignore" />
+    <issue id="AndroidGradlePluginVersion" severity="ignore" />
+    <!-- The app is English only (see .agents/rules/features.md). -->
+    <issue id="MissingTranslation" severity="ignore" />
+</lint>
