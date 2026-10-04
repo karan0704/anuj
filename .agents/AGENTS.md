@@ -1,6 +1,8 @@
 # Master Android — Agent Configuration & Operating Rules
 
-Read this file fresh from disk before starting any work in this project — it may have changed. It is deliberately short: it holds only the rules that apply to *every* task, plus a map of where the rest live. Open a `rules/` file only when its trigger situation actually applies — never read the whole `rules/` folder up front.
+These files are the single source of truth for any coding tool used on this project (Claude Code, Antigravity, or another). Nothing a tool needs may live only in that tool's own memory: if it matters next time, it is written here or in a `rules/` file.
+
+Read this file fresh from disk before starting any work in this project — it may have changed. Then read `rules/handover.md`, which says where the work stands and what is next. This file is deliberately short: it holds only the rules that apply to *every* task, plus a map of where the rest live. Open a `rules/` file only when its trigger situation actually applies — never read the whole `rules/` folder up front.
 
 ---
 
@@ -8,7 +10,7 @@ Read this file fresh from disk before starting any work in this project — it m
 
 Anuj is a native Android app (Kotlin, Jetpack Compose, Room, Hilt) that puts tasks, alarms, calendar, location triggers, health/habit tracking, a daily journal and a renameable voice assistant in one place. It is built for a user with ADHD, so its job is to *remember for the user* without overwhelming them. Everything runs on the phone: database, business logic and UI all live inside the app, with no server and no internet needed for core features. The full feature list and build phases are in `rules/features.md`.
 
-The app's name is **Anuj** (the project folder and vault folder keep their "Master Android" names). The package id is not decided yet.
+The app's name is **Anuj** (the project folder and vault folder keep their "Master Android" names). The package id is `com.karan.anuj`.
 
 ---
 
@@ -22,6 +24,14 @@ The app's name is **Anuj** (the project folder and vault folder keep their "Mast
 **Never Assume — Always Ask**: when a detail needed for the 3-step format above is missing or ambiguous, stop and ask instead of guessing — this applies at the start of a prompt and mid-task. See the Requirement Ambiguity Protocol below for what to do while waiting on an answer.
 
 **Requirement Ambiguity Protocol** (what to do while a question is open): if a requirement is unclear, ask the clarifying question — but don't let work sit fully blocked on the answer. Implement the standard / common-practice version of that piece in the meantime, and mark it explicitly as an **assumption pending confirmation** (in code comments, the commit body, and the log/journal entry). Once the developer confirms, revisit that logic and adjust it to match — do not treat the standard version as final until confirmed.
+
+**Thumb First**: the app's first job on screen is to be usable with one thumb, right or left. Anything that is tapped must be able to come down to the thumb; nothing tappable may be stuck at the top of a screen. The full rule, and what is still to be built for it, is in `rules/ui.md` under "Thumb-First Scrolling".
+
+**A User-Facing Value Is A Setting With A Default**: a time, a length, a count, or anything the app would throw away by itself is the user's to change in Settings, and the default must be safe (the app deletes nothing unless asked). See `rules/clean-code.md`.
+
+**Old Code Is Removed**: replaced code is deleted, not kept in comments; git history is the record. See `rules/code-integrity.md`.
+
+**Every Build Handover Lists What To Check**: see `rules/handover.md`.
 
 **Minimal Typing, Tap + Voice Parity**: the user should write as little as possible. Every action must be doable by taps alone *and* by voice alone; typing is always optional, never required. No screen ships with a mandatory text field that has no picker, chip, preset or microphone alternative. Details and the checklist to verify against are in `rules/ui.md`.
 
@@ -50,6 +60,7 @@ Only open the file that matches your current situation:
 ```
 .agents/
 └── rules/
+    ├── handover.md          [always-on: start of a session — the developer, build handover, current state, what is next]
     ├── graphify.md          [always-on: codebase/architecture questions — query graphify-out/ first]
     ├── features.md           [planning or building a feature — full feature list, phases, stack]
     ├── ui.md                 [building or changing any screen, notification or voice command]
@@ -64,6 +75,6 @@ Only open the file that matches your current situation:
     └── bug-trace.md          [diagnosing a reported bug — write the call-chain trace]
 ```
 
-`rules/graphify.md` is the only always-on rule file besides this index (it's small and applies to nearly every task involving code understanding).
+`rules/handover.md` and `rules/graphify.md` are the only always-on rule files besides this index. Update `rules/handover.md` at the end of any session that changes where the work stands.
 
 The `skills/` folder was copied from another project and has not been reviewed for this one — treat a skill there as applicable only if it clearly fits Android/Kotlin work.

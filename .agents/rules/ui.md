@@ -31,9 +31,50 @@ The app must be handy: usable one-handed, by taps and by voice, with the user wr
 ## One-Hand Layout
 * Primary actions in the bottom half of the screen; nothing essential in the top corners.
 * Touch targets at least 56dp.
-* Bottom sheets instead of full-screen forms; optional fields collapsed under "More".
+* Bottom sheets instead of full-screen forms; optional fields collapsed under "More" (`MoreRow`), whose line says what is already set there.
+* A screen opens with few controls. Chips and buttons that are not needed every time go into a sheet or under "More".
+* A task, a routine and a reminder must be told apart at a glance: the add button asks which is being added, and a routine carries the repeat mark and the word "Routine" in every list.
 * Swipe right = done, swipe left = snooze / carry over.
 * Undo snackbar instead of "Are you sure?" dialogs, except for irreversible actions.
+
+## Thumb-First Scrolling (asked for on 2026-10-04 — NOT BUILT YET)
+
+This is the developer's request after using the first one-hand layout on his phone. It replaces part of what is built. **Nothing in this section is in the code yet; it is the next UI work.** The developer's own words are quoted so they can be checked against any reading of them.
+
+**What is built today, and what he found wrong with it**
+* `OneHandList` (`core/ui/components/OneHand.kt`) is used on Today, Tasks and Inbox only. The top (the clock on Today, the title on Tasks and Inbox) is fixed; the list starts about a fifth of the way down the screen; search and the menu ride at its head.
+* "the list looks a quad without a bar or a title": the lowered list reads as a loose block. It has no bar of its own, and the gap above it looks empty.
+* "title stays static which is not looking good": the fixed title and the fixed clock look wrong while the list moves under them.
+* Every other screen (Settings and its branches, Regular reminders, the task screen, Search, Trash, History, Places, Voice) is an ordinary top-to-bottom screen. On those, the first rows are at the top of the screen and the thumb cannot reach them.
+
+**What he asked for**
+1. **A list starts from the bottom.** "it should be start from the bottom ... and then it should get scrolled to up or bottom". Content begins at the bottom of the screen, where the thumb is, and can be scrolled both ways.
+2. **Every screen can be scrolled so that any row comes to the thumb**, including its first row. "this setting screen shows all the settings above if I want to select any settings from the thumb I can't select the top settings". This applies to every screen, named by him: Today, Tasks, Inbox, the Settings root, every Settings branch, Regular reminders, the task screen, Search, and menus that open from a button.
+3. **The title moves with the content.** "when I am scrolling the list below or above it should dynamically move the title also". No title stays fixed while its list scrolls.
+4. **The date and time on Today scroll too.** "the date and time stays above in the left side corner which I want should be scrollable also". This reverses his earlier request that the time stay in place.
+5. **The list has a bar.** "there should be a bar because right now the list looks a quad without a bar or a title". The list needs a visible bar at its head that travels with it.
+6. **A scroll bar everywhere.** "scroll bar for everything and everywhere". Every scrolling screen shows where it is and how much there is.
+7. **Right or left thumb.** "their first job is to make our device hands free ... supportable for the thumb right or left". The existing Hand setting (Settings, Display) keeps deciding the side.
+
+**How to read it (the assistant's interpretation, to confirm with him before or while building)**
+* One shared container for *every* screen, replacing both `OneHandList` and the plain scrolling columns: the title (or the clock) is the first item of the scrolling content, followed by the bar of actions, then the rows. Nothing is pinned at the top.
+* "Start from the bottom" is read as: when a screen opens, its content is laid against the bottom edge, so a short screen (the Settings root with seven rows) sits in the lower half, and a long one opens showing its beginning with the thumb on it. The screen must then scroll far enough in both directions that the first and the last row can each be brought to thumb height, which means empty space the height of the reach area before the first row and after the last.
+* "A bar" is read as one row at the head of the content holding the title and the screen's actions (back, search, menu) on the side of the chosen hand, with a visible edge, so the content reads as one sheet with a handle and not a loose block. It travels with the content.
+* "A scroll bar" is read as a thin position indicator down one edge of every scrolling screen. Which edge, and whether it can be dragged, are open questions below.
+* Sheets (`AnujBottomSheet`) already open at the bottom and are within reach; they need the scroll indicator only when their content is taller than the sheet.
+* Dropdown menus opened from a button ("Opening the search menu in task or whatever menu, it is also not same") open at the button today. Read as: a menu should open as a bottom sheet or at thumb height, never at the top of the screen.
+
+**Open questions for the developer**
+1. Should a short screen rest at the bottom when it opens (rows in the lower half, empty space above), or open at the top and only be pullable down?
+2. Scroll bar: only shows the position, or can be dragged with the thumb? On the hand's side or the opposite edge?
+3. The back arrow on pushed screens: part of the moving bar, or is the phone's own back gesture enough?
+4. Does the bottom tab bar stay fixed? (Assumed yes: it is already at the thumb.)
+5. The "Start lists lower" setting: keep it as the switch for this whole behaviour, or remove it once every screen works this way?
+
+**When building it**
+* Build it once in `core:ui` and move every screen onto it; do not fix screens one by one with their own padding.
+* The end-to-end test (`app/src/test/.../AppJourneyTest.kt`) runs on a very tall screen so that everything is composed; keep it passing, and keep the rule that the keyboard never covers the focused field.
+* Remove `OneHandList` and the fixed-top code it replaces in the same change (old code is removed, not kept).
 
 ## Layout That Stays Aligned (the Instagram / Discord feel)
 * **Every full screen sits in `AnujScaffold`** (`core/ui/components/AnujScaffold.kt`). It draws edge to edge, keeps content clear of the status and navigation bars, and lifts content above the keyboard. Do not use a bare `Scaffold` or hand-rolled inset padding in a feature.
@@ -41,8 +82,8 @@ The app must be handy: usable one-handed, by taps and by voice, with the user wr
 * **Short input and choices open in `AnujBottomSheet`** (`core/ui/components/AnujBottomSheet.kt`), the equivalent of an RBSheet: opens fully in one motion, closes on swipe down or tap outside, content moves up with the keyboard.
 * **Shared controls, not one-off ones**: `PrimaryButton`, `SecondaryButton`, `ChoiceChips` (one of many), `ToggleChips` (any of many) and `MinTouchTarget` from `core/ui/components/Controls.kt`, so spacing and sizes match on every screen. A chip row is never laid out by hand: the shared ones leave the gap between wrapped rows, and a hand-made one without it shows the rows touching.
 * **Consistent spacing**: 24dp screen side padding, 16dp between groups, 8dp between related items.
-* **Bottom tab bar for top-level areas**; a new area adds one entry to `TopLevelDestination` in `app/.../navigation/AnujApp.kt`. The bar is hidden on pushed screens (one task, search, trash), where the back arrow is the single way out.
-* **Screen titles use `ScreenHeader`**, group labels `SectionTitle`, tap-to-change values `FieldRow`, on/off values `SwitchRow`, numbers `Stepper`, times `ClockDialog` (all in `core/ui/components`). A feature's settings are a composable of `FieldRow`s that the Settings screen places under a `SectionTitle` — see `TaskSettingsRows` and `ReminderSettingsRows`. Settings too long for that screen get their own pushed screen, opened from one row.
+* **Bottom tab bar for the areas used all day** (Today, Tasks, Inbox, and Ask); a new area adds one entry to `TopLevelDestination` in `app/.../navigation/AnujApp.kt`. The bar is hidden on pushed screens (one task, search, trash, settings), where the back arrow is the single way out. Settings is not a tab: it opens from the menu on Today and is a tree, one row per branch (`SettingsSection`) and one screen per branch.
+* **Screen titles use `ScreenHeader`**, group labels `SectionTitle`, tap-to-change values `FieldRow`, on/off values `SwitchRow`, numbers `Stepper`, times `ClockDialog` (all in `core/ui/components`). A feature's settings are a composable of `FieldRow`s that a Settings branch screen hosts — see `TaskSettingsRows` and `ReminderSettingsRows`. A feature with a full settings screen of its own (Places, Voice) is opened straight from its row in the Settings root.
 * **One "Undo" host**: `AnujApp` owns the single `SnackbarHostState` and passes it to screens; a screen never creates its own.
 * **Swipe needs a twin**: anything a swipe does must also be a named screen-reader action on the row and reachable by a tap. `SwipeActions` in `feature/task/common/TaskRow.kt` does this; use it rather than a bare `SwipeToDismissBox`.
 * **All user-visible text comes from `strings.xml`**, never a literal in a Composable.
