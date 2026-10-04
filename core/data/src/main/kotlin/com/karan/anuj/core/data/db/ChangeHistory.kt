@@ -10,17 +10,18 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.Serializable
 
 /**
- * One row per changed field. History rows are written once and never edited
- * or deleted, so they carry only the time of the change instead of the full
- * created / updated / deleted set.
+ * One row per changed field. History rows are written once and never
+ * edited, so they carry only the time of the change instead of the full
+ * created / updated / deleted set. Old rows are removed only when the user
+ * has chosen how long history is kept.
  *
- * The index matches the only read this table serves: the history of one row,
- * newest first.
+ * The first index serves the history of one row, newest first; the second
+ * serves the History screen and the clean-up, which both go by time alone.
  */
 @Serializable
 @Entity(
     tableName = "change_history",
-    indices = [Index(value = ["tableName", "rowId", "changedAt"])],
+    indices = [Index(value = ["tableName", "rowId", "changedAt"]), Index("changedAt")],
 )
 data class ChangeHistoryEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -42,4 +43,10 @@ interface ChangeHistoryDao {
             "ORDER BY changedAt DESC, id DESC",
     )
     fun observeFor(table: String, rowId: String): Flow<List<ChangeHistoryEntity>>
+
+    @Query("SELECT * FROM change_history ORDER BY changedAt DESC, id DESC LIMIT :limit")
+    fun observeRecent(limit: Int): Flow<List<ChangeHistoryEntity>>
+
+    @Query("DELETE FROM change_history WHERE changedAt < :millis")
+    suspend fun deleteBefore(millis: Long)
 }

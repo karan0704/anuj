@@ -9,8 +9,7 @@ import javax.inject.Inject
 /**
  * A ready-made task the user can add with one tap.
  *
- * @property steps become sub-tasks, for things done one after another
- * @property checklist becomes tick-off lines on the task itself
+ * @property steps become sub-tasks, each ticked off on its own
  */
 data class TaskTemplate(
     val key: String,
@@ -18,7 +17,6 @@ data class TaskTemplate(
     val time: LocalTime? = null,
     val repetition: Repetition? = Repetition.Daily(),
     val steps: List<String> = emptyList(),
-    val checklist: List<String> = emptyList(),
 )
 
 /**
@@ -38,18 +36,18 @@ object BuiltInTemplates {
         TaskTemplate(
             key = "leaving_home",
             name = "Leaving home",
-            checklist = listOf("Keys in pocket", "Phone and wallet", "Lights and fans off", "Taps closed", "Door locked"),
+            steps = listOf("Keys in pocket", "Phone and wallet", "Lights and fans off", "Taps closed", "Door locked"),
         ),
         TaskTemplate(
             key = "water",
             name = "Drink water",
-            checklist = listOf("Morning", "Midday", "Afternoon", "Evening"),
+            steps = listOf("Morning", "Midday", "Afternoon", "Evening"),
         ),
         TaskTemplate(
             key = "sleep",
             name = "Go to bed on time",
             time = LocalTime.of(23, 0),
-            checklist = listOf("Phone on charger", "Alarm set", "Lights off"),
+            steps = listOf("Phone on charger", "Alarm set", "Lights off"),
         ),
     )
 
@@ -58,7 +56,6 @@ object BuiltInTemplates {
 
 class ApplyTemplatesUseCase @Inject constructor(
     private val tasks: TaskRepository,
-    private val checklists: ChecklistRepository,
     private val ids: IdGenerator,
     private val time: TimeSource,
 ) {
@@ -67,7 +64,6 @@ class ApplyTemplatesUseCase @Inject constructor(
         if (templates.isEmpty()) return
         val now = time.nowMillis()
         val newTasks = mutableListOf<Task>()
-        val newItems = mutableListOf<ChecklistItem>()
 
         templates.forEach { template ->
             val parent = Task(
@@ -88,11 +84,7 @@ class ApplyTemplatesUseCase @Inject constructor(
                     stamps = RecordStamps.created(now + index),
                 )
             }
-            template.checklist.forEachIndexed { index, line ->
-                newItems += ChecklistItem(ids.newId(), parent.id, line, position = index, stamps = RecordStamps.created(now))
-            }
         }
         tasks.save(newTasks)
-        if (newItems.isNotEmpty()) checklists.save(newItems)
     }
 }

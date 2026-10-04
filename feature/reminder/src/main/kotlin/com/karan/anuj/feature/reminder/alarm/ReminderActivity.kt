@@ -51,6 +51,7 @@ import com.karan.anuj.core.ui.components.ChoiceChips
 import com.karan.anuj.core.ui.components.PrimaryButton
 import com.karan.anuj.core.ui.components.ScreenPadding
 import com.karan.anuj.core.ui.components.SecondaryButton
+import com.karan.anuj.core.ui.theme.AnujPalette
 import com.karan.anuj.core.ui.theme.AnujTheme
 import com.karan.anuj.feature.reminder.R
 import com.karan.anuj.feature.reminder.common.GroupLabel
@@ -148,7 +149,11 @@ class ReminderActivity : ComponentActivity() {
                 ThemeMode.DARK -> true
                 ThemeMode.SYSTEM -> isSystemInDarkTheme()
             }
-            AnujTheme(darkTheme = dark, textScaleFactor = state.app.textScale.factor) {
+            AnujTheme(
+                darkTheme = dark,
+                palette = AnujPalette.named(state.app.colourStyle.name),
+                textScaleFactor = state.app.textScale.factor,
+            ) {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     AnswerScreen(state, onDone = viewModel::done, onSnooze = viewModel::snooze, onTomorrow = viewModel::tomorrow)
                 }

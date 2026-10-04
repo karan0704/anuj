@@ -3,15 +3,16 @@
     <string name="app_name">Anuj</string>
 
     <!-- Bottom bar -->
-    <string name="nav_home">Home</string>
+    <string name="nav_home">Today</string>
     <string name="nav_tasks">Tasks</string>
     <string name="nav_inbox">Inbox</string>
-    <string name="nav_settings">Settings</string>
     <string name="nav_ask">Ask</string>
 
     <!-- Home -->
-    <string name="home_empty_title">Nothing here yet</string>
-    <string name="home_empty_body">Your tasks for today will show up here.</string>
+    <string name="home_search">Search</string>
+    <string name="home_menu">Menu</string>
+    <string name="home_menu_reminders">Reminders</string>
+    <string name="home_menu_trash">Trash</string>
 
     <!-- Lock -->
     <string name="lock_title">Anuj is locked</string>
@@ -39,7 +40,16 @@
     <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_theme">Theme</string>
+    <string name="settings_colours">Colours</string>
+    <string name="settings_colours_note">Each set of colours has a light and a dark form. Theme chooses which one is used.</string>
     <string name="settings_text_size">Text size</string>
+    <string name="settings_back">Back</string>
+    <string name="settings_hand">Hand</string>
+    <string name="settings_hand_note">The add button and the buttons at the head of a list sit on this side.</string>
+    <string name="hand_right">Right hand</string>
+    <string name="hand_left">Left hand</string>
+    <string name="settings_lower_lists">Start lists lower</string>
+    <string name="settings_lower_lists_detail">A list begins where your thumb is and rises as you scroll. The clock and titles stay at the top.</string>
     <string name="settings_app_lock">App lock</string>
     <string name="settings_app_lock_on">Asks for your fingerprint when you come back</string>
     <string name="settings_lock_after">Lock again after</string>
@@ -50,11 +60,61 @@
     <string name="settings_app_lock_unavailable">Set a screen lock on this phone first</string>
     <string name="settings_text_size_preview">This is how text will look.</string>
 
-    <string name="settings_section_display">Display and privacy</string>
+    <string name="settings_section_display">Display</string>
     <string name="settings_section_tasks">Tasks</string>
     <string name="settings_section_reminders">Reminders</string>
-    <string name="settings_section_backup">Backup</string>
     <string name="settings_section_voice">Voice</string>
+    <string name="settings_section_places">Places</string>
+    <string name="settings_summary_places">Home, saved places, the leaving list, new spots</string>
+    <string name="settings_section_lock">App lock</string>
+    <string name="settings_section_backup">Backup</string>
+    <string name="settings_summary_display">Theme, colours, text size, which hand</string>
+    <string name="settings_summary_tasks">Unfinished tasks, times of day, lengths</string>
+    <string name="settings_summary_reminders">Calm mode, notifications, regular reminders, a check</string>
+    <string name="settings_summary_voice">The assistant\'s name, when it listens, how it answers</string>
+    <string name="settings_summary_lock">Fingerprint or screen lock, and when it locks again</string>
+    <string name="settings_summary_backup">Folder, schedule, password, restore</string>
+    <string name="settings_section_storage">History and storage</string>
+    <string name="settings_summary_storage">The trash, photos of deleted tasks, the logs</string>
+
+    <!-- History and storage -->
+    <string name="storage_trash">Empty the trash by itself</string>
+    <string name="storage_trash_never">Never</string>
+    <string name="storage_trash_note">A task that has been in the trash this long is removed for good. With \"Never\", nothing leaves the trash until you empty it yourself.</string>
+    <string name="storage_photos">Photos of tasks removed for good</string>
+    <string name="storage_photos_at_once">Deleted with the task</string>
+    <string name="storage_photos_note">When a task is removed for good, its photo files can go with it or stay on the phone a while longer. They are not shown anywhere in the app while they wait.</string>
+    <string name="storage_history">Keep the logs for</string>
+    <string name="storage_history_always">Always</string>
+    <string name="storage_history_note">The logs are what was edited and which reminders were shown. Older lines are forgotten after this long. Finished rounds of routines are always kept.</string>
+    <string name="storage_see_history_detail">What was edited, and every reminder shown, held back or answered</string>
+    <plurals name="keep_days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <plurals name="keep_weeks">
+        <item quantity="one">%1$d week</item>
+        <item quantity="other">%1$d weeks</item>
+    </plurals>
+    <plurals name="keep_months">
+        <item quantity="one">%1$d month</item>
+        <item quantity="other">%1$d months</item>
+    </plurals>
+    <plurals name="keep_years">
+        <item quantity="one">%1$d year</item>
+        <item quantity="other">%1$d years</item>
+    </plurals>
+    <string name="history_title">History</string>
+    <string name="history_edits">Edits</string>
+    <string name="history_reminders">Reminders</string>
+    <string name="history_empty">Nothing here yet.</string>
+    <string name="history_event_shown">Shown</string>
+    <string name="history_event_nagged">Shown again</string>
+    <string name="history_event_held">Held back</string>
+    <string name="history_event_snoozed">Snoozed</string>
+    <string name="history_event_done">Done</string>
+    <string name="history_event_moved">Moved to another day</string>
+    <string name="history_event_summary">Summary shown</string>
 
     <!-- Backup -->
     <string name="backup_folder">Backup folder</string>
@@ -99,6 +159,9 @@
     <string name="theme_system">Same as phone</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+
+    <string name="colours_teal">Teal</string>
+    <string name="colours_ivory">Ivory</string>
 
     <string name="text_small">Small</string>
     <string name="text_normal">Normal</string>

@@ -3,6 +3,7 @@ package com.karan.anuj.core.domain.task
 import com.karan.anuj.core.domain.history.ChangeHistoryRepository
 import com.karan.anuj.core.domain.history.RecordChange
 import com.karan.anuj.core.domain.record.RecordStamps
+import com.karan.anuj.core.domain.settings.FakeSettingsRepository
 import com.karan.anuj.core.domain.time.TimeSource
 import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
@@ -30,6 +31,11 @@ class FakeHistory : ChangeHistoryRepository {
     }
 
     override fun observeFor(table: String, rowId: String): Flow<List<RecordChange>> = emptyFlow()
+    override fun observeRecent(limit: Int): Flow<List<RecordChange>> = emptyFlow()
+
+    override suspend fun deleteBefore(millis: Long) {
+        recorded.removeAll { it.changedAt < millis }
+    }
 }
 
 class FakeTaskRepository : TaskRepository {
@@ -104,17 +110,6 @@ class FakeTaskRepository : TaskRepository {
     override suspend fun removeOccurrence(id: String) = rounds.update { list -> list.filterNot { it.id == id } }
 }
 
-class FakeChecklistRepository : ChecklistRepository {
-    private val rows = MutableStateFlow<Map<String, ChecklistItem>>(emptyMap())
-    val all: Collection<ChecklistItem> get() = rows.value.values
-
-    override fun observeFor(taskId: TaskId) =
-        rows.map { it.values.filter { item -> item.taskId == taskId && !item.stamps.isDeleted } }
-
-    override suspend fun getFor(taskIds: List<TaskId>): List<ChecklistItem> = all.filter { it.taskId in taskIds }
-    override suspend fun save(items: List<ChecklistItem>) = rows.update { it + items.associateBy { item -> item.id } }
-}
-
 class FakeAttachmentRepository : AttachmentRepository {
     val rows = mutableListOf<Attachment>()
     override fun observeFor(taskId: TaskId): Flow<List<Attachment>> = emptyFlow()
@@ -134,6 +129,20 @@ class FakeFileStore : AttachmentFileStore {
     override suspend fun delete(fileNames: List<String>) {
         deleted += fileNames
     }
+
+    /** File name to the moment it was set aside. */
+    val setAside = mutableMapOf<String, Long>()
+    var now = 0L
+
+    override suspend fun setAside(fileNames: List<String>) {
+        fileNames.forEach { setAside[it] = now }
+    }
+
+    override suspend fun deleteSetAsideBefore(millis: Long) {
+        val old = setAside.filterValues { it < millis }.keys.toList()
+        deleted += old
+        old.forEach(setAside::remove)
+    }
 }
 
 class FakeTaskPreferences(initial: TaskPreferences = TaskPreferences()) : TaskPreferencesRepository {
@@ -151,11 +160,11 @@ class TaskWorld {
     val ids = FakeIds()
     val history = FakeHistory()
     val tasks = FakeTaskRepository()
-    val checklists = FakeChecklistRepository()
     val attachments = FakeAttachmentRepository()
     val files = FakeFileStore()
     val preferences = FakeTaskPreferences()
-    val editor = TaskEditor(tasks, checklists, history, clock)
+    val settings = FakeSettingsRepository()
+    val editor = TaskEditor(tasks, history, clock)
 
     /** Stores a task directly, bypassing the use cases, to set a scene. */
     suspend fun given(
@@ -182,12 +191,6 @@ class TaskWorld {
         )
         tasks.save(listOf(task))
         return task
-    }
-
-    suspend fun givenChecklistItem(id: String, task: String, checked: Boolean): ChecklistItem {
-        val item = ChecklistItem(id, TaskId(task), id, checked, position = 0, stamps = RecordStamps.created(clock.now))
-        checklists.save(listOf(item))
-        return item
     }
 }
 

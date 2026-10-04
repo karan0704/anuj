@@ -37,7 +37,6 @@
 
     <!-- Settings -->
     <string name="voice_settings_title">Voice</string>
-    <string name="voice_settings_detail">The assistant\'s name, when it listens, how it answers</string>
     <string name="voice_name">Its name</string>
     <string name="voice_name_hint">A name that is easy to say</string>
     <string name="voice_teach">Teach it its name</string>
@@ -69,7 +68,7 @@
         <item>Tell me the high priority tasks</item>
         <item>Office tasks</item>
         <item>Tasks related to money</item>
-        <item>Read the checklist of leaving home</item>
+        <item>Read the steps of leaving home</item>
         <item>Add call mum tomorrow at six pm</item>
         <item>Mark call the bank as done</item>
         <item>Search for passport</item>

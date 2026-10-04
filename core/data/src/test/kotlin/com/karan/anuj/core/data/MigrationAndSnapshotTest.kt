@@ -9,10 +9,11 @@ import androidx.test.core.app.ApplicationProvider
 import com.karan.anuj.core.data.db.AnujDatabase
 import com.karan.anuj.core.data.db.AttachmentEntity
 import com.karan.anuj.core.data.db.ChangeHistoryEntity
-import com.karan.anuj.core.data.db.ChecklistItemEntity
 import com.karan.anuj.core.data.db.DatabaseSnapshot
 import com.karan.anuj.core.data.db.Migrations
 import com.karan.anuj.core.data.db.NoteEntity
+import com.karan.anuj.core.data.db.PlaceEntity
+import com.karan.anuj.core.data.db.PlaceVisitEntity
 import com.karan.anuj.core.data.db.ReminderEntity
 import com.karan.anuj.core.data.db.ReminderEventEntity
 import com.karan.anuj.core.data.db.SnapshotFormat
@@ -20,6 +21,7 @@ import com.karan.anuj.core.data.db.StampColumns
 import com.karan.anuj.core.data.db.TagEntity
 import com.karan.anuj.core.data.db.TaskEntity
 import com.karan.anuj.core.data.db.TaskOccurrenceEntity
+import com.karan.anuj.core.data.db.TaskPlaceEntity
 import com.karan.anuj.core.data.db.TaskTagEntity
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -117,6 +119,74 @@ class MigrationAndSnapshotTest {
     }
 
     @Test
+    fun `a version 3 database upgrades with its checklist lines turned into steps`() = runTest {
+        createDatabaseAtVersion(3, "upgrade3.db") {
+            it.execSQL(
+                "INSERT INTO task (id, name, description, daysOff, priority, carryCount, createdAt, updatedAt) " +
+                    "VALUES ('home', 'Leaving home', '', 0, 'NONE', 0, 1, 1)",
+            )
+            it.execSQL(
+                "INSERT INTO checklist_item (id, taskId, text, checked, position, createdAt, updatedAt, deletedAt) VALUES " +
+                    "('keys', 'home', 'Keys in pocket', 1, 0, 10, 20, NULL), " +
+                    "('door', 'home', 'Door locked', 0, 1, 10, 20, NULL), " +
+                    "('gone', 'home', 'Old line', 0, 2, 10, 20, 30)",
+            )
+        }
+
+        val upgraded = openCurrent("upgrade3.db")
+
+        val steps = upgraded.snapshotDao().tasks().filter { it.parentId == "home" }.sortedBy { it.stamps.createdAt }
+        assertEquals(listOf("Keys in pocket", "Door locked", "Old line"), steps.map { it.name })
+        assertEquals("a ticked line arrives done", listOf(20L, null, null), steps.map { it.completedAt })
+        assertEquals("a removed line arrives in the trash", listOf(null, null, 30L), steps.map { it.stamps.deletedAt })
+        assertEquals(
+            "a step made from a checklist line can be searched for",
+            listOf("Door locked"),
+            upgraded.taskDao().search("door*", 10).map { it.name },
+        )
+        assertEquals(AnujDatabase.VERSION, upgraded.openHelper.readableDatabase.version)
+    }
+
+    @Test
+    fun `a version 4 database upgrades with its history kept and old history removable`() = runTest {
+        createDatabaseAtVersion(4, "upgrade4.db") {
+            it.execSQL(
+                "INSERT INTO change_history (tableName, rowId, field, oldValue, newValue, changedAt) VALUES " +
+                    "('task', 't', 'name', 'a', 'b', 10), ('task', 't', 'name', 'b', 'c', 50)",
+            )
+        }
+
+        val upgraded = openCurrent("upgrade4.db")
+        upgraded.changeHistoryDao().deleteBefore(20)
+
+        assertEquals(listOf(50L), upgraded.snapshotDao().changeHistory().map { it.changedAt })
+        assertEquals(AnujDatabase.VERSION, upgraded.openHelper.readableDatabase.version)
+    }
+
+    @Test
+    fun `a version 5 database upgrades with its tasks kept and places working`() = runTest {
+        createDatabaseAtVersion(5, "upgrade5.db") {
+            it.execSQL(
+                "INSERT INTO task (id, name, description, daysOff, priority, carryCount, createdAt, updatedAt) " +
+                    "VALUES ('t', 'Buy the water can', '', 0, 'NONE', 0, 1, 1)",
+            )
+        }
+
+        val upgraded = openCurrent("upgrade5.db")
+        val places = upgraded.placeDao()
+        places.upsert(PlaceEntity("shop", "Shop", 21.1, 79.0, 100, "SAVED", stamps = stamps))
+        places.upsertVisit(PlaceVisitEntity("v", "shop", arrivedAt = 5))
+        places.upsertTie(TaskPlaceEntity("t", "shop", "ARRIVE"))
+
+        assertEquals(listOf("t"), places.tiesOf("shop").map { it.taskId })
+        places.delete("shop")
+        assertTrue("a place takes its visits and its ties with it", places.tiesOf("shop").isEmpty())
+        assertEquals(0, places.countVisits("shop"))
+        assertEquals(listOf("Buy the water can"), upgraded.snapshotDao().tasks().map { it.name })
+        assertEquals(AnujDatabase.VERSION, upgraded.openHelper.readableDatabase.version)
+    }
+
+    @Test
     fun `a version 2 database upgrades with its tasks kept and reminders working`() = runTest {
         createDatabaseAtVersion(2, "upgrade2.db") {
             it.execSQL(
@@ -182,7 +252,6 @@ class MigrationAndSnapshotTest {
                 stamps = StampColumns(1, 2, 3),
             ),
         ),
-        checklistItems = listOf(ChecklistItemEntity("c", "parent", "passport", checked = true, position = 0, stamps = stamps)),
         notes = listOf(NoteEntity("n", "child", "the white one", stamps)),
         tags = listOf(TagEntity("home", "Home", 2, stamps)),
         taskTags = listOf(TaskTagEntity("parent", "home")),
@@ -197,6 +266,9 @@ class MigrationAndSnapshotTest {
             ),
             ReminderEntity(id = "water", title = "Drink water", schedule = "EVERY;120;540;1260;0", enabled = false, stamps = stamps),
         ),
+        places = listOf(PlaceEntity("home", "Home", 21.1458, 79.0882, 100, "SAVED", isHome = true, stamps = stamps)),
+        placeVisits = listOf(PlaceVisitEntity("v", "home", arrivedAt = 3, leftAt = 9)),
+        taskPlaces = listOf(TaskPlaceEntity("parent", "home", "LEAVE")),
         reminderEvents = listOf(ReminderEventEntity("e", "r", "parent", "Trip", "SNOOZED", 8, minutes = 10, reason = "Busy")),
     )
 
@@ -219,14 +291,12 @@ class MigrationAndSnapshotTest {
     fun `restoring replaces what was there instead of adding to it`() = runTest {
         val database = openCurrent("replace.db")
         database.taskDao().save(listOf(TaskEntity(id = "old", name = "Old task", stamps = stamps)), emptyList())
-        database.checklistDao().upsert(listOf(ChecklistItemEntity("oc", "old", "old line", stamps = stamps)))
         database.reminderDao().upsert(listOf(ReminderEntity(id = "old-standing", title = "Old", schedule = "TIMES;480;0", stamps = stamps)))
 
         database.snapshotDao().replaceWith(fullSnapshot())
 
         val after = database.snapshotDao().read(AnujDatabase.VERSION)
         assertEquals(setOf("child", "parent"), after.tasks.map { it.id }.toSet())
-        assertEquals(listOf("c"), after.checklistItems.map { it.id })
         assertEquals("a standing reminder from before the restore must not survive it", setOf("r", "water"), after.reminders.map { it.id }.toSet())
         assertTrue("replaced text is gone from search", database.taskDao().search("old*", 10).isEmpty())
     }

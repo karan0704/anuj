@@ -26,8 +26,66 @@ object Migrations {
         }
     }
 
-    /** Until version 3 this was `arrayOf(FROM_1_TO_2)`. */
-    val ALL: Array<Migration> = arrayOf(FROM_1_TO_2, FROM_2_TO_3)
+    /**
+     * Version 4 has one kind of step. A checklist line was a second, lighter
+     * kind kept in its own table; each line becomes a sub-task of the task
+     * it was on (ticked lines arrive done, removed lines arrive in the
+     * trash), and the two checklist tables are dropped.
+     *
+     * Room removes the search tables' sync triggers before a migration runs,
+     * so the rows added here are not indexed as they go in; the task index is
+     * rebuilt at the end to make the new steps searchable.
+     */
+    val FROM_3_TO_4 = object : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            VERSION_4_STATEMENTS.forEach(db::execSQL)
+        }
+    }
+
+    /** Version 5 adds an index on the time of a change, for the History screen and for clearing old history. */
+    val FROM_4_TO_5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_change_history_changedAt` ON `change_history` (`changedAt`)")
+        }
+    }
+
+    /** Version 6 adds places, the stays at them, and the tie between a task and a place. Nothing existing is altered. */
+    val FROM_5_TO_6 = object : Migration(5, 6) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            VERSION_6_STATEMENTS.forEach(db::execSQL)
+        }
+    }
+
+    val ALL: Array<Migration> = arrayOf(FROM_1_TO_2, FROM_2_TO_3, FROM_3_TO_4, FROM_4_TO_5, FROM_5_TO_6)
+
+    /** Copied from the exported schema `6.json`. */
+    private val VERSION_6_STATEMENTS = listOf(
+        "CREATE TABLE IF NOT EXISTS `place` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `latitude` REAL NOT NULL, " +
+            "`longitude` REAL NOT NULL, `radiusMeters` INTEGER NOT NULL, `kind` TEXT NOT NULL, `isHome` INTEGER NOT NULL, " +
+            "`createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `deletedAt` INTEGER, PRIMARY KEY(`id`))",
+        "CREATE TABLE IF NOT EXISTS `place_visit` (`id` TEXT NOT NULL, `placeId` TEXT NOT NULL, `arrivedAt` INTEGER NOT NULL, " +
+            "`leftAt` INTEGER, PRIMARY KEY(`id`), " +
+            "FOREIGN KEY(`placeId`) REFERENCES `place`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED)",
+        "CREATE INDEX IF NOT EXISTS `index_place_visit_placeId` ON `place_visit` (`placeId`)",
+        "CREATE INDEX IF NOT EXISTS `index_place_visit_arrivedAt` ON `place_visit` (`arrivedAt`)",
+        "CREATE TABLE IF NOT EXISTS `task_place` (`taskId` TEXT NOT NULL, `placeId` TEXT NOT NULL, `moment` TEXT NOT NULL, " +
+            "PRIMARY KEY(`taskId`), " +
+            "FOREIGN KEY(`taskId`) REFERENCES `task`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, " +
+            "FOREIGN KEY(`placeId`) REFERENCES `place`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED)",
+        "CREATE INDEX IF NOT EXISTS `index_task_place_placeId` ON `task_place` (`placeId`)",
+    )
+
+    /** A line keeps its place among its neighbours by being created that many milliseconds after them. */
+    private val VERSION_4_STATEMENTS = listOf(
+        "INSERT INTO `task` (`id`, `parentId`, `name`, `description`, `daysOff`, `priority`, `carryCount`, " +
+            "`completedAt`, `createdAt`, `updatedAt`, `deletedAt`) " +
+            "SELECT `id`, `taskId`, `text`, '', 0, 'NONE', 0, " +
+            "CASE WHEN `checked` THEN `updatedAt` END, `createdAt` + `position`, `updatedAt`, `deletedAt` " +
+            "FROM `checklist_item`",
+        "DROP TABLE IF EXISTS `checklist_item_fts`",
+        "DROP TABLE IF EXISTS `checklist_item`",
+        "INSERT INTO `task_fts`(`task_fts`) VALUES('rebuild')",
+    )
 
     /** Copied from the exported schema `3.json`. */
     private val VERSION_3_STATEMENTS = listOf(
@@ -48,7 +106,8 @@ object Migrations {
 
     /**
      * Copied from the exported schema `2.json`. The search tables' sync triggers are
-     * not listed: Room creates those itself after every migration.
+     * not listed: Room creates those itself after every migration. The checklist
+     * tables made here are removed again by version 4.
      */
     private val VERSION_2_STATEMENTS = listOf(
         "CREATE TABLE IF NOT EXISTS `task` (`id` TEXT NOT NULL, `parentId` TEXT, " +

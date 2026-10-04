@@ -7,23 +7,11 @@ import androidx.room.RoomDatabase
  * The app's single database. Any change to an entity here needs a new version
  * number and a migration; the exported schema under `core/data/schemas` shows
  * what each version looked like.
- *
- * Version 3 adds the reminder table and the reminder log (see [Migrations]).
- * Version 2 added the task tables and their search indexes; its entity list
- * was everything below up to `ChecklistItemFtsEntity`.
- * Version 1, kept for comparison, held only the change history:
- *
- *     @Database(
- *         entities = [ChangeHistoryEntity::class],
- *         version = 1,
- *         exportSchema = true,
- *     )
  */
 @Database(
     entities = [
         ChangeHistoryEntity::class,
         TaskEntity::class,
-        ChecklistItemEntity::class,
         NoteEntity::class,
         TagEntity::class,
         TaskTagEntity::class,
@@ -31,9 +19,11 @@ import androidx.room.RoomDatabase
         TaskOccurrenceEntity::class,
         TaskFtsEntity::class,
         NoteFtsEntity::class,
-        ChecklistItemFtsEntity::class,
         ReminderEntity::class,
         ReminderEventEntity::class,
+        PlaceEntity::class,
+        PlaceVisitEntity::class,
+        TaskPlaceEntity::class,
     ],
     version = AnujDatabase.VERSION,
     exportSchema = true,
@@ -41,15 +31,15 @@ import androidx.room.RoomDatabase
 abstract class AnujDatabase : RoomDatabase() {
     abstract fun changeHistoryDao(): ChangeHistoryDao
     abstract fun taskDao(): TaskDao
-    abstract fun checklistDao(): ChecklistDao
     abstract fun noteDao(): NoteDao
     abstract fun tagDao(): TagDao
     abstract fun attachmentDao(): AttachmentDao
     abstract fun snapshotDao(): SnapshotDao
     abstract fun reminderDao(): ReminderDao
+    abstract fun placeDao(): PlaceDao
 
     companion object {
         const val FILE_NAME = "anuj.db"
-        const val VERSION = 3
+        const val VERSION = 6
     }
 }

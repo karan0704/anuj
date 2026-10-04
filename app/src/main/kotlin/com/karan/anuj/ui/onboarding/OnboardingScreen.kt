@@ -44,11 +44,6 @@ import com.karan.anuj.feature.task.templates.TemplateOnboardingStep
  * permission (microphone, location, usage access) adds a step here; the
  * screen itself does not change.
  */
-/**
- * Phase 1 adds the routines step. Before it:
- *
- *     private enum class OnboardingStep { WELCOME, NOTIFICATIONS, APP_LOCK }
- */
 private enum class OnboardingStep { WELCOME, NOTIFICATIONS, APP_LOCK, ROUTINES }
 
 /** The notification permission only exists from Android 13; older phones allow notifications without asking. */

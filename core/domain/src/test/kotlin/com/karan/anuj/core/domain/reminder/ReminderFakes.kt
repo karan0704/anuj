@@ -39,6 +39,8 @@ class FakeReminderRepository : ReminderRepository {
     override suspend fun log(event: ReminderEvent) = log.update { it + event }
     override suspend fun eventsSince(fromMillis: Long) = events.filter { it.at >= fromMillis }.sortedBy { it.at }
     override suspend fun lastEventAt(kind: ReminderEventKind) = events.filter { it.kind == kind }.maxOfOrNull { it.at }
+    override fun observeRecentEvents(limit: Int) = log.map { list -> list.sortedByDescending { it.at }.take(limit) }
+    override suspend fun deleteEventsBefore(millis: Long) = log.update { list -> list.filter { it.at >= millis } }
 }
 
 class FakeReminderSettings(initial: ReminderSettings = ReminderSettings()) : ReminderSettingsRepository {
@@ -93,7 +95,7 @@ class ReminderWorld(settings: ReminderSettings = ReminderSettings(autoRemindTime
     private val zones = ZoneSource { INDIA }
 
     val sync = SyncRemindersUseCase(
-        reminders, world.tasks, world.checklists, this.settings, notifier, alarms, zones, clock, world.ids,
+        reminders, world.tasks, this.settings, notifier, alarms, zones, clock, world.ids,
     )
     val answer = AnswerReminderUseCase(
         reminders,

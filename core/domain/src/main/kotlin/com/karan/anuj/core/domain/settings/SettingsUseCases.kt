@@ -28,13 +28,25 @@ class UpdateSettingUseCase @Inject constructor(
 ) {
     suspend fun themeMode(mode: ThemeMode) = tracked { repository.setThemeMode(mode) }
 
+    suspend fun colourStyle(style: ColourStyle) = tracked { repository.setColourStyle(style) }
+
     suspend fun textScale(scale: TextScale) = tracked { repository.setTextScale(scale) }
+
+    suspend fun handSide(side: HandSide) = tracked { repository.setHandSide(side) }
+
+    suspend fun lowerLists(lower: Boolean) = tracked { repository.setLowerLists(lower) }
 
     suspend fun appLock(enabled: Boolean) = tracked { repository.setAppLockEnabled(enabled) }
 
     suspend fun onboardingDone(done: Boolean) = tracked { repository.setOnboardingDone(done) }
 
     suspend fun lockAfter(seconds: Int) = tracked { repository.setLockAfterSeconds(seconds.coerceAtLeast(0)) }
+
+    suspend fun emptyTrashAfter(days: Int?) = tracked { repository.setEmptyTrashAfterDays(days?.coerceAtLeast(1)) }
+
+    suspend fun keepRemovedPhotos(days: Int) = tracked { repository.setKeepRemovedPhotosDays(days.coerceAtLeast(0)) }
+
+    suspend fun keepHistory(days: Int?) = tracked { repository.setKeepHistoryDays(days?.coerceAtLeast(1)) }
 
     private suspend fun tracked(change: suspend () -> Unit) {
         val before = repository.settings.first()
@@ -52,9 +64,15 @@ class UpdateSettingUseCase @Inject constructor(
 
     private fun AppSettings.asFields(): Map<String, String?> = mapOf(
         "themeMode" to themeMode.name,
+        "colourStyle" to colourStyle.name,
         "textScale" to textScale.name,
+        "handSide" to handSide.name,
+        "lowerLists" to lowerLists.toString(),
         "appLockEnabled" to appLockEnabled.toString(),
         "onboardingDone" to onboardingDone.toString(),
         "lockAfterSeconds" to lockAfterSeconds.toString(),
+        "emptyTrashAfterDays" to emptyTrashAfterDays?.toString(),
+        "keepRemovedPhotosDays" to keepRemovedPhotosDays.toString(),
+        "keepHistoryDays" to keepHistoryDays?.toString(),
     )
 }

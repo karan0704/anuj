@@ -29,11 +29,11 @@ core/data/                Room database, DAOs, repository implementations
 core/ui/                  theme, shared Compose components
 core/security/            app lock, database encryption
 core/backup/              backup, restore, export
-feature/task/             nested tasks, checklist, repetition, carry-over, tags, search, trash
+feature/task/             nested tasks (a step is a sub-task), repetition, carry-over, tags, search, trash
 feature/reminder/         the alarm, notifications, full-screen alarm, reminder settings, regular reminders, routine player, reminder check
 feature/tracker/          trackers, entries, charts, journal
 feature/voice/            wake name, commands, voice notes
-feature/place/            location + Wi-Fi triggers, leaving-home checklist
+feature/place/            reading location, the background check, the Places screen, the place row on a task
 feature/scan/             offline OCR, share-to-Anuj
 feature/shopping/         shopping list, purchases, bills, expenses
 feature/phoneuse/         usage nudges, app limits, focus mode
@@ -59,7 +59,7 @@ The number after each feature is the phase it is built in.
 | Feature | Phase |
 |---|---|
 | Nested tasks to any depth (task inside task inside task) | 1 |
-| Checklist, name, description, time | 1 |
+| Steps, name, description, time | 1 |
 | Repetition with days off | 1 |
 | Inbox for unsorted thoughts | 1 |
 | Typed notes | 1 |
@@ -213,7 +213,7 @@ Each phase must end in an installable, usable app (see Phased Independent Testab
 | 2 | Reminders | Area B (except leave-by) | Tasks remind and nag reliably, without overwhelming | Built and tested on the computer; not yet run on a phone. Missed-call follow-up is not built (see Phase 2 gaps) |
 | 3 | Tracking | Area C (except mood log and watch import) | Sleep, water, food, weight, BP, journal, doctor export | Not started |
 | 4 | Voice | Area D | Hands-free: named assistant, voice notes, voice add | Built and tested on the computer; speech itself has not been run on a phone. Several items are open (see Phase 4 gaps) |
-| 5 | Place | Area E, plus leave-by alerts | Leaving-home checklist and location reminders | Not started |
+| 5 | Place | Area E, plus leave-by alerts | Leaving-home list and location reminders | Part built (see Phase 5 status). The rules are tested on the computer; reading location on a phone has not been verified |
 | 6 | Scan and shopping | Areas F and G | Scan pages and receipts, shopping list, purchases, bills | Not started |
 | 7 | Phone use and focus | Area H | Phone-use nudges, focus mode, pick for me | Not started |
 | 8 | Visual | Area I (rest) | Calendar, timeline, widget, simple mode | Not started |
@@ -228,9 +228,9 @@ Phases 0–2 are the minimum that makes the app worth using daily. Phases 3–6 
 
 **Phase 1 gaps, known and deliberate** — none of these block daily use; each is small enough to add when it is missed:
 - A task cannot be moved under a different parent, and rows cannot be reordered by hand (order is priority, then age).
-- A note, a checklist line and a tag can be added and removed but not edited in place.
+- A note and a tag can be added and removed but not edited in place.
 - (Closed.) The part-of-day chips were fixed times; they are now a setting, "Times of day".
-- The trash is never emptied automatically.
+- (Closed.) The trash is emptied by itself only if the user chooses a period in Settings, History and storage; the default is never.
 - A task has no voice path yet (phase 4); until then a task name is typed, dictated with the keyboard's own microphone, or picked from the "Add again" chips.
 - Deleting from the task screen shows no "Undo" message, because the screen closes; the task is restored from the trash instead.
 - Not exercised by any test, because they need a phone: the encrypted database, the camera and photo picker, choosing a backup folder, and the scheduled backup.
@@ -265,14 +265,20 @@ Phases 0–2 are the minimum that makes the app worth using daily. Phases 3–6 
 
 - **One alarm, one sync.** The phone holds a single wake-up, for the earliest due moment. `SyncRemindersUseCase` shows everything due, then sets the next wake-up. It is safe to run any number of times and is run by the alarm, a restart, a clock or zone change, the app coming to the front, and any change to a task, a reminder or the settings (`ReminderRunner` watches for those). **Never set an alarm or post a reminder notification from a feature**: change the data and the sync follows.
 - **Every notification passes `NotificationPolicy.decide`**, which applies the kind's on/off switch, "wait for the summary", calm mode, quiet hours and the daily limit. A held reminder is listed in the next summary (at the user's summary times, and when quiet hours end).
-- **Kinds** (`ReminderCategory`): task, alarm, early warning, regular, summary. Each has its own tone, vibration and rules. Android fixes a channel's sound when the channel is made, so the tone is part of the channel id and choosing another tone replaces the channel.
+- **Kinds** (`ReminderCategory`): task, alarm, early warning, regular, summary, place. Each has its own tone, vibration and rules. Android fixes a channel's sound when the channel is made, so the tone is part of the channel id and choosing another tone replaces the channel.
 - **Repeats** stop when the reminder is answered, its limit is reached, or (for a task) the task is finished or moves to another time.
 - **A task with a time is reminded at that time without being asked** (a setting). Removing a task's reminder keeps the removed row, which is what stops the automatic one from coming back.
-- **Things to bring** are the task's unticked checklist lines, shown in its reminder.
+- **Things to bring** are the task's steps not ticked yet, shown in its reminder.
 - **Full-screen alarm**: a notification with a full-screen intent to `ReminderActivity`, on a channel that plays at the alarm volume, and it keeps sounding until answered.
 - **Settings, not constants**: snooze lengths, repeat gaps, "remind me" times, snooze reasons, quiet hours, the daily limit, summary times and the routine warning are all in `ReminderSettings`, each with a default. Lists are edited by switching candidates on and off (see `rules/clean-code.md`).
 
-**Task tree** — one `task` table with a `parentId` column. Fields: name, description, checklist items, due time, repetition rule, days off, priority, tags, energy tag, estimated minutes, carry-over rule, carry count, optional tracker, optional per-task notification tone, photo attachments.
+**Steps (2026-10-04)** — there is one kind of step: a sub-task. The separate checklist was removed in database version 4, whose migration turned every checklist line into a step. Do not add a second, lighter kind of line again.
+
+**Screens (2026-10-04)** — three tabs (Today, Tasks, Inbox) and Ask. A tab's list is a `OneHandList`: the read-only top (clock, title) never moves, the list starts lowered, and search and the menu ride at its head on the side of the chosen hand. A screen opens with few controls; the rest is under a `MoreRow` that says what is set. Settings is a tree opened from the home menu: one row per branch, one screen per branch.
+
+**Phase 5 status (2026-10-04)** — built: places (saved, only visited, ignored, home), noticing a spot after a stay or after returning often and asking once, a task tied to a place for arriving or for leaving, the leaving list (told which steps are open on leaving; steps start fresh only after settling back home), Google location first with GPS as fallback, a check each time the app opens and about every 15 minutes in the background when "Allow all the time" is granted. Not built yet: Wi-Fi and Bluetooth as extra signals, photo proof on a step, the "where did I put it" log, leave-by alerts, the movement sensor for staying "at home" indoors (the rule "a vague reading never means left" covers that case for now), and showing reminders in the Today list.
+
+**Task tree** — one `task` table with a `parentId` column. Fields: name, description, due time, repetition rule, days off, priority, tags, energy tag, estimated minutes, carry-over rule, carry count, optional tracker, optional per-task notification tone, photo attachments.
 
 **Carry-over** — applied when a task is unfinished at end of day. Set at three levels: app default → parent task/list → single task. Respects days off. A missed occurrence of a repeating task is marked missed instead of piling up, unless carry-over is switched on for it. After a user-set number of carries the app asks whether to break it down, reschedule or drop it.
 

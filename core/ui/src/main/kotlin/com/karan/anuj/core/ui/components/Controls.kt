@@ -77,13 +77,7 @@ fun <T> ChoiceChips(
 ) {
     /**
      * The chips fill their whole 48dp row, so without a gap between rows a
-     * second line of chips sat flush against the first and looked overlapped.
-     * The row used to be laid out with the sideways gap only:
-     *
-     *     FlowRow(
-     *         modifier = modifier.fillMaxWidth(),
-     *         horizontalArrangement = Arrangement.spacedBy(8.dp),
-     *     )
+     * second line of chips would sit flush against the first and look overlapped.
      */
     FlowRow(
         modifier = modifier.fillMaxWidth(),

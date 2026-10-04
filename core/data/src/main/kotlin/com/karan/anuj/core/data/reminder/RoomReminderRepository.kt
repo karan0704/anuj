@@ -115,4 +115,9 @@ class RoomReminderRepository @Inject constructor(
         withContext(io) { dao.get().eventsSince(fromMillis).mapNotNull { it.toDomain() } }
 
     override suspend fun lastEventAt(kind: ReminderEventKind): Long? = withContext(io) { dao.get().lastEventAt(kind.name) }
+
+    override fun observeRecentEvents(limit: Int): Flow<List<ReminderEvent>> =
+        onIo { dao -> dao.observeRecentEvents(limit).map { rows -> rows.mapNotNull { it.toDomain() } } }
+
+    override suspend fun deleteEventsBefore(millis: Long) = withContext(io) { dao.get().deleteEventsBefore(millis) }
 }

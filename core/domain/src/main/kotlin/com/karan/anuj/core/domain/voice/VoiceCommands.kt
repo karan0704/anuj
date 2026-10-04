@@ -4,7 +4,6 @@ import com.karan.anuj.core.domain.reminder.ReminderCategory
 import com.karan.anuj.core.domain.reminder.ReminderSchedule
 import com.karan.anuj.core.domain.reminder.StandingReminderDraft
 import com.karan.anuj.core.domain.reminder.StandingRemindersUseCase
-import com.karan.anuj.core.domain.task.ChecklistRepository
 import com.karan.anuj.core.domain.task.CompleteTaskUseCase
 import com.karan.anuj.core.domain.task.CreateTaskUseCase
 import com.karan.anuj.core.domain.task.Priority
@@ -216,10 +215,9 @@ class MarkDoneCommand @Inject constructor(
     }
 }
 
-/** "Read the checklist of leaving home": the lines not ticked yet, then the steps not done yet. */
-class ChecklistCommand @Inject constructor(
+/** "Read the steps of leaving home": the steps not ticked yet. "Checklist" is heard as the same thing. */
+class StepsCommand @Inject constructor(
     private val tasks: TaskRepository,
-    private val checklists: ChecklistRepository,
 ) : VoiceCommand {
     override val order = 70
 
@@ -230,16 +228,11 @@ class ChecklistCommand @Inject constructor(
         ) ?: return null
         val open = tasks.getOpen()
         val task = TaskMatcher.find(open, said).firstOrNull() ?: return VoiceReply("I could not find that task", understood = false)
-        val lines = checklists.getFor(listOf(task.id))
-            .filterNot { it.stamps.isDeleted || it.checked }
-            .sortedBy { it.position }
-            .map { it.text }
         val steps = open.filter { it.parentId == task.id }.sortedBy { it.stamps.createdAt }.map { it.name }
-        val all = lines + steps
-        return if (all.isEmpty()) {
+        return if (steps.isEmpty()) {
             VoiceReply("${task.name} has nothing left to tick", openTask = task.id)
         } else {
-            VoiceReply("${task.name}, ${all.size} left", lines = all, openTask = task.id)
+            VoiceReply("${task.name}, ${steps.size} left", lines = steps, openTask = task.id)
         }
     }
 }

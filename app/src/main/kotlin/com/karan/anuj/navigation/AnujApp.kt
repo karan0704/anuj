@@ -5,7 +5,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MailOutline
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -37,6 +36,8 @@ import com.karan.anuj.R
 import com.karan.anuj.core.domain.task.TaskId
 import com.karan.anuj.core.ui.components.AnujScaffold
 import com.karan.anuj.core.ui.components.LocalVoiceInput
+import com.karan.anuj.feature.place.settings.PlacesScreen
+import com.karan.anuj.feature.place.task.TaskPlaceField
 import com.karan.anuj.feature.reminder.health.ReminderCheckScreen
 import com.karan.anuj.feature.reminder.routine.RoutinePlayerScreen
 import com.karan.anuj.feature.reminder.routine.RoutinePlayerViewModel
@@ -52,12 +53,16 @@ import com.karan.anuj.feature.task.tree.TaskTreeScreen
 import com.karan.anuj.feature.voice.assistant.AssistantSheet
 import com.karan.anuj.feature.voice.dictate.DictationButton
 import com.karan.anuj.feature.voice.settings.VoiceSettingsScreen
+import com.karan.anuj.ui.history.HistoryScreen
+import com.karan.anuj.ui.home.HomeLinks
 import com.karan.anuj.ui.home.HomeScreen
 import com.karan.anuj.ui.settings.SettingsScreen
+import com.karan.anuj.ui.settings.SettingsSection
+import com.karan.anuj.ui.settings.SettingsSectionScreen
 
 /**
- * A tab in the bottom bar. A later phase adds its tab by adding an entry
- * here and a matching `composable` in the NavHost below.
+ * A tab in the bottom bar: the three places that are used all day. Settings
+ * is not one of them; it is opened from the home menu and has a tree of its own.
  */
 private enum class TopLevelDestination(
     val route: String,
@@ -67,7 +72,6 @@ private enum class TopLevelDestination(
     HOME("home", R.string.nav_home, Icons.Filled.Home),
     TASKS("tasks", R.string.nav_tasks, Icons.AutoMirrored.Filled.List),
     INBOX("inbox", R.string.nav_inbox, Icons.Filled.MailOutline),
-    SETTINGS("settings", R.string.nav_settings, Icons.Filled.Settings),
 }
 
 /** Screens that open on top of a tab and are left with the back arrow. */
@@ -79,10 +83,11 @@ private object Routes {
 
     fun task(id: TaskId) = "$TASK/${id.value}"
 
+    const val SETTINGS = "settings"
+    const val HISTORY = "settings/history"
     const val NOTIFICATIONS = "settings/notifications"
     const val REGULAR_REMINDERS = "settings/regular-reminders"
     const val REMINDER_CHECK = "settings/reminder-check"
-    const val VOICE = "settings/voice"
     private const val ROUTINE = "routine"
     const val ROUTINE_PATTERN = "$ROUTINE/{${RoutinePlayerViewModel.TASK_ID_ARG}}"
 
@@ -131,14 +136,6 @@ fun AnujApp(
      * search, trash) it is hidden so the back arrow is the single way out.
      * Until the first destination is known the bar is shown, so it does not
      * pop in a frame late.
-     *
-     * Before phase 1 there were only tabs and the bar was always drawn:
-     *
-     *     AnujScaffold(
-     *         bottomBar = {
-     *             NavigationBar { ... }
-     *         },
-     *     ) {
      */
     val onTab = currentDestination == null ||
         TopLevelDestination.entries.any { tab -> currentDestination.hierarchy.any { it.route == tab.route } }
@@ -177,13 +174,17 @@ fun AnujApp(
             navController = navController,
             startDestination = TopLevelDestination.HOME.route,
         ) {
-            /**
-             * Home now shows today's tasks under the clock. Before phase 1:
-             *
-             *     composable(TopLevelDestination.HOME.route) { HomeScreen() }
-             */
             composable(TopLevelDestination.HOME.route) {
-                HomeScreen(snackbar = snackbar, onOpenTask = openTask)
+                HomeScreen(
+                    snackbar = snackbar,
+                    onOpenTask = openTask,
+                    links = HomeLinks(
+                        search = { navController.navigate(Routes.SEARCH) },
+                        reminders = { navController.navigate(Routes.REGULAR_REMINDERS) },
+                        trash = { navController.navigate(Routes.TRASH) },
+                        settings = { navController.navigate(Routes.SETTINGS) },
+                    ),
+                )
             }
             composable(TopLevelDestination.TASKS.route) {
                 TaskTreeScreen(
@@ -191,20 +192,38 @@ fun AnujApp(
                     onOpenTask = openTask,
                     onOpenSearch = { navController.navigate(Routes.SEARCH) },
                     onOpenTrash = { navController.navigate(Routes.TRASH) },
+                    onAddReminder = { navController.navigate(Routes.REGULAR_REMINDERS) },
                 )
             }
             composable(TopLevelDestination.INBOX.route) {
                 InboxScreen(snackbar = snackbar, onOpenTask = openTask)
             }
-            composable(TopLevelDestination.SETTINGS.route) {
-                SettingsScreen(
-                    lockAvailable = lockAvailable,
-                    onAppLockToggled = onAppLockToggled,
-                    onOpenNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
-                    onOpenRegularReminders = { navController.navigate(Routes.REGULAR_REMINDERS) },
-                    onOpenReminderCheck = { navController.navigate(Routes.REMINDER_CHECK) },
-                    onOpenVoice = { navController.navigate(Routes.VOICE) },
-                )
+
+            composable(Routes.SETTINGS) {
+                SettingsScreen(onBack = navController::popBackStack, onOpen = { navController.navigate(it.route) })
+            }
+            SettingsSection.entries.filter { it != SettingsSection.VOICE && it != SettingsSection.PLACES }.forEach { section ->
+                composable(section.route) {
+                    SettingsSectionScreen(
+                        section = section,
+                        onBack = navController::popBackStack,
+                        lockAvailable = lockAvailable,
+                        onAppLockToggled = onAppLockToggled,
+                        onOpenNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
+                        onOpenRegularReminders = { navController.navigate(Routes.REGULAR_REMINDERS) },
+                        onOpenReminderCheck = { navController.navigate(Routes.REMINDER_CHECK) },
+                        onOpenHistory = { navController.navigate(Routes.HISTORY) },
+                    )
+                }
+            }
+            composable(Routes.HISTORY) {
+                HistoryScreen(onBack = navController::popBackStack)
+            }
+            composable(SettingsSection.PLACES.route) {
+                PlacesScreen(onBack = navController::popBackStack)
+            }
+            composable(SettingsSection.VOICE.route) {
+                VoiceSettingsScreen(onBack = navController::popBackStack)
             }
 
             composable(
@@ -213,17 +232,19 @@ fun AnujApp(
             ) {
                 /**
                  * The reminder row and the step-by-step player come from the
-                 * reminder feature and are handed to the task screen here,
-                 * the one place that knows both. Before phase 2:
-                 *
-                 *     TaskDetailScreen(snackbar = snackbar, onBack = navController::popBackStack, onOpenTask = openTask)
+                 * reminder feature, and the place row from the place feature.
+                 * They are handed to the task screen here, the one place
+                 * that knows all three.
                  */
                 TaskDetailScreen(
                     snackbar = snackbar,
                     onBack = navController::popBackStack,
                     onOpenTask = openTask,
                     onPlaySteps = { navController.navigate(Routes.routine(it)) },
-                    extraFields = { task -> TaskReminderField(taskId = task.id, hasDay = task.dueDate != null) },
+                    extraFields = { task ->
+                        TaskReminderField(taskId = task.id, hasDay = task.dueDate != null)
+                        TaskPlaceField(taskId = task.id)
+                    },
                 )
             }
             composable(
@@ -246,9 +267,6 @@ fun AnujApp(
             }
             composable(Routes.TRASH) {
                 TrashScreen(onBack = navController::popBackStack)
-            }
-            composable(Routes.VOICE) {
-                VoiceSettingsScreen(onBack = navController::popBackStack)
             }
         }
         }

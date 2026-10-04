@@ -1,27 +1,24 @@
 package com.karan.anuj.feature.task.tree
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.InputChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -50,6 +47,10 @@ import com.karan.anuj.core.domain.task.TagId
 import com.karan.anuj.core.domain.task.TaskId
 import com.karan.anuj.core.domain.task.TaskNode
 import com.karan.anuj.core.domain.task.TaskTree
+import com.karan.anuj.core.ui.components.AnujBottomSheet
+import com.karan.anuj.core.ui.components.ChoiceChips
+import com.karan.anuj.core.ui.components.LocalOneHand
+import com.karan.anuj.core.ui.components.OneHandList
 import com.karan.anuj.core.ui.components.ScreenHeader
 import com.karan.anuj.core.ui.components.ScreenPadding
 import com.karan.anuj.feature.task.R
@@ -61,7 +62,7 @@ import com.karan.anuj.feature.task.common.TaskActions
 import com.karan.anuj.feature.task.common.TaskActionsViewModel
 import com.karan.anuj.feature.task.common.TaskRow
 import com.karan.anuj.feature.task.common.UndoSnackbars
-import com.karan.anuj.feature.task.quickadd.QuickAddSheet
+import com.karan.anuj.feature.task.quickadd.AddSheet
 import com.karan.anuj.feature.task.templates.TemplateSheet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -142,14 +143,23 @@ class TaskTreeViewModel @Inject constructor(
 }
 
 /** Which sheet is open over the tree. */
-private enum class TreeOverlay { NONE, QUICK_ADD, TEMPLATES }
+private enum class TreeOverlay { NONE, ADD, TEMPLATES, TAG_FILTER }
 
+/**
+ * Every task, as a tree. The title stays at the top; search and the menu
+ * ride at the head of the list. Choosing a tag, the ready-made routines,
+ * finished tasks and the trash are all in the menu, so the screen opens
+ * with nothing on it but the tasks.
+ *
+ * @param onAddReminder opens the screen where a reminder is made, for the add button's "Reminder" choice
+ */
 @Composable
 fun TaskTreeScreen(
     snackbar: SnackbarHostState,
     onOpenTask: (TaskId) -> Unit,
     onOpenSearch: () -> Unit,
     onOpenTrash: () -> Unit,
+    onAddReminder: (() -> Unit)? = null,
     viewModel: TaskTreeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -165,8 +175,9 @@ fun TaskTreeScreen(
     UndoSnackbars(viewModel.undoable, snackbar, viewModel::undo)
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            ScreenHeader(title = stringResource(R.string.tasks_title)) {
+        OneHandList(
+            top = { ScreenHeader(title = stringResource(R.string.tasks_title)) },
+            actions = {
                 IconButton(onClick = onOpenSearch) {
                     Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.tasks_search))
                 }
@@ -182,6 +193,15 @@ fun TaskTreeScreen(
                                 overlay = TreeOverlay.TEMPLATES
                             },
                         )
+                        if (state.tags.isNotEmpty()) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.tasks_filter_tag)) },
+                                onClick = {
+                                    menuOpen = false
+                                    overlay = TreeOverlay.TAG_FILTER
+                                },
+                            )
+                        }
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.tasks_show_finished)) },
                             trailingIcon = { Checkbox(checked = state.showFinished, onCheckedChange = null) },
@@ -199,39 +219,39 @@ fun TaskTreeScreen(
                         )
                     }
                 }
-            }
-
-            if (state.tags.isNotEmpty()) {
-                TagFilterRow(tags = state.tags, selected = state.tagFilter, onSelect = viewModel::setTagFilter)
-            }
-
-            if (state.loaded && state.rows.isEmpty()) {
-                EmptyTree()
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    /** Room at the bottom so the last row can scroll clear of the add button. */
-                    contentPadding = PaddingValues(bottom = 96.dp),
-                ) {
-                    items(state.rows, key = { it.task.id.value }) { node ->
-                        TreeRow(
-                            node = node,
-                            state = state,
-                            tagsById = tagsById,
-                            onToggleDone = { if (node.task.isOpen) viewModel.complete(node.task) else viewModel.reopen(node.task.id) },
-                            onTomorrow = { viewModel.moveTo(node.task, today.plusDays(1), countsAsCarry = true) },
-                            onOpen = { onOpenTask(node.task.id) },
-                            onToggleExpanded = { viewModel.toggleExpanded(node.task.id) },
-                        )
-                    }
+            },
+        ) {
+            /** A chosen tag is shown as the one thing narrowing the list, with its own way out. */
+            state.tags.firstOrNull { it.id == state.tagFilter }?.let { tag ->
+                item(key = "tag-filter") {
+                    InputChip(
+                        selected = true,
+                        onClick = { viewModel.setTagFilter(null) },
+                        label = { Text(tag.name) },
+                        leadingIcon = { TagDot(tag.colorIndex) },
+                        trailingIcon = { Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.tasks_filter_clear)) },
+                        modifier = Modifier.padding(horizontal = ScreenPadding),
+                    )
                 }
+            }
+            if (state.loaded && state.rows.isEmpty()) item(key = "empty") { EmptyTree() }
+            items(state.rows, key = { it.task.id.value }) { node ->
+                TreeRow(
+                    node = node,
+                    state = state,
+                    tagsById = tagsById,
+                    onToggleDone = { if (node.task.isOpen) viewModel.complete(node.task) else viewModel.reopen(node.task.id) },
+                    onTomorrow = { viewModel.moveTo(node.task, today.plusDays(1), countsAsCarry = true) },
+                    onOpen = { onOpenTask(node.task.id) },
+                    onToggleExpanded = { viewModel.toggleExpanded(node.task.id) },
+                )
             }
         }
 
         FloatingActionButton(
-            onClick = { overlay = TreeOverlay.QUICK_ADD },
+            onClick = { overlay = TreeOverlay.ADD },
             modifier = Modifier
-                .align(Alignment.BottomEnd)
+                .align(LocalOneHand.current.hand.corner)
                 .padding(ScreenPadding),
         ) {
             Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.quick_add_open))
@@ -240,8 +260,22 @@ fun TaskTreeScreen(
 
     when (overlay) {
         TreeOverlay.NONE -> Unit
-        TreeOverlay.QUICK_ADD -> QuickAddSheet(parentId = null, defaultDate = today, onDismiss = { overlay = TreeOverlay.NONE })
+        TreeOverlay.ADD -> AddSheet(defaultDate = today, onDismiss = { overlay = TreeOverlay.NONE }, onAddReminder = onAddReminder)
         TreeOverlay.TEMPLATES -> TemplateSheet(onDismiss = { overlay = TreeOverlay.NONE })
+        TreeOverlay.TAG_FILTER -> AnujBottomSheet(
+            onDismiss = { overlay = TreeOverlay.NONE },
+            title = stringResource(R.string.tasks_filter_tag),
+        ) {
+            ChoiceChips(
+                options = listOf<Tag?>(null) + state.tags,
+                selected = state.tags.firstOrNull { it.id == state.tagFilter },
+                label = { it?.name ?: stringResource(R.string.tasks_all_tags) },
+                onSelect = {
+                    viewModel.setTagFilter(it?.id)
+                    overlay = TreeOverlay.NONE
+                },
+            )
+        }
     }
 }
 
@@ -289,28 +323,6 @@ private fun TreeRow(
         )
     } else {
         row()
-    }
-}
-
-@Composable
-private fun TagFilterRow(tags: List<Tag>, selected: TagId?, onSelect: (TagId?) -> Unit) {
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = ScreenPadding),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        item(key = "all") {
-            FilterChip(selected = selected == null, onClick = { onSelect(null) }, label = { Text(stringResource(R.string.tasks_all_tags)) })
-        }
-        items(tags, key = { it.id.value }) { tag ->
-            FilterChip(
-                selected = selected == tag.id,
-                /** Tapping the chosen tag again goes back to all tasks. */
-                onClick = { onSelect(if (selected == tag.id) null else tag.id) },
-                label = { Text(tag.name) },
-                leadingIcon = { TagDot(tag.colorIndex) },
-            )
-        }
     }
 }
 

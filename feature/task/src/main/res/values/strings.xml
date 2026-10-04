@@ -23,6 +23,15 @@
     <string name="task_carried">Carried %1$d×</string>
     <string name="task_missed">Missed</string>
 
+    <!-- The three kinds of thing the app keeps -->
+    <string name="kind_task">Task</string>
+    <string name="kind_routine">Routine</string>
+    <string name="kind_reminder">Reminder</string>
+    <string name="add_kind_title">What are you adding?</string>
+    <string name="add_kind_task_detail">Something to do once. It is ticked off and gone.</string>
+    <string name="add_kind_routine_detail">Something that comes round again: every day, every week.</string>
+    <string name="add_kind_reminder_detail">Only a nudge at a set time. Nothing to tick.</string>
+
     <!-- Dates and times -->
     <string name="task_today">Today</string>
     <string name="task_tomorrow">Tomorrow</string>
@@ -45,7 +54,9 @@
     <string name="quick_add_name">What needs doing?</string>
     <string name="quick_add_suggestions">Add again</string>
     <string name="quick_add_button">Add task</string>
-    <string name="quick_add_open">Add a task</string>
+    <string name="quick_add_routine_title">New routine</string>
+    <string name="quick_add_routine_button">Add routine</string>
+    <string name="quick_add_open">Add</string>
 
     <!-- Today -->
     <string name="today_decide_title">Not done on their day</string>
@@ -57,7 +68,9 @@
     <string name="today_stuck_break">Break into steps</string>
     <string name="today_stuck_reschedule">Pick a new day</string>
     <string name="today_stuck_drop">Drop it</string>
-    <string name="today_decide_drop">Drop</string>
+    <string name="today_decide_drop">Drop it</string>
+    <string name="today_decide_ask">Not done. Choose a day</string>
+    <string name="today_decide_body">This was not done on its day. When will you do it?</string>
     <string name="today_reopen">Put back on the list</string>
 
     <!-- Tasks tree -->
@@ -66,7 +79,9 @@
     <string name="tasks_trash">Trash</string>
     <string name="tasks_templates">Add a routine</string>
     <string name="tasks_show_finished">Show finished</string>
-    <string name="tasks_all_tags">All</string>
+    <string name="tasks_all_tags">All tasks</string>
+    <string name="tasks_filter_tag">Show one tag</string>
+    <string name="tasks_filter_clear">Show all tasks</string>
     <string name="tasks_expand">Show steps of %1$s</string>
     <string name="tasks_collapse">Hide steps of %1$s</string>
     <string name="tasks_empty_title">No tasks yet</string>
@@ -96,9 +111,10 @@
     <string name="detail_energy">Energy needed</string>
     <string name="detail_estimate">Time needed</string>
     <string name="detail_carry">If not done on its day</string>
-    <string name="detail_checklist">Checklist</string>
-    <string name="detail_checklist_hint">Add a checklist line</string>
-    <string name="detail_checklist_remove">Remove %1$s</string>
+    <string name="detail_history">History of this task</string>
+    <string name="detail_history_empty">Nothing has been changed since it was made.</string>
+    <string name="detail_more_hint">Description, priority, tags, notes, photos</string>
+    <string name="detail_priority_is">%1$s priority</string>
     <string name="detail_steps">Steps</string>
     <string name="detail_add_step">Add a step</string>
     <string name="detail_play_steps">Do the steps one by one</string>
@@ -179,7 +195,7 @@
 
     <!-- Search -->
     <string name="search_title">Search</string>
-    <string name="search_hint">Search tasks, notes and checklists</string>
+    <string name="search_hint">Search tasks, steps and notes</string>
     <string name="search_clear">Clear search</string>
     <string name="search_empty">Nothing found</string>
 

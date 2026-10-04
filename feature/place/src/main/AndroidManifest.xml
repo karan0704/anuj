@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Asked for only when "Notice places" is switched on in Settings, never
+        at install. Fine location is what lets a 100 metre circle work; coarse
+        is asked alongside it because the phone lets the user grant only that.
+    -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- Lets the check run while the app is closed. Asked for separately, and places still work without it whenever the app is opened. -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+
+    <uses-feature
+        android:name="android.hardware.location.gps"
+        android:required="false" />
+
+</manifest>

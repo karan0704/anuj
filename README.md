@@ -6,12 +6,13 @@ Everything runs on the phone. There is no server, and the core features need no 
 
 ## Status
 
-Phases 0 to 2 and phase 4 are built.
+Phases 0 to 2 and phase 4 are built, and the first part of phase 5.
 
 - **Phase 0, foundation**: first-run setup, fingerprint or screen-lock app lock, light and dark themes, adjustable text size, encrypted database.
-- **Phase 1, tasks**: nested tasks with checklists, notes, photos, tags and priority; repeating tasks with days off; carry-over rules for unfinished tasks; an inbox, search and trash; ready-made routines; backup and restore.
+- **Phase 1, tasks**: nested tasks with steps, notes, photos, tags and priority; repeating tasks with days off; carry-over rules for unfinished tasks; an inbox, search and trash; ready-made routines; backup and restore.
 - **Phase 2, reminders**: reminders that go off with the app closed and come back after a restart; repeat-until-done; full-screen alarms; snooze with a reason; quiet hours, a daily limit, calm mode and a summary of what was held back; a tone per kind of reminder and per task; regular reminders for medication, water and meals; routines played one step at a time; a check that the phone lets reminders through.
 
+- **Phase 5, place (first part)**: saved places and home, tasks that come up on arriving, a leaving list that says what was not ticked, spots the phone notices by itself. Works without internet, Wi-Fi or Bluetooth.
 - **Phase 4, voice**: an assistant that answers to a name you choose, offline; it reads out your tasks, picks what to do now, adds and ticks tasks, searches, sets a timer and switches the flashlight; a microphone on the new-task field. Built before phase 3.
 
 Phases 0 and 1 have been run on a device by the developer. Phases 2 and 4 have only been tested on the computer so far. Phase 3 (tracking and the journal) and phase 5 (place) are not built.

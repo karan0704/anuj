@@ -1,7 +1,6 @@
 package com.karan.anuj.core.data.task
 
 import com.karan.anuj.core.data.db.AttachmentEntity
-import com.karan.anuj.core.data.db.ChecklistItemEntity
 import com.karan.anuj.core.data.db.NoteEntity
 import com.karan.anuj.core.data.db.StampColumns
 import com.karan.anuj.core.data.db.TagEntity
@@ -10,7 +9,6 @@ import com.karan.anuj.core.data.db.TaskOccurrenceEntity
 import com.karan.anuj.core.data.db.TaskTagEntity
 import com.karan.anuj.core.domain.task.Attachment
 import com.karan.anuj.core.domain.task.CarryOverCodec
-import com.karan.anuj.core.domain.task.ChecklistItem
 import com.karan.anuj.core.domain.task.Energy
 import com.karan.anuj.core.domain.task.Note
 import com.karan.anuj.core.domain.task.OccurrenceOutcome
@@ -71,12 +69,6 @@ internal fun Task.toEntity(): TaskEntity = TaskEntity(
 )
 
 internal fun Task.toTagRows(): List<TaskTagEntity> = tagIds.map { TaskTagEntity(taskId = id.value, tagId = it.value) }
-
-internal fun ChecklistItemEntity.toDomain() =
-    ChecklistItem(id, TaskId(taskId), text, checked, position, stamps.toDomain())
-
-internal fun ChecklistItem.toEntity() =
-    ChecklistItemEntity(id, taskId.value, text, checked, position, StampColumns.from(stamps))
 
 internal fun NoteEntity.toDomain() = Note(id, TaskId(taskId), text, stamps.toDomain())
 

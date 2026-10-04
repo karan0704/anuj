@@ -1,7 +1,7 @@
 # Trigger: editing existing code
 
 ## Code Modification & Architectural Integrity Rule
-* **Zero Code Deletion & Preservation Protocol**: When resolving bugs, refactoring code, or implementing new features, NEVER delete pre-existing or legacy code blocks. Always preserve the original implementation inside clearly labeled comment blocks directly adjacent to the new code so developers can easily compare the original ("before") vs modified ("now") code.
+* **Remove Old Code, Do Not Keep It In Comments**: when code is replaced, the old version is deleted. Git history is the record of what it was, and the commit body says why it changed. Never leave a commented-out block, a "before" copy, or an unused class, function, string or resource behind. (Decided by the developer on 2026-10-04; this replaces the earlier keep-everything-in-comments rule.)
 * **Mandatory Explanatory Comments**: Every code modification MUST include explicit header and inline comments explaining what was changed, why, and how the new logic works — but written as a developer would write them, not as an AI narrating its own edit:
   - Use `/** ... */` KDoc block-comment style, not plain `//` line comments, for anything beyond a single trivial line.
   - Write the reasoning as a plain statement of the code's actual behavior (e.g. "a carried task keeps its original due date here, because the carry count is computed from it") — do not label sections `WHAT:`/`WHY:`/`HOW:`/`NEW:`.
@@ -11,7 +11,7 @@
   - **Open/Closed Principle (OCP)**: new variants are added as new implementations of `Trigger`, `VoiceCommand`, `TrackerType`, `CarryOverRule` — not as new branches in an existing `when`.
   - **Liskov Substitution & Interface Segregation**: Use small, focused Kotlin interfaces and sealed types rather than bulky boolean parameter flags.
   - **Dependency Inversion & Loose Coupling**: Composables talk only to a ViewModel; ViewModels only to use cases; use cases only to repository interfaces in `core:domain`. Feature modules never depend on each other, and `core:domain` never imports `android.*`.
-* **No Unused Live Imports**: Never leave an import in place if nothing in the file actually uses it. If a class/function is kept in the codebase for future use, its import at the call site must be commented out (not deleted) alongside a note on why, consistent with the Zero Code Deletion rule above - only import it live again when something actually starts using it.
+* **No Unused Imports**: an import nothing in the file uses is deleted, not commented out.
 * **Strict Targeted Modification & Formatting Scope Protocol**: ONLY modify the specific target code block being added, updated, or refactored. NEVER touch, alter, or reformat any other code in the file. Indentation and formatting changes are strictly restricted exclusively to the specific code block being modified.
 * **Standing Conventions**: once a styling/formatting decision is confirmed for one field or instance within a feature (e.g. "times shown as 6:30 pm", "every chip has an icon"), treat it as a standing convention for the rest of that feature and apply it to every subsequent similar field without re-confirming each time. State the convention explicitly when it's set, so it's easy to point back to.
 * **Fix Stale Comments On Sight**: if a comment describes behavior that's no longer true, fix it as part of whatever change you're already making there — don't leave a comment you know is wrong for someone else to trip over.
@@ -26,7 +26,7 @@
 
 ## Modular Feature Implementation Principles
 * **Phased Independent Testability**: Feature development must be broken down into incremental, self-contained phases (see `rules/features.md`). Each phase MUST be independently testable end-to-end — installable and usable — without relying on unbuilt future phases.
-* **Minimal Changes & Zero Destruction**: Implement features additively — new implementations of existing interfaces, new modules, additive migrations (no dropping or repurposing existing columns).
+* **Minimal Changes**: implement features as new implementations of existing interfaces and new modules where that fits. While the app is in its testing phase a migration may drop a table or column when that gives the simpler model (the developer accepted losing test data on 2026-10-04); it is still a real Room migration, and the commit body says what data is lost.
 * **Extract Shared Components Opportunistically**: when a second screen needs the same picker, chip row or entry sheet, pull it into `core:ui` *then* instead of copy-pasting a near-identical version.
 * **Type The Shared Layer Strictly**: no `Any`, no stringly-typed ids, no nullable-everything data classes in `core:domain`. Use value classes for ids and sealed types for variants so the compiler catches mismatches.
 * **Test The Time-Math Modules**: repetition rules, days off, carry-over, nagging intervals, quiet hours and streak counting are where a wrong answer means a missed reminder. When touching one of these, add or extend a unit test alongside the change (including month-end, leap-day and daylight-saving cases) rather than relying on manual verification alone.

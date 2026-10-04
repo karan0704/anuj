@@ -1,7 +1,10 @@
 package com.karan.anuj.core.domain.task
 
+import com.karan.anuj.core.domain.history.HouseKeepingUseCase
+import com.karan.anuj.core.domain.settings.SettingsRepository
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 class DeleteTaskUseCase @Inject constructor(
@@ -51,14 +54,19 @@ class PurgeTasksUseCase @Inject constructor(
     private val tasks: TaskRepository,
     private val attachments: AttachmentRepository,
     private val files: AttachmentFileStore,
+    private val settings: SettingsRepository,
 ) {
-    /** Removes tasks for good, with everything beneath them and their photo files. This cannot be undone. */
+    /**
+     * Removes tasks for good, with everything beneath them. This cannot be
+     * undone. Their photo files go at once, or are set aside for as long as
+     * the user has chosen and deleted by [HouseKeepingUseCase] after that.
+     */
     suspend operator fun invoke(ids: List<TaskId>) {
         val all = ids.flatMap { tasks.getSubtree(it) }.map { it.id }.distinct()
         if (all.isEmpty()) return
         val photoFiles = attachments.getFor(all).map { it.fileName }
         tasks.purge(all)
-        files.delete(photoFiles)
+        if (settings.settings.first().keepRemovedPhotosDays > 0) files.setAside(photoFiles) else files.delete(photoFiles)
     }
 }
 

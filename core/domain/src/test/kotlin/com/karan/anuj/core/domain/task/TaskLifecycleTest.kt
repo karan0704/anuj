@@ -15,10 +15,10 @@ class TaskLifecycleTest {
     private val create = CreateTaskUseCase(world.tasks, world.ids, world.clock)
     private val update = UpdateTaskUseCase(world.tasks, world.editor)
     private val complete = CompleteTaskUseCase(world.tasks, world.editor, world.ids)
-    private val undo = UndoCompletionUseCase(world.tasks, world.checklists, world.editor)
+    private val undo = UndoCompletionUseCase(world.tasks, world.editor)
     private val reopen = ReopenTaskUseCase(world.tasks, world.editor)
     private val move = MoveTaskToDayUseCase(world.tasks, world.editor)
-    private val duplicate = DuplicateTaskUseCase(world.tasks, world.checklists, world.ids, world.clock)
+    private val duplicate = DuplicateTaskUseCase(world.tasks, world.ids, world.clock)
 
     @Test
     fun `a task needs nothing but a name`() = runTest {
@@ -140,23 +140,21 @@ class TaskLifecycleTest {
     }
 
     @Test
-    fun `a new round starts with its steps reopened and its checklists unticked`() = runTest {
+    fun `a new round starts with every step beneath it reopened`() = runTest {
         world.given("routine", due = MONDAY, repetition = Repetition.Daily())
         world.given("step", parent = "routine", completedAt = 10)
-        world.givenChecklistItem("on routine", task = "routine", checked = true)
-        world.givenChecklistItem("on step", task = "step", checked = true)
+        world.given("step of step", parent = "step", completedAt = 10)
 
         complete(TaskId("routine"), today = MONDAY)
 
         assertTrue(world.tasks.task("step").isOpen)
-        assertTrue(world.checklists.all.none { it.checked })
+        assertTrue(world.tasks.task("step of step").isOpen)
     }
 
     @Test
-    fun `undoing a repeating completion restores the day, the steps, the ticks and removes the round`() = runTest {
+    fun `undoing a repeating completion restores the day and the steps and removes the round`() = runTest {
         world.given("routine", due = MONDAY, repetition = Repetition.Daily(), carryCount = 2)
         world.given("step", parent = "routine", completedAt = 10)
-        world.givenChecklistItem("item", task = "routine", checked = true)
 
         val token = complete(TaskId("routine"), today = MONDAY)
         undo(token!!)
@@ -164,7 +162,6 @@ class TaskLifecycleTest {
         assertEquals(MONDAY, world.tasks.task("routine").dueDate)
         assertEquals(2, world.tasks.task("routine").carryCount)
         assertEquals(10L, world.tasks.task("step").completedAt)
-        assertTrue(world.checklists.all.single().checked)
         assertTrue(world.tasks.occurrences.isEmpty())
     }
 
@@ -200,10 +197,9 @@ class TaskLifecycleTest {
     }
 
     @Test
-    fun `a copy has its own sub-tasks and checklist and starts fresh`() = runTest {
+    fun `a copy has its own steps and starts fresh`() = runTest {
         world.given("parent", due = MONDAY, carryCount = 3, name = "Pack bag")
         world.given("child", parent = "parent", completedAt = 10, name = "Charger")
-        world.givenChecklistItem("item", task = "parent", checked = true)
 
         val copyId = duplicate(TaskId("parent")) { "$it (copy)" }
 
@@ -215,7 +211,6 @@ class TaskLifecycleTest {
         assertEquals(0, copy.carryCount)
         assertEquals("Charger", copiedChild.name)
         assertTrue(copiedChild.isOpen)
-        assertFalse(world.checklists.observeFor(copyId).first().single().checked)
         assertEquals(10L, world.tasks.task("child").completedAt)
     }
 

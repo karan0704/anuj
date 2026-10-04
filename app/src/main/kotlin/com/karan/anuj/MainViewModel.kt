@@ -2,12 +2,14 @@ package com.karan.anuj
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.karan.anuj.core.domain.history.HouseKeepingUseCase
 import com.karan.anuj.core.domain.settings.AppSettings
 import com.karan.anuj.core.domain.settings.ObserveSettingsUseCase
 import com.karan.anuj.core.domain.settings.UpdateSettingUseCase
 import com.karan.anuj.core.domain.task.RollOverTasksUseCase
 import com.karan.anuj.core.security.AppLockController
 import com.karan.anuj.core.security.LockState
+import com.karan.anuj.feature.place.platform.PlaceRunner
 import com.karan.anuj.feature.reminder.platform.ReminderRunner
 import com.karan.anuj.feature.voice.platform.VoiceRunner
 import com.karan.anuj.feature.task.common.DayClock
@@ -33,6 +35,8 @@ class MainViewModel @Inject constructor(
     private val rollOverTasks: RollOverTasksUseCase,
     private val reminders: ReminderRunner,
     private val voice: VoiceRunner,
+    private val houseKeeping: HouseKeepingUseCase,
+    private val places: PlaceRunner,
 ) : ViewModel() {
 
     /** Null until the saved settings have been read, so nothing is drawn with the wrong theme or before the lock is known. */
@@ -59,8 +63,6 @@ class MainViewModel @Inject constructor(
      * re-reading the day catches both. Reminders are checked too, in case an
      * alarm was held back by the phone while the app was closed.
      *
-     * Before phase 2 this was only `fun onForeground() = clock.refresh()`.
-     *
      * The phone only lets a microphone service start while the app is on
      * screen, so listening for the assistant's name is (re)started here too.
      */
@@ -68,6 +70,10 @@ class MainViewModel @Inject constructor(
         clock.refresh()
         reminders.syncNow()
         voice.onForeground()
+        /** Where the phone is now is read once each time the app is opened, when places are switched on. */
+        places.onForeground()
+        /** The clean-up the user has chosen in Settings; with the defaults it removes nothing. */
+        viewModelScope.launch { houseKeeping() }
     }
 
     fun onUnlocked() = appLock.unlock()

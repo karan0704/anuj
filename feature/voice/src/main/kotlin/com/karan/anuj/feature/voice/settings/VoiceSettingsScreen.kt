@@ -106,12 +106,6 @@ class VoiceSettingsViewModel @Inject constructor(
     }
 }
 
-/** The one row the main Settings screen shows for voice. Everything else is one tap in. */
-@Composable
-fun VoiceSettingsRows(onOpenVoice: () -> Unit) {
-    FieldRow(stringResource(R.string.voice_settings_title), stringResource(R.string.voice_settings_detail), onOpenVoice)
-}
-
 private enum class VoiceSheet { NONE, NAME, TEACH, LISTEN_WHEN, ITEMS, WAIT }
 
 @Composable

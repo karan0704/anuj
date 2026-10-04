@@ -111,7 +111,6 @@ data class TaskDetail(
     val parent: Task?,
     val children: List<Task>,
     val childProgress: Map<TaskId, ChildProgress>,
-    val checklist: List<ChecklistItem>,
     val notes: List<Note>,
     val attachments: List<Attachment>,
     val allTags: List<Tag>,
@@ -119,7 +118,6 @@ data class TaskDetail(
 
 class ObserveTaskDetailUseCase @Inject constructor(
     private val tasks: TaskRepository,
-    private val checklists: ChecklistRepository,
     private val notes: NoteRepository,
     private val attachments: AttachmentRepository,
     private val tags: TagRepository,
@@ -136,18 +134,16 @@ class ObserveTaskDetailUseCase @Inject constructor(
         }
         return combine(
             family,
-            checklists.observeFor(id),
             notes.observeFor(id),
             attachments.observeFor(id),
             tags.observeAll(),
-        ) { f, checklist, noteList, photos, allTags ->
+        ) { f, noteList, photos, allTags ->
             f.task?.let {
                 TaskDetail(
                     task = it,
                     parent = f.parent,
                     children = f.children,
                     childProgress = f.progress,
-                    checklist = checklist.sortedBy { item -> item.position },
                     notes = noteList.sortedByDescending { note -> note.stamps.createdAt },
                     attachments = photos.sortedBy { photo -> photo.stamps.createdAt },
                     allTags = allTags,

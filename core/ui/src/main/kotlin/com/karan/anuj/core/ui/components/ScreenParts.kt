@@ -80,6 +80,9 @@ fun SectionTitle(text: String, modifier: Modifier = Modifier) {
 /**
  * One tappable setting-style row: what it is on top, its current value
  * underneath. Tapping opens whatever changes the value, usually a sheet of chips.
+ *
+ * @param valueFirst draws the large line on top and the small one under it,
+ * for a row that names a place to go rather than a value to change
  */
 @Composable
 fun FieldRow(
@@ -87,6 +90,7 @@ fun FieldRow(
     value: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    valueFirst: Boolean = false,
 ) {
     Column(
         modifier = modifier
@@ -95,8 +99,9 @@ fun FieldRow(
             .clickable(onClick = onClick)
             .padding(horizontal = ScreenPadding, vertical = 8.dp),
     ) {
+        if (valueFirst) Text(value, style = MaterialTheme.typography.bodyLarge)
         Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(value, style = MaterialTheme.typography.bodyLarge)
+        if (!valueFirst) Text(value, style = MaterialTheme.typography.bodyLarge)
     }
 }
 

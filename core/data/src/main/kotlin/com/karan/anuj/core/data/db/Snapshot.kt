@@ -24,7 +24,6 @@ import kotlinx.serialization.json.encodeToStream
 data class DatabaseSnapshot(
     val schemaVersion: Int,
     val tasks: List<TaskEntity> = emptyList(),
-    val checklistItems: List<ChecklistItemEntity> = emptyList(),
     val notes: List<NoteEntity> = emptyList(),
     val tags: List<TagEntity> = emptyList(),
     val taskTags: List<TaskTagEntity> = emptyList(),
@@ -33,6 +32,9 @@ data class DatabaseSnapshot(
     val changeHistory: List<ChangeHistoryEntity> = emptyList(),
     val reminders: List<ReminderEntity> = emptyList(),
     val reminderEvents: List<ReminderEventEntity> = emptyList(),
+    val places: List<PlaceEntity> = emptyList(),
+    val placeVisits: List<PlaceVisitEntity> = emptyList(),
+    val taskPlaces: List<TaskPlaceEntity> = emptyList(),
 )
 
 /**
@@ -62,7 +64,6 @@ object SnapshotFormat {
 abstract class SnapshotDao {
 
     @Query("SELECT * FROM task") abstract suspend fun tasks(): List<TaskEntity>
-    @Query("SELECT * FROM checklist_item") abstract suspend fun checklistItems(): List<ChecklistItemEntity>
     @Query("SELECT * FROM note") abstract suspend fun notes(): List<NoteEntity>
     @Query("SELECT * FROM tag") abstract suspend fun tags(): List<TagEntity>
     @Query("SELECT * FROM task_tag") abstract suspend fun taskTags(): List<TaskTagEntity>
@@ -71,9 +72,11 @@ abstract class SnapshotDao {
     @Query("SELECT * FROM change_history") abstract suspend fun changeHistory(): List<ChangeHistoryEntity>
     @Query("SELECT * FROM reminder") abstract suspend fun reminders(): List<ReminderEntity>
     @Query("SELECT * FROM reminder_event") abstract suspend fun reminderEvents(): List<ReminderEventEntity>
+    @Query("SELECT * FROM place") abstract suspend fun places(): List<PlaceEntity>
+    @Query("SELECT * FROM place_visit") abstract suspend fun placeVisits(): List<PlaceVisitEntity>
+    @Query("SELECT * FROM task_place") abstract suspend fun taskPlaces(): List<TaskPlaceEntity>
 
     @Insert abstract suspend fun insertTasks(rows: List<TaskEntity>)
-    @Insert abstract suspend fun insertChecklistItems(rows: List<ChecklistItemEntity>)
     @Insert abstract suspend fun insertNotes(rows: List<NoteEntity>)
     @Insert abstract suspend fun insertTags(rows: List<TagEntity>)
     @Insert abstract suspend fun insertTaskTags(rows: List<TaskTagEntity>)
@@ -82,19 +85,22 @@ abstract class SnapshotDao {
     @Insert abstract suspend fun insertChangeHistory(rows: List<ChangeHistoryEntity>)
     @Insert abstract suspend fun insertReminders(rows: List<ReminderEntity>)
     @Insert abstract suspend fun insertReminderEvents(rows: List<ReminderEventEntity>)
+    @Insert abstract suspend fun insertPlaces(rows: List<PlaceEntity>)
+    @Insert abstract suspend fun insertPlaceVisits(rows: List<PlaceVisitEntity>)
+    @Insert abstract suspend fun insertTaskPlaces(rows: List<TaskPlaceEntity>)
 
     @Query("DELETE FROM task") abstract suspend fun clearTasks()
     @Query("DELETE FROM tag") abstract suspend fun clearTags()
     @Query("DELETE FROM change_history") abstract suspend fun clearChangeHistory()
     @Query("DELETE FROM reminder") abstract suspend fun clearReminders()
     @Query("DELETE FROM reminder_event") abstract suspend fun clearReminderEvents()
+    @Query("DELETE FROM place") abstract suspend fun clearPlaces()
 
     /** All tables are read inside one transaction so the copy is of a single moment. */
     @Transaction
     open suspend fun read(schemaVersion: Int): DatabaseSnapshot = DatabaseSnapshot(
         schemaVersion = schemaVersion,
         tasks = tasks(),
-        checklistItems = checklistItems(),
         notes = notes(),
         tags = tags(),
         taskTags = taskTags(),
@@ -103,16 +109,20 @@ abstract class SnapshotDao {
         changeHistory = changeHistory(),
         reminders = reminders(),
         reminderEvents = reminderEvents(),
+        places = places(),
+        placeVisits = placeVisits(),
+        taskPlaces = taskPlaces(),
     )
 
     /**
      * Empties the database and fills it from [snapshot] as one step: if any
      * row fails to insert, nothing is changed and the old data is still there.
      *
-     * Deleting tasks and tags removes everything hanging off them (checklist,
+     * Deleting tasks and tags removes everything hanging off them (steps,
      * notes, photos, rounds, tag links, a task's reminders) through the
      * foreign keys. Reminders that stand on their own and the reminder log
-     * hang off nothing, so they are cleared by name.
+     * hang off nothing, so they are cleared by name; so are places, which
+     * take their visits and their ties to tasks with them.
      */
     @Transaction
     open suspend fun replaceWith(snapshot: DatabaseSnapshot) {
@@ -121,10 +131,10 @@ abstract class SnapshotDao {
         clearChangeHistory()
         clearReminders()
         clearReminderEvents()
+        clearPlaces()
 
         insertTags(snapshot.tags)
         insertTasks(snapshot.tasks)
-        insertChecklistItems(snapshot.checklistItems)
         insertNotes(snapshot.notes)
         insertTaskTags(snapshot.taskTags)
         insertAttachments(snapshot.attachments)
@@ -132,5 +142,8 @@ abstract class SnapshotDao {
         insertChangeHistory(snapshot.changeHistory)
         insertReminders(snapshot.reminders)
         insertReminderEvents(snapshot.reminderEvents)
+        insertPlaces(snapshot.places)
+        insertPlaceVisits(snapshot.placeVisits)
+        insertTaskPlaces(snapshot.taskPlaces)
     }
 }

@@ -38,6 +38,12 @@ interface ReminderRepository {
     suspend fun eventsSince(fromMillis: Long): List<ReminderEvent>
 
     suspend fun lastEventAt(kind: ReminderEventKind): Long?
+
+    /** The latest log lines, newest first. */
+    fun observeRecentEvents(limit: Int): Flow<List<ReminderEvent>>
+
+    /** Forgets every log line from before [millis]. */
+    suspend fun deleteEventsBefore(millis: Long)
 }
 
 /** Asks the phone to wake the app at a moment, with the app closed. Only one moment is held at a time. */

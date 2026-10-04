@@ -66,6 +66,7 @@ fun ReminderCategory.labelRes(): Int = when (this) {
     ReminderCategory.HEADS_UP -> R.string.channel_heads_up
     ReminderCategory.HEALTH -> R.string.channel_health
     ReminderCategory.SUMMARY -> R.string.channel_summary
+    ReminderCategory.PLACE -> R.string.channel_place
 }
 
 fun DayOfWeek.shortLabel(): String = getDisplayName(TextStyle.SHORT, Locale.ENGLISH)

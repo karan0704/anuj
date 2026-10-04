@@ -2,10 +2,12 @@ package com.karan.anuj.feature.task.detail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.karan.anuj.core.domain.history.HistoryLine
+import com.karan.anuj.core.domain.history.HistoryText
+import com.karan.anuj.core.domain.history.ObserveHistoryUseCase
 import com.karan.anuj.core.domain.task.Attachment
 import com.karan.anuj.core.domain.task.AttachmentActions
-import com.karan.anuj.core.domain.task.ChecklistActions
-import com.karan.anuj.core.domain.task.ChecklistItem
+import com.karan.anuj.core.domain.task.CreateTaskUseCase
 import com.karan.anuj.core.domain.task.DuplicateTaskUseCase
 import com.karan.anuj.core.domain.task.Note
 import com.karan.anuj.core.domain.task.NoteActions
@@ -16,6 +18,7 @@ import com.karan.anuj.core.domain.task.TagActions
 import com.karan.anuj.core.domain.task.TagId
 import com.karan.anuj.core.domain.task.Task
 import com.karan.anuj.core.domain.task.TaskDetail
+import com.karan.anuj.core.domain.task.TaskDraft
 import com.karan.anuj.core.domain.task.TaskId
 import com.karan.anuj.core.domain.task.TaskPreferences
 import com.karan.anuj.core.domain.task.TaskPreferencesUseCase
@@ -26,6 +29,7 @@ import com.karan.anuj.feature.task.common.TaskActions
 import com.karan.anuj.feature.task.common.TaskActionsViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.DayOfWeek
+import java.time.ZoneId
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -49,7 +53,7 @@ sealed interface TaskDetailUiState {
     ) : TaskDetailUiState
 }
 
-/** A checklist line, note or photo just removed from the task, and how to bring it back. */
+/** A note or photo just removed from the task, and how to bring it back. */
 class RemovedPart(val label: String, val restore: suspend () -> Unit)
 
 @HiltViewModel
@@ -57,13 +61,14 @@ class TaskDetailViewModel @Inject constructor(
     private val savedState: SavedStateHandle,
     observeDetail: ObserveTaskDetailUseCase,
     private val updateTask: UpdateTaskUseCase,
-    private val checklist: ChecklistActions,
+    private val createTask: CreateTaskUseCase,
     private val notes: NoteActions,
     private val tags: TagActions,
     private val photos: AttachmentActions,
     private val duplicateTask: DuplicateTaskUseCase,
     private val actions: TaskActions,
     preferences: TaskPreferencesUseCase,
+    observeHistory: ObserveHistoryUseCase,
 ) : TaskActionsViewModel(actions) {
 
     private val taskId = TaskId(checkNotNull(savedState.get<String>(TASK_ID_ARG)) { "Task screen opened without a task id" })
@@ -74,6 +79,13 @@ class TaskDetailViewModel @Inject constructor(
             if (detail == null || detail.task.stamps.isDeleted) TaskDetailUiState.Gone
             else TaskDetailUiState.Loaded(detail, day, prefs)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TaskDetailUiState.Loading)
+
+    /** Every recorded edit of this task, newest first. Only read while its sheet is open. */
+    val history: StateFlow<List<HistoryLine>> =
+        observeHistory.ofTask(taskId, ZoneId.systemDefault())
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    fun historyMoment(line: HistoryLine): String = HistoryText.moment(line.at, ZoneId.systemDefault())
 
     private val removedChannel = Channel<RemovedPart>(Channel.BUFFERED)
     val removedParts: Flow<RemovedPart> = removedChannel.receiveAsFlow()
@@ -108,19 +120,9 @@ class TaskDetailViewModel @Inject constructor(
         actions.writes.launch { tags.remove(tag) }
     }
 
-    fun addChecklistLine(text: String) {
-        actions.writes.launch { checklist.add(taskId, text) }
-    }
-
-    fun setChecked(item: ChecklistItem, checked: Boolean) {
-        actions.writes.launch { checklist.setChecked(item, checked) }
-    }
-
-    fun removeChecklistLine(item: ChecklistItem) {
-        actions.writes.launch {
-            checklist.remove(item)
-            removedChannel.send(RemovedPart(item.text) { checklist.restore(item) })
-        }
+    /** A step is a task of its own under this one; a blank name adds nothing. */
+    fun addStep(name: String) {
+        actions.writes.launch { createTask(TaskDraft(name = name, parentId = taskId), today = clock.day.value.date) }
     }
 
     fun addNote(text: String) {

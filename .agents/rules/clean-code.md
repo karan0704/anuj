@@ -51,6 +51,6 @@ Code is clean when anyone on the team can read it and change it, not only the pe
 Rigidity (one change forces many), fragility (one change breaks distant code), immobility (nothing can be reused), needless complexity, needless repetition, opacity.
 
 ## Where This Project Differs, And Which Rule Wins
-* **"Don't comment out code, just remove it."** This project does the opposite on purpose: `code-integrity.md` (Zero Code Deletion) keeps the old implementation in a labelled comment beside the new code. **`code-integrity.md` wins until the developer says otherwise.** (Open question raised with the developer on 2026-10-04.)
-* **"Don't be redundant in comments."** `code-integrity.md` requires an explanatory comment on every change. Both hold: the comment must say *why*, never repeat *what*.
+* **"Don't comment out code, just remove it."** Followed as written since 2026-10-04: old code is deleted and git history keeps it.
+* **"Don't be redundant in comments."** `code-integrity.md` asks for a comment where a change is not obvious. Both hold: the comment must say *why*, never repeat *what*.
 * **"One assert per test."** Read here as one behaviour per test.
