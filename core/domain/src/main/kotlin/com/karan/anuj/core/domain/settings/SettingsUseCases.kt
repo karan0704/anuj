@@ -28,6 +28,8 @@ class UpdateSettingUseCase @Inject constructor(
 ) {
     suspend fun themeMode(mode: ThemeMode) = tracked { repository.setThemeMode(mode) }
 
+    suspend fun colourStyle(style: ColourStyle) = tracked { repository.setColourStyle(style) }
+
     suspend fun textScale(scale: TextScale) = tracked { repository.setTextScale(scale) }
 
     suspend fun appLock(enabled: Boolean) = tracked { repository.setAppLockEnabled(enabled) }
@@ -52,6 +54,7 @@ class UpdateSettingUseCase @Inject constructor(
 
     private fun AppSettings.asFields(): Map<String, String?> = mapOf(
         "themeMode" to themeMode.name,
+        "colourStyle" to colourStyle.name,
         "textScale" to textScale.name,
         "appLockEnabled" to appLockEnabled.toString(),
         "onboardingDone" to onboardingDone.toString(),

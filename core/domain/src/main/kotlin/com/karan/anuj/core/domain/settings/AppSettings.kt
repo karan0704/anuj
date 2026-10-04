@@ -3,6 +3,12 @@ package com.karan.anuj.core.domain.settings
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
 /**
+ * The set of colours the app is drawn in. Each has a light and a dark form,
+ * so this choice and [ThemeMode] are independent.
+ */
+enum class ColourStyle { TEAL, IVORY }
+
+/**
  * How much larger or smaller than the phone's own setting the app's text is.
  * A fixed set of steps, so it is picked with a tap rather than typed.
  */
@@ -15,6 +21,7 @@ enum class TextScale(val factor: Float) {
 
 data class AppSettings(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val colourStyle: ColourStyle = ColourStyle.TEAL,
     val textScale: TextScale = TextScale.NORMAL,
     val appLockEnabled: Boolean = false,
     val onboardingDone: Boolean = false,

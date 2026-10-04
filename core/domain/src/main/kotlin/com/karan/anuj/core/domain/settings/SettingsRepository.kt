@@ -6,6 +6,7 @@ interface SettingsRepository {
     val settings: Flow<AppSettings>
 
     suspend fun setThemeMode(mode: ThemeMode)
+    suspend fun setColourStyle(style: ColourStyle)
     suspend fun setTextScale(scale: TextScale)
     suspend fun setAppLockEnabled(enabled: Boolean)
     suspend fun setOnboardingDone(done: Boolean)

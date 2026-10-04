@@ -27,6 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.karan.anuj.R
 import com.karan.anuj.core.domain.settings.AppSettings
+import com.karan.anuj.core.domain.settings.ColourStyle
 import com.karan.anuj.core.domain.settings.TextScale
 import com.karan.anuj.core.domain.settings.ThemeMode
 import com.karan.anuj.core.ui.components.AnujBottomSheet
@@ -45,6 +46,12 @@ private fun ThemeMode.labelRes(): Int = when (this) {
 }
 
 @StringRes
+private fun ColourStyle.labelRes(): Int = when (this) {
+    ColourStyle.TEAL -> R.string.colours_teal
+    ColourStyle.IVORY -> R.string.colours_ivory
+}
+
+@StringRes
 private fun TextScale.labelRes(): Int = when (this) {
     TextScale.SMALL -> R.string.text_small
     TextScale.NORMAL -> R.string.text_normal
@@ -53,7 +60,7 @@ private fun TextScale.labelRes(): Int = when (this) {
 }
 
 /** Which choice sheet is open. Saved across rotation so the sheet does not vanish mid-choice. */
-private enum class OpenSheet { NONE, THEME, TEXT_SIZE, LOCK_AFTER }
+private enum class OpenSheet { NONE, THEME, COLOURS, TEXT_SIZE, LOCK_AFTER }
 
 /** "Straight away", "30 seconds", "5 minutes": a delay in the words a person would use. */
 @Composable
@@ -106,6 +113,14 @@ fun SettingsScreen(
             modifier = Modifier
                 .heightIn(min = MinTouchTarget)
                 .clickable { openSheet = OpenSheet.THEME },
+        )
+        HorizontalDivider()
+        ListItem(
+            headlineContent = { Text(stringResource(R.string.settings_colours)) },
+            supportingContent = { Text(stringResource(settings.colourStyle.labelRes())) },
+            modifier = Modifier
+                .heightIn(min = MinTouchTarget)
+                .clickable { openSheet = OpenSheet.COLOURS },
         )
         HorizontalDivider()
         ListItem(
@@ -187,6 +202,25 @@ fun SettingsScreen(
                 selected = settings.themeMode,
                 label = { stringResource(it.labelRes()) },
                 onSelect = viewModel::setThemeMode,
+            )
+        }
+
+        OpenSheet.COLOURS -> AnujBottomSheet(
+            onDismiss = { openSheet = OpenSheet.NONE },
+            title = stringResource(R.string.settings_colours),
+        ) {
+            /** The sheet is drawn in the app's theme, so a tapped chip shows its colours at once. */
+            ChoiceChips(
+                options = ColourStyle.entries,
+                selected = settings.colourStyle,
+                label = { stringResource(it.labelRes()) },
+                onSelect = viewModel::setColourStyle,
+            )
+            Spacer(Modifier.height(16.dp))
+            Text(
+                stringResource(R.string.settings_colours_note),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
 

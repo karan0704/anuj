@@ -39,6 +39,8 @@
     <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_theme">Theme</string>
+    <string name="settings_colours">Colours</string>
+    <string name="settings_colours_note">Each set of colours has a light and a dark form. Theme chooses which one is used.</string>
     <string name="settings_text_size">Text size</string>
     <string name="settings_app_lock">App lock</string>
     <string name="settings_app_lock_on">Asks for your fingerprint when you come back</string>
@@ -99,6 +101,9 @@
     <string name="theme_system">Same as phone</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+
+    <string name="colours_teal">Teal</string>
+    <string name="colours_ivory">Ivory</string>
 
     <string name="text_small">Small</string>
     <string name="text_normal">Normal</string>

@@ -3,6 +3,7 @@ package com.karan.anuj.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.karan.anuj.core.domain.settings.AppSettings
+import com.karan.anuj.core.domain.settings.ColourStyle
 import com.karan.anuj.core.domain.settings.ObserveSettingsUseCase
 import com.karan.anuj.core.domain.settings.TextScale
 import com.karan.anuj.core.domain.settings.ThemeMode
@@ -25,6 +26,10 @@ class SettingsViewModel @Inject constructor(
 
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch { updateSetting.themeMode(mode) }
+    }
+
+    fun setColourStyle(style: ColourStyle) {
+        viewModelScope.launch { updateSetting.colourStyle(style) }
     }
 
     fun setTextScale(scale: TextScale) {

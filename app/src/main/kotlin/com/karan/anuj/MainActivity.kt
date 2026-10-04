@@ -21,6 +21,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.karan.anuj.core.domain.settings.ThemeMode
 import com.karan.anuj.core.security.BiometricAuthenticator
 import com.karan.anuj.core.security.LockState
+import com.karan.anuj.core.ui.theme.AnujPalette
 import com.karan.anuj.core.ui.theme.AnujTheme
 import com.karan.anuj.feature.reminder.platform.ReminderLinks
 import com.karan.anuj.navigation.AnujApp
@@ -74,6 +75,7 @@ class MainActivity : FragmentActivity() {
 
             AnujTheme(
                 darkTheme = dark,
+                palette = AnujPalette.named(root?.settings?.colourStyle?.name),
                 textScaleFactor = root?.settings?.textScale?.factor ?: 1f,
             ) {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {

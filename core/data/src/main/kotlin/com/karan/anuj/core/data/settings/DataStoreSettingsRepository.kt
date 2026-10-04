@@ -9,6 +9,7 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.karan.anuj.core.domain.settings.AppSettings
+import com.karan.anuj.core.domain.settings.ColourStyle
 import com.karan.anuj.core.domain.settings.SettingsRepository
 import com.karan.anuj.core.domain.settings.TextScale
 import com.karan.anuj.core.domain.settings.ThemeMode
@@ -35,6 +36,7 @@ class DataStoreSettingsRepository @Inject constructor(
         .map { prefs ->
             AppSettings(
                 themeMode = enumOr(prefs[THEME_MODE], ThemeMode.SYSTEM),
+                colourStyle = enumOr(prefs[COLOUR_STYLE], ColourStyle.TEAL),
                 textScale = enumOr(prefs[TEXT_SCALE], TextScale.NORMAL),
                 appLockEnabled = prefs[APP_LOCK] ?: false,
                 onboardingDone = prefs[ONBOARDING_DONE] ?: false,
@@ -45,6 +47,10 @@ class DataStoreSettingsRepository @Inject constructor(
 
     override suspend fun setThemeMode(mode: ThemeMode) {
         context.settingsStore.edit { it[THEME_MODE] = mode.name }
+    }
+
+    override suspend fun setColourStyle(style: ColourStyle) {
+        context.settingsStore.edit { it[COLOUR_STYLE] = style.name }
     }
 
     override suspend fun setTextScale(scale: TextScale) {
@@ -69,6 +75,7 @@ class DataStoreSettingsRepository @Inject constructor(
 
     private companion object {
         val THEME_MODE = stringPreferencesKey("theme_mode")
+        val COLOUR_STYLE = stringPreferencesKey("colour_style")
         val TEXT_SCALE = stringPreferencesKey("text_scale")
         val APP_LOCK = booleanPreferencesKey("app_lock_enabled")
         val ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
