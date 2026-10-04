@@ -1,0 +1,61 @@
+# Added on top of detekt's defaults. Only what differs is listed here.
+
+naming:
+  FunctionNaming:
+    # A Compose screen is a function named like a thing, not like an action.
+    ignoreAnnotated: ['Composable']
+  TopLevelPropertyNaming:
+    # Compose sizes and shared values are written like constants: ScreenPadding, ChipSpacing.
+    constantPattern: '[A-Z][A-Za-z0-9_]*'
+
+complexity:
+  LongParameterList:
+    # A screen takes its callbacks as parameters; that is how Compose passes events up.
+    ignoreAnnotated: ['Composable']
+    ignoreDefaultParameters: true
+  LongMethod:
+    ignoreAnnotated: ['Composable']
+  CyclomaticComplexMethod:
+    ignoreAnnotated: ['Composable']
+    ignoreSimpleWhenEntries: true
+  TooManyFunctions:
+    # A screen file is made of many small private pieces; those are not counted.
+    ignorePrivate: true
+    thresholdInFiles: 20
+    thresholdInClasses: 20
+    thresholdInInterfaces: 15
+
+style:
+  MagicNumber:
+    # A value given a name, or passed to a named argument, is not a magic number.
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreNamedArgument: true
+    ignoreAnnotated: ['Composable']
+  UnusedPrivateMember:
+    ignoreAnnotated: ['Preview']
+  MaxLineLength:
+    maxLineLength: 140
+  ReturnCount:
+    max: 4
+  WildcardImport:
+    active: true
+
+formatting:
+  # ktlint, run through detekt. It reports; it does not rewrite files.
+  autoCorrect: false
+  MaximumLineLength:
+    maxLineLength: 140
+  Filename:
+    # A file is named after the screen or the subject, and may hold several small types.
+    active: false
+  FunctionNaming:
+    active: false
+  NoWildcardImports:
+    active: true
+  ArgumentListWrapping:
+    # The code keeps short argument lists on one line inside a multi-line call; this rule wants one per line.
+    active: false
+  ImportOrdering:
+    # Imports are in plain alphabetical order, with no groups.
+    layout: '*'

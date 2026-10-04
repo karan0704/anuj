@@ -118,6 +118,17 @@ The number after each feature is the phase it is built in.
 | Leaving-home checklist (keys, door, lights, tap) | 5 |
 | Photo proof for checklist items | 5 |
 | "Where did I put it" log | 5 |
+| Places the phone notices by itself: a spot stayed at for about an hour, or returned to often, is offered for saving with a name or a tag | 5 |
+| A task tied to a saved place (the weekly water can at the shop) | 5 |
+
+**A noticed spot is the user's call, three ways** (2026-10-04): when the phone notices a spot, it asks once and offers (1) save it as a place, named now or edited later, (2) keep it only as "visited", which is a record of having been there and never triggers a task or a reminder, or (3) ignore it. A saved place can be renamed, re-tagged or turned back into "visited" afterwards. The question is a notification of the Place kind, so quiet hours, the daily limit and calm mode apply to it.
+
+**Place must work offline, and with Wi-Fi and Bluetooth switched off** (developer's requirement, 2026-10-04): no feature of area E may need the internet, and none may need Wi-Fi or Bluetooth to be on, because the developer keeps both off by habit. Location is the one signal that must always be enough on its own: Google's location service first, the phone's own GPS as the fallback when Google gives nothing. Wi-Fi and Bluetooth are optional extras that make a place quicker to recognise when they happen to be on. This rules out anything that looks a place up online (maps, addresses, travel time from a server).
+
+- Indoors, with no radio to help, a GPS fix can be missing for a long time. "Still at home" is therefore held from the last good position plus the phone's movement sensor (no radio needed): the app does not decide the user has left until a position outside the circle is actually seen.
+- Before: this paragraph said "Place must work offline, from GPS alone ... Wi-Fi and Bluetooth are extra signals, never the only one."
+
+**Leaving-list ticks survive passing by** (2026-10-04): the list unticks only when the phone is sure the user is inside — the home Wi-Fi connected, or a set time spent at home — never on merely coming near.
 
 ### F. Scan (Offline OCR)
 | Feature | Phase |

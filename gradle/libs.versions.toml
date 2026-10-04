@@ -33,6 +33,13 @@ coil = "2.7.0"
 zip4j = "2.11.5"
 robolectric = "4.14.1"
 androidxTestCore = "1.6.1"
+# Code checks (run with ./gradlew qualityCheck)
+detekt = "1.23.8"
+kover = "0.9.11"
+dependencyAnalysis = "3.19.2"
+cpd = "3.5"
+pmd = "7.28.0"
+konsist = "0.17.3"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
@@ -73,6 +80,8 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 androidx-test-core-ktx = { module = "androidx.test:core-ktx", version.ref = "androidxTestCore" }
 androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hilt" }
+detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
+konsist = { module = "com.lemonappdev:konsist", version.ref = "konsist" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -84,3 +93,7 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 room = { id = "androidx.room", version.ref = "room" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+dependency-analysis = { id = "com.autonomousapps.dependency-analysis", version.ref = "dependencyAnalysis" }
+cpd = { id = "de.aaschmid.cpd", version.ref = "cpd" }

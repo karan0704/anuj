@@ -23,6 +23,25 @@ Phases 0 and 1 have been run on a device by the developer. Phase 2 has only been
 
 Needs JDK 17 and the Android SDK (platform 36).
 
+## Checking the code
+
+```
+./gradlew qualityCheck
+```
+
+Runs six checks and writes a report for each. The first five only report; the architecture tests fail the run.
+
+| Check | What it looks for | Report |
+|---|---|---|
+| Detekt, with ktlint | Tangled or over-long code, magic numbers, swallowed errors, formatting | `<module>/build/reports/detekt/detekt.html` |
+| Android Lint | Unused resources, accessibility, wrong API use | `app/build/reports/lint-results-debug.html` |
+| CPD | Copy-pasted code (`-PcpdTokens=60` finds shorter repeats) | `build/reports/cpd/cpdCheck.text` |
+| Konsist | The architecture rules: no Android in `core:domain`, features independent of each other and of storage, view models given use cases only | `quality/build/reports/tests/test/index.html` |
+| Dependency analysis | Libraries declared but unused, or declared in the wrong place | `build/reports/dependency-analysis/build-health-report.txt` |
+| Kover | Which lines the tests never run | `build/reports/kover/htmlAnuj/index.html` |
+
+The settings are in `config/detekt/detekt.yml` and `config/lint/lint.xml`. A new architecture rule is a new test in `quality/src/test`.
+
 ## Stack
 
 Kotlin, Jetpack Compose, Room, Hilt, AlarmManager and WorkManager, Vosk for offline speech, ML Kit for offline text scanning.
