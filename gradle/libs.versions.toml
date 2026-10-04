@@ -40,6 +40,9 @@ dependencyAnalysis = "3.19.2"
 cpd = "3.5"
 pmd = "7.28.0"
 konsist = "0.17.3"
+# Offline speech. The model is fetched at build time by feature/voice.
+vosk = "0.3.75"
+voskModel = "0.15"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
@@ -82,6 +85,7 @@ androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4
 hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hilt" }
 detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
 konsist = { module = "com.lemonappdev:konsist", version.ref = "konsist" }
+vosk-android = { module = "com.alphacephei:vosk-android", version.ref = "vosk" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

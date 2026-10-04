@@ -35,6 +35,7 @@ import com.karan.anuj.core.domain.task.SuggestTaskNamesUseCase
 import com.karan.anuj.core.domain.task.TaskDraft
 import com.karan.anuj.core.domain.task.TaskId
 import com.karan.anuj.core.ui.components.AnujBottomSheet
+import com.karan.anuj.core.ui.components.LocalVoiceInput
 import com.karan.anuj.core.ui.components.PrimaryButton
 import com.karan.anuj.feature.task.R
 import com.karan.anuj.feature.task.common.DateChips
@@ -113,6 +114,8 @@ fun QuickAddSheet(
             value = name,
             onValueChange = { name = it },
             placeholder = { Text(stringResource(R.string.quick_add_name)) },
+            /** Say the name instead of typing it. */
+            trailingIcon = { LocalVoiceInput.current { spoken -> name = spoken } },
             singleLine = true,
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { add(name) }),

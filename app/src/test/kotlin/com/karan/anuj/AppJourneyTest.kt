@@ -120,6 +120,13 @@ class AppJourneyTest {
         app.onAllNodes(tappable).onFirst().performSemanticsAction(SemanticsActions.OnClick)
     }
 
+    /** For a word that is also part of other labels: "Ask" is inside "Ask what to do after". */
+    private fun tapExactText(text: String) {
+        val tappable = hasText(text, substring = false) and hasClickAction()
+        waitOrExplain("something tappable saying exactly \"$text\"") { app.onAllNodes(tappable).fetchSemanticsNodes().isNotEmpty() }
+        app.onAllNodes(tappable).onFirst().performSemanticsAction(SemanticsActions.OnClick)
+    }
+
     private fun tapLabel(label: String) {
         waitOrExplain("the control labelled \"$label\"") { labelShown(label) }
         app.onAllNodesWithContentDescription(label).onFirst().performSemanticsAction(SemanticsActions.OnClick)
@@ -275,10 +282,26 @@ class AppJourneyTest {
         waitForText("Send a test reminder")
         tapLabel("Back")
 
+        // Voice settings: the name, when it listens, and how many tasks it reads.
+        tapText("The assistant's name")
+        waitForText("Teach it its name")
+        waitForText("Things you can say")
+        tapText("Tasks read out before")
+        tapText("8")
+        tapText("OK")
+        waitForNoText("OK")
+        tapLabel("Back")
+
         waitForText("Backups kept")
         tapText("Lock again after")
         tapText("5 min away")
         waitForText("Straight away")
+
+        // The assistant by tap: a shortcut asks the same question a voice would.
+        tapExactText("Ask")
+        waitForText("Tap to talk")
+        tapText("Tell me the list of tasks")
+        waitForText("You said: Tell me the list of tasks")
     }
 
     private companion object {

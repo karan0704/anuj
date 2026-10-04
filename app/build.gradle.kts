@@ -57,6 +57,7 @@ dependencies {
     implementation(project(":core:backup"))
     implementation(project(":feature:task"))
     implementation(project(":feature:reminder"))
+    implementation(project(":feature:voice"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

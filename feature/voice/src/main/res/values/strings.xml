@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared -->
+    <string name="voice_back">Back</string>
+    <string name="voice_ok">OK</string>
+    <string name="voice_cancel">Cancel</string>
+    <string name="voice_undo">Undo</string>
+
+    <!-- The notice shown while the phone listens for the name -->
+    <string name="voice_channel">Assistant is listening</string>
+    <string name="voice_channel_detail">Shown while the phone waits to hear the assistant\'s name</string>
+    <string name="voice_listening_title">Listening for my name</string>
+    <string name="voice_listening_text">Say my name, then what you need. Change this in Settings, Voice.</string>
+
+    <!-- The assistant sheet -->
+    <string name="assistant_open">Ask</string>
+    <string name="assistant_title">Ask %1$s</string>
+    <string name="assistant_tap_to_talk">Tap to talk</string>
+    <string name="assistant_stop">Stop listening</string>
+    <string name="assistant_listening">Listening…</string>
+    <string name="assistant_thinking">One moment…</string>
+    <string name="assistant_heard">You said: %1$s</string>
+    <string name="assistant_try">Or tap one</string>
+    <string name="assistant_ask_now">What should I do now</string>
+    <string name="assistant_ask_list">Tell me the list of tasks</string>
+    <string name="assistant_ask_priority">Tell me the high priority tasks</string>
+    <string name="assistant_open_task">Open this task</string>
+    <string name="assistant_no_permission">The microphone is not allowed yet.</string>
+    <string name="assistant_allow">Allow the microphone</string>
+    <string name="assistant_no_model">The speech files could not be read. Reinstalling the app puts them back.</string>
+    <string name="assistant_mic_busy">Another app is using the microphone. Close it and try again.</string>
+    <string name="assistant_nothing_heard">I did not hear anything.</string>
+
+    <!-- The microphone on a text field -->
+    <string name="dictate_start">Speak instead of typing</string>
+    <string name="dictate_stop">Stop listening</string>
+
+    <!-- Settings -->
+    <string name="voice_settings_title">Voice</string>
+    <string name="voice_settings_detail">The assistant\'s name, when it listens, how it answers</string>
+    <string name="voice_name">Its name</string>
+    <string name="voice_name_hint">A name that is easy to say</string>
+    <string name="voice_teach">Teach it its name</string>
+    <string name="voice_teach_none">Not taught yet</string>
+    <plurals name="voice_teach_count">
+        <item quantity="one">Heard %1$d way</item>
+        <item quantity="other">Heard %1$d ways</item>
+    </plurals>
+    <string name="voice_teach_body">Say “%1$s” a few times, the way you normally would. The phone writes down what it hears and will answer to any of them.</string>
+    <string name="voice_teach_say">Say the name</string>
+    <string name="voice_teach_heard">It heard</string>
+    <string name="voice_teach_forget">Forget all of these</string>
+    <string name="voice_teach_done">Done</string>
+    <string name="voice_listen_when">Listen for its name</string>
+    <string name="voice_listen_never">Never</string>
+    <string name="voice_listen_charging">While charging</string>
+    <string name="voice_listen_screen_on">While the screen is on</string>
+    <string name="voice_listen_always">Always</string>
+    <string name="voice_listen_hint">Listening uses the battery and shows a notice the whole time. Open the app once after the phone restarts.</string>
+    <string name="voice_speak">Read answers aloud</string>
+    <string name="voice_items">Tasks read out before \"and more\"</string>
+    <string name="voice_items_value">%1$d</string>
+    <string name="voice_wait">How long it waits for you</string>
+    <string name="voice_wait_value">%1$d seconds</string>
+    <string name="voice_examples_title">Things you can say</string>
+    <string-array name="voice_examples">
+        <item>What should I do now</item>
+        <item>Tell me the list of tasks</item>
+        <item>Tell me the high priority tasks</item>
+        <item>Office tasks</item>
+        <item>Tasks related to money</item>
+        <item>Read the checklist of leaving home</item>
+        <item>Add call mum tomorrow at six pm</item>
+        <item>Mark call the bank as done</item>
+        <item>Search for passport</item>
+        <item>Set a timer for ten minutes</item>
+        <item>Flashlight on</item>
+        <item>Undo</item>
+    </string-array>
+</resources>
