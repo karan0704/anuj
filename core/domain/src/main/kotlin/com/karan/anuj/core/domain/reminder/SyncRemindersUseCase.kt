@@ -1,11 +1,11 @@
 package com.karan.anuj.core.domain.reminder
 
 import com.karan.anuj.core.domain.record.RecordStamps
-import com.karan.anuj.core.domain.task.ChecklistRepository
 import com.karan.anuj.core.domain.task.IdGenerator
 import com.karan.anuj.core.domain.task.Task
 import com.karan.anuj.core.domain.task.TaskId
 import com.karan.anuj.core.domain.task.TaskRepository
+import com.karan.anuj.core.domain.task.TaskTree
 import com.karan.anuj.core.domain.time.TimeSource
 import java.time.Instant
 import java.time.ZoneId
@@ -27,7 +27,6 @@ import kotlinx.coroutines.sync.withLock
 class SyncRemindersUseCase @Inject constructor(
     private val reminders: ReminderRepository,
     private val tasks: TaskRepository,
-    private val checklists: ChecklistRepository,
     private val settingsRepository: ReminderSettingsRepository,
     private val notifier: ReminderNotifier,
     private val alarms: AlarmGateway,
@@ -139,10 +138,10 @@ class SyncRemindersUseCase @Inject constructor(
             toneUri = reminder.toneUri,
             leadMinutes = (reminder.schedule as? ReminderSchedule.BeforeTask)?.leadMinutes ?: 0,
             isRepeat = isRepeat,
-            bring = task?.let { checklists.getFor(listOf(it.id)) }.orEmpty()
-                .filter { !it.checked && !it.stamps.isDeleted }
-                .sortedBy { it.position }
-                .map { it.text },
+            bring = task?.let { tasks.getSubtree(it.id) }.orEmpty()
+                .filter { it.parentId == task?.id && it.isOpen && !it.stamps.isDeleted }
+                .sortedWith(TaskTree.treeOrder)
+                .map { it.name },
             snoozeMinutes = settings.defaultSnoozeMinutes,
         )
     }

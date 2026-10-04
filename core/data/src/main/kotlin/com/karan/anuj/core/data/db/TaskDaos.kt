@@ -61,17 +61,15 @@ abstract class TaskDao {
     abstract suspend fun getSubtree(id: String): List<TaskEntity>
 
     /**
-     * Tasks matching a full-text query in their own text, a note or a
-     * checklist line. Open tasks come first, then the most recently changed.
+     * Tasks matching a full-text query in their own text or a note. A step
+     * is a task, so it is found by its own name. Open tasks come first, then
+     * the most recently changed.
      */
     @Query(
         "SELECT * FROM task WHERE deletedAt IS NULL AND id IN (" +
             "SELECT task.id FROM task JOIN task_fts ON task.rowid = task_fts.rowid WHERE task_fts MATCH :match " +
             "UNION SELECT note.taskId FROM note JOIN note_fts ON note.rowid = note_fts.rowid " +
-            "WHERE note_fts MATCH :match AND note.deletedAt IS NULL " +
-            "UNION SELECT checklist_item.taskId FROM checklist_item " +
-            "JOIN checklist_item_fts ON checklist_item.rowid = checklist_item_fts.rowid " +
-            "WHERE checklist_item_fts MATCH :match AND checklist_item.deletedAt IS NULL" +
+            "WHERE note_fts MATCH :match AND note.deletedAt IS NULL" +
             ") ORDER BY (completedAt IS NOT NULL OR missedAt IS NOT NULL), updatedAt DESC LIMIT :limit",
     )
     abstract suspend fun search(match: String, limit: Int): List<TaskEntity>
@@ -114,19 +112,6 @@ abstract class TaskDao {
 
     @Query("DELETE FROM task_occurrence WHERE id = :id")
     abstract suspend fun deleteOccurrence(id: String)
-}
-
-@Dao
-interface ChecklistDao {
-    @Query("SELECT * FROM checklist_item WHERE taskId = :taskId AND deletedAt IS NULL ORDER BY position")
-    fun observeFor(taskId: String): Flow<List<ChecklistItemEntity>>
-
-    /** Includes removed lines; callers that only want live ones filter them out. */
-    @Query("SELECT * FROM checklist_item WHERE taskId IN (:taskIds)")
-    suspend fun getFor(taskIds: List<String>): List<ChecklistItemEntity>
-
-    @Upsert
-    suspend fun upsert(items: List<ChecklistItemEntity>)
 }
 
 @Dao

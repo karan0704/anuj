@@ -239,11 +239,11 @@ class ReminderSyncTest {
     }
 
     @Test
-    fun `unticked checklist lines are listed as things to have ready`() = runTest {
+    fun `steps not ticked yet are listed as things to have ready`() = runTest {
         val w = world()
         w.givenTask("Doctor", MONDAY, sixPm)
-        w.world.givenChecklistItem("Reports", task = "Doctor", checked = false)
-        w.world.givenChecklistItem("Wallet", task = "Doctor", checked = true)
+        w.world.given("Reports", parent = "Doctor")
+        w.world.given("Wallet", parent = "Doctor", completedAt = 10)
         w.givenReminder("r", task = "Doctor")
 
         w.syncAt(moment(MONDAY, 18))

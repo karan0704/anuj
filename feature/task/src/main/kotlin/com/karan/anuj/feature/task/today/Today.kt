@@ -1,20 +1,16 @@
 package com.karan.anuj.feature.task.today
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -49,7 +45,9 @@ import com.karan.anuj.core.domain.task.TaskId
 import com.karan.anuj.core.domain.task.TodayItem
 import com.karan.anuj.core.domain.task.TodayTasks
 import com.karan.anuj.core.ui.components.AnujBottomSheet
+import com.karan.anuj.core.ui.components.LocalOneHand
 import com.karan.anuj.core.ui.components.MinTouchTarget
+import com.karan.anuj.core.ui.components.OneHandList
 import com.karan.anuj.core.ui.components.PrimaryButton
 import com.karan.anuj.core.ui.components.ScreenPadding
 import com.karan.anuj.core.ui.components.SecondaryButton
@@ -63,6 +61,7 @@ import com.karan.anuj.feature.task.common.TaskActions
 import com.karan.anuj.feature.task.common.TaskActionsViewModel
 import com.karan.anuj.feature.task.common.TaskRow
 import com.karan.anuj.feature.task.common.UndoSnackbars
+import com.karan.anuj.feature.task.quickadd.AddSheet
 import com.karan.anuj.feature.task.quickadd.QuickAddSheet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.LocalDate
@@ -99,13 +98,15 @@ class TodayViewModel @Inject constructor(
 }
 
 /** Which sheet or dialog is open over the list. Task ids are kept as text so the choice survives rotation. */
-private enum class TodayOverlay { NONE, QUICK_ADD, STUCK, ADD_STEP, RESCHEDULE }
+private enum class TodayOverlay { NONE, ADD, DECIDE, STUCK, ADD_STEP, RESCHEDULE }
 
 /**
  * The list under the clock on the home screen: what was left undone, what is
  * due today, and what has been finished today.
  *
- * @param header drawn as the first item, so it scrolls away with the list
+ * @param header read-only, drawn above the list and never moved by it
+ * @param actions the buttons that ride at the head of the list, beside the thumb
+ * @param onAddReminder opens the screen where a reminder is made, for the add button's "Reminder" choice
  */
 @Composable
 fun TodayTaskList(
@@ -113,6 +114,8 @@ fun TodayTaskList(
     onOpenTask: (TaskId) -> Unit,
     modifier: Modifier = Modifier,
     header: @Composable () -> Unit = {},
+    actions: (@Composable RowScope.() -> Unit)? = null,
+    onAddReminder: (() -> Unit)? = null,
     viewModel: TodayViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -137,13 +140,7 @@ fun TodayTaskList(
     }
 
     Box(modifier = modifier.fillMaxSize()) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            /** Room at the bottom so the last row can scroll clear of the add button. */
-            contentPadding = PaddingValues(bottom = 96.dp),
-        ) {
-            item(key = "header") { header() }
-
+        OneHandList(top = header, actions = actions) {
             if (tasks != null && tasks.needsDecision.isEmpty() && tasks.due.isEmpty() && tasks.done.isEmpty()) {
                 item(key = "empty") { EmptyToday() }
             }
@@ -159,11 +156,14 @@ fun TodayTaskList(
                             onToggleDone = { viewModel.complete(item.task) },
                             onClick = { onOpenTask(item.task.id) },
                         )
-                        DecisionChips(
-                            onToday = { viewModel.moveTo(item.task, today, countsAsCarry = true) },
-                            onTomorrow = { viewModel.moveTo(item.task, today.plusDays(1), countsAsCarry = true) },
-                            onNextWeek = { viewModel.moveTo(item.task, today.plusWeeks(1), countsAsCarry = true) },
-                            onDrop = { viewModel.delete(item.task) },
+                        /** One quiet prompt per row; the answers are in the sheet it opens. */
+                        AssistChip(
+                            onClick = {
+                                overlayTaskId = item.task.id.value
+                                overlay = TodayOverlay.DECIDE
+                            },
+                            label = { Text(stringResource(R.string.today_decide_ask)) },
+                            modifier = Modifier.padding(start = ScreenPadding + 36.dp, bottom = 4.dp),
                         )
                     }
                 }
@@ -199,9 +199,9 @@ fun TodayTaskList(
         }
 
         FloatingActionButton(
-            onClick = { overlay = TodayOverlay.QUICK_ADD },
+            onClick = { overlay = TodayOverlay.ADD },
             modifier = Modifier
-                .align(Alignment.BottomEnd)
+                .align(LocalOneHand.current.hand.corner)
                 .padding(ScreenPadding),
         ) {
             Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.quick_add_open))
@@ -210,7 +210,24 @@ fun TodayTaskList(
 
     when (overlay) {
         TodayOverlay.NONE -> Unit
-        TodayOverlay.QUICK_ADD -> QuickAddSheet(parentId = null, defaultDate = today, onDismiss = closeOverlay)
+        TodayOverlay.ADD -> AddSheet(defaultDate = today, onDismiss = closeOverlay, onAddReminder = onAddReminder)
+        TodayOverlay.DECIDE -> if (overlayTask != null) {
+            val move = { date: LocalDate ->
+                viewModel.moveTo(overlayTask, date, countsAsCarry = true)
+                closeOverlay()
+            }
+            DecideSheet(
+                task = overlayTask,
+                onToday = { move(today) },
+                onTomorrow = { move(today.plusDays(1)) },
+                onNextWeek = { move(today.plusWeeks(1)) },
+                onDrop = {
+                    viewModel.delete(overlayTask)
+                    closeOverlay()
+                },
+                onDismiss = closeOverlay,
+            )
+        }
         TodayOverlay.ADD_STEP -> QuickAddSheet(
             parentId = overlayTaskId?.let(::TaskId),
             defaultDate = null,
@@ -239,7 +256,7 @@ fun TodayTaskList(
     }
 
     /** If the task a sheet was opened for has left today's list (done elsewhere, moved), the sheet has nothing to act on. */
-    val needsTask = overlay == TodayOverlay.STUCK || overlay == TodayOverlay.RESCHEDULE
+    val needsTask = overlay == TodayOverlay.STUCK || overlay == TodayOverlay.RESCHEDULE || overlay == TodayOverlay.DECIDE
     LaunchedEffect(needsTask, overlayTask == null, tasks == null) {
         if (needsTask && overlayTask == null && tasks != null) closeOverlay()
     }
@@ -292,18 +309,30 @@ private fun DueRow(
     }
 }
 
-/** One-tap answers for a task whose day has passed, in place of a dialog. */
-@OptIn(ExperimentalLayoutApi::class)
+/** The answers for a task whose day has passed. They are kept off the list, where four chips a row were too much to look at. */
 @Composable
-private fun DecisionChips(onToday: () -> Unit, onTomorrow: () -> Unit, onNextWeek: () -> Unit, onDrop: () -> Unit) {
-    FlowRow(
-        modifier = Modifier.padding(start = ScreenPadding + 36.dp, end = ScreenPadding, bottom = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        AssistChip(onClick = onToday, label = { Text(stringResource(R.string.task_today)) })
-        AssistChip(onClick = onTomorrow, label = { Text(stringResource(R.string.task_tomorrow)) })
-        AssistChip(onClick = onNextWeek, label = { Text(stringResource(R.string.task_next_week)) })
-        AssistChip(onClick = onDrop, label = { Text(stringResource(R.string.today_decide_drop)) })
+private fun DecideSheet(
+    task: Task,
+    onToday: () -> Unit,
+    onTomorrow: () -> Unit,
+    onNextWeek: () -> Unit,
+    onDrop: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AnujBottomSheet(onDismiss = onDismiss, title = task.name) {
+        Text(
+            stringResource(R.string.today_decide_body),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(16.dp))
+        PrimaryButton(text = stringResource(R.string.task_today), onClick = onToday)
+        Spacer(Modifier.height(8.dp))
+        SecondaryButton(text = stringResource(R.string.task_tomorrow), onClick = onTomorrow)
+        Spacer(Modifier.height(8.dp))
+        SecondaryButton(text = stringResource(R.string.task_next_week), onClick = onNextWeek)
+        Spacer(Modifier.height(8.dp))
+        SecondaryButton(text = stringResource(R.string.today_decide_drop), onClick = onDrop)
     }
 }
 

@@ -1,12 +1,12 @@
 package com.karan.anuj.feature.voice.di
 
 import com.karan.anuj.core.domain.voice.AddTaskCommand
-import com.karan.anuj.core.domain.voice.ChecklistCommand
 import com.karan.anuj.core.domain.voice.ListTasksCommand
 import com.karan.anuj.core.domain.voice.NameListener
 import com.karan.anuj.core.domain.voice.MarkDoneCommand
 import com.karan.anuj.core.domain.voice.PriorityTasksCommand
 import com.karan.anuj.core.domain.voice.SearchCommand
+import com.karan.anuj.core.domain.voice.StepsCommand
 import com.karan.anuj.core.domain.voice.Speaker
 import com.karan.anuj.core.domain.voice.SpeechEngine
 import com.karan.anuj.core.domain.voice.TimerCommand
@@ -68,7 +68,7 @@ abstract class VoiceModule {
     abstract fun markDone(command: MarkDoneCommand): VoiceCommand
 
     @Binds @IntoSet
-    abstract fun checklist(command: ChecklistCommand): VoiceCommand
+    abstract fun steps(command: StepsCommand): VoiceCommand
 
     @Binds @IntoSet
     abstract fun whatNow(command: WhatNowCommand): VoiceCommand

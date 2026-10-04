@@ -13,8 +13,11 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
@@ -50,6 +53,9 @@ import java.time.LocalDate
 /** How far each level of the tree is pushed in. */
 private val IndentStep: Dp = 20.dp
 
+/** The repeat mark in front of a routine's details, sized to sit in a line of small text. */
+private val KindMarkSize: Dp = 14.dp
+
 /** A checkbox has 12dp of its own space around the box, so rows start that much left of the screen padding. */
 private val CheckboxInset: Dp = 12.dp
 
@@ -58,7 +64,9 @@ private val CheckboxInset: Dp = 12.dp
  *
  * The tick box completes the task; tapping anywhere else opens it. Under the
  * name is one quiet line of whatever is set: when it is due, how it repeats,
- * step progress, priority, how often it has been carried.
+ * step progress, priority, how often it has been carried. A routine says so
+ * at the start of that line, with the repeat mark, so it is never mistaken
+ * for a task that is done once.
  *
  * @param tags all tags by id, for drawing this task's coloured dots; null hides them
  * @param depth 0 for a top-level task; pushes the row in for the tree
@@ -107,13 +115,26 @@ fun TaskRow(
             )
             val details = taskDetailsLine(task, today, progress)
             if (details.isNotEmpty()) {
-                Text(
-                    text = details,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (overdue) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                val detailColor = if (overdue) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (task.repetition != null) {
+                        Icon(
+                            Icons.Filled.Refresh,
+                            contentDescription = null,
+                            tint = detailColor,
+                            modifier = Modifier
+                                .padding(end = 4.dp)
+                                .size(KindMarkSize),
+                        )
+                    }
+                    Text(
+                        text = details,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = detailColor,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
             val taskTags = tags?.let { all -> task.tagIds.mapNotNull(all::get) }.orEmpty()
             if (taskTags.isNotEmpty()) TagDots(taskTags)
@@ -125,6 +146,7 @@ fun TaskRow(
 @Composable
 private fun taskDetailsLine(task: Task, today: LocalDate, progress: ChildProgress?): String {
     val parts = buildList {
+        if (task.repetition != null) add(stringResource(R.string.kind_routine))
         if (task.isMissed) add(stringResource(R.string.task_missed))
         dueLabel(task.dueDate, task.dueTime, today)?.let(::add)
         if (task.repetition != null) add(repetitionLabel(task.repetition, task.daysOff))

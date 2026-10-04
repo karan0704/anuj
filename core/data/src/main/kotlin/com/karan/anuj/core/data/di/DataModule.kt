@@ -3,7 +3,6 @@ package com.karan.anuj.core.data.di
 import com.karan.anuj.core.data.db.AnujDatabase
 import com.karan.anuj.core.data.db.AttachmentDao
 import com.karan.anuj.core.data.db.ChangeHistoryDao
-import com.karan.anuj.core.data.db.ChecklistDao
 import com.karan.anuj.core.data.db.NoteDao
 import com.karan.anuj.core.data.db.ReminderDao
 import com.karan.anuj.core.data.db.SnapshotDao
@@ -17,7 +16,6 @@ import com.karan.anuj.core.data.settings.DataStoreSettingsRepository
 import com.karan.anuj.core.data.task.DataStoreTaskPreferencesRepository
 import com.karan.anuj.core.data.task.FileAttachmentStore
 import com.karan.anuj.core.data.task.RoomAttachmentRepository
-import com.karan.anuj.core.data.task.RoomChecklistRepository
 import com.karan.anuj.core.data.task.RoomNoteRepository
 import com.karan.anuj.core.data.task.RoomTagRepository
 import com.karan.anuj.core.data.task.RoomTaskRepository
@@ -28,7 +26,6 @@ import com.karan.anuj.core.domain.reminder.ZoneSource
 import com.karan.anuj.core.domain.settings.SettingsRepository
 import com.karan.anuj.core.domain.task.AttachmentFileStore
 import com.karan.anuj.core.domain.task.AttachmentRepository
-import com.karan.anuj.core.domain.task.ChecklistRepository
 import com.karan.anuj.core.domain.task.IdGenerator
 import com.karan.anuj.core.domain.task.NoteRepository
 import com.karan.anuj.core.domain.task.TagRepository
@@ -65,9 +62,6 @@ abstract class DataModule {
 
     @Binds
     abstract fun bindTaskRepository(impl: RoomTaskRepository): TaskRepository
-
-    @Binds
-    abstract fun bindChecklistRepository(impl: RoomChecklistRepository): ChecklistRepository
 
     @Binds
     abstract fun bindNoteRepository(impl: RoomNoteRepository): NoteRepository
@@ -119,9 +113,6 @@ abstract class DataModule {
 
         @Provides
         fun provideTaskDao(database: AnujDatabase): TaskDao = database.taskDao()
-
-        @Provides
-        fun provideChecklistDao(database: AnujDatabase): ChecklistDao = database.checklistDao()
 
         @Provides
         fun provideNoteDao(database: AnujDatabase): NoteDao = database.noteDao()

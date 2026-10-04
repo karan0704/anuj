@@ -5,7 +5,6 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.karan.anuj.core.data.db.AnujDatabase
 import com.karan.anuj.core.data.db.AttachmentEntity
-import com.karan.anuj.core.data.db.ChecklistItemEntity
 import com.karan.anuj.core.data.db.DatabaseSnapshot
 import com.karan.anuj.core.data.db.StampColumns
 import com.karan.anuj.core.data.db.TaskEntity
@@ -63,11 +62,10 @@ class BackupEngineTest {
         db.taskDao().save(
             listOf(
                 TaskEntity(id = "trip", name = "Trip to Pune", stamps = stamps),
-                TaskEntity(id = "pack", parentId = "trip", name = "Pack bag", stamps = stamps),
+                TaskEntity(id = "pack", parentId = "trip", name = "Pack bag", description = "passport", stamps = stamps),
             ),
             emptyList(),
         )
-        db.checklistDao().upsert(listOf(ChecklistItemEntity("c", "pack", "passport", stamps = stamps)))
         db.attachmentDao().upsert(AttachmentEntity("a", "trip", "ticket.jpg", stamps))
         File(photos, "ticket.jpg").writeBytes(photoBytes)
         /** A file the database does not know about, which a backup should leave behind. */

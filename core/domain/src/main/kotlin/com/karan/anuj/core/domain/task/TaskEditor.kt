@@ -6,12 +6,6 @@ import com.karan.anuj.core.domain.time.TimeSource
 import java.time.LocalDate
 import javax.inject.Inject
 
-/** What a new round overwrote, kept so the step can be undone. */
-data class RoundSnapshot(
-    val tasks: List<Task>,
-    val checklist: List<ChecklistItem>,
-)
-
 /**
  * The one place tasks are written from. Every use case that changes a task
  * goes through here, so the updated time and the change history are never
@@ -19,7 +13,6 @@ data class RoundSnapshot(
  */
 class TaskEditor @Inject constructor(
     private val tasks: TaskRepository,
-    private val checklists: ChecklistRepository,
     private val history: ChangeHistoryRepository,
     private val time: TimeSource,
 ) {
@@ -44,23 +37,20 @@ class TaskEditor @Inject constructor(
 
     /**
      * Moves a repeating task on to [nextDue] and clears the progress of the
-     * round just ended: sub-tasks are reopened and every checklist beneath
-     * it is unticked, so the routine starts fresh.
+     * round just ended: every step beneath it is reopened, so the routine
+     * starts fresh.
      *
      * @param subtree the task and everything beneath it that is not in the trash
+     * @return the tasks as they were before, so the round can be undone
      */
-    suspend fun startNewRound(task: Task, subtree: List<Task>, nextDue: LocalDate, now: Long): RoundSnapshot {
+    suspend fun startNewRound(task: Task, subtree: List<Task>, nextDue: LocalDate, now: Long): List<Task> {
         val closedSteps = subtree.filter { it.id != task.id && (it.isDone || it.isMissed) }
-        val ticked = checklists.getFor(subtree.map { it.id }).filter { it.checked && !it.stamps.isDeleted }
 
         apply(
             changes = listOf(task to task.copy(dueDate = nextDue, carryCount = 0)) +
                 closedSteps.map { it to it.copy(completedAt = null, missedAt = null) },
             now = now,
         )
-        if (ticked.isNotEmpty()) {
-            checklists.save(ticked.map { it.copy(checked = false, stamps = it.stamps.touched(now)) })
-        }
-        return RoundSnapshot(tasks = listOf(task) + closedSteps, checklist = ticked)
+        return listOf(task) + closedSteps
     }
 }

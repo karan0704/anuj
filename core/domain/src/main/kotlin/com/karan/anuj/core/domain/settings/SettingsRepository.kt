@@ -8,6 +8,8 @@ interface SettingsRepository {
     suspend fun setThemeMode(mode: ThemeMode)
     suspend fun setColourStyle(style: ColourStyle)
     suspend fun setTextScale(scale: TextScale)
+    suspend fun setHandSide(side: HandSide)
+    suspend fun setLowerLists(lower: Boolean)
     suspend fun setAppLockEnabled(enabled: Boolean)
     suspend fun setOnboardingDone(done: Boolean)
     suspend fun setLockAfterSeconds(seconds: Int)

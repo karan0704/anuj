@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -44,6 +43,7 @@ import com.karan.anuj.core.domain.task.Task
 import com.karan.anuj.core.domain.task.TaskDraft
 import com.karan.anuj.core.domain.task.TaskId
 import com.karan.anuj.core.ui.components.MinTouchTarget
+import com.karan.anuj.core.ui.components.OneHandList
 import com.karan.anuj.core.ui.components.ScreenHeader
 import com.karan.anuj.core.ui.components.ScreenPadding
 import com.karan.anuj.feature.task.R
@@ -92,13 +92,17 @@ fun InboxScreen(
     UndoSnackbars(viewModel.undoable, snackbar, viewModel::undo)
 
     Column(modifier = Modifier.fillMaxSize()) {
-        ScreenHeader(title = stringResource(R.string.inbox_title))
-
         val list = thoughts
         if (list != null && list.isEmpty()) {
+            ScreenHeader(title = stringResource(R.string.inbox_title))
             EmptyInbox(Modifier.weight(1f))
         } else {
-            LazyColumn(modifier = Modifier.weight(1f)) {
+            OneHandList(
+                top = { ScreenHeader(title = stringResource(R.string.inbox_title)) },
+                modifier = Modifier.weight(1f),
+                /** The thought box is under the list, not over it, so no room has to be left for it. */
+                bottomSpace = 0.dp,
+            ) {
                 items(list.orEmpty(), key = { it.id.value }) { task ->
                     SwipeActions(
                         rightLabel = stringResource(R.string.task_swipe_done),

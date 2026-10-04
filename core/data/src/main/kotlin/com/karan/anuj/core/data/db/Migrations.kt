@@ -26,8 +26,35 @@ object Migrations {
         }
     }
 
-    /** Until version 3 this was `arrayOf(FROM_1_TO_2)`. */
-    val ALL: Array<Migration> = arrayOf(FROM_1_TO_2, FROM_2_TO_3)
+    /**
+     * Version 4 has one kind of step. A checklist line was a second, lighter
+     * kind kept in its own table; each line becomes a sub-task of the task
+     * it was on (ticked lines arrive done, removed lines arrive in the
+     * trash), and the two checklist tables are dropped.
+     *
+     * Room removes the search tables' sync triggers before a migration runs,
+     * so the rows added here are not indexed as they go in; the task index is
+     * rebuilt at the end to make the new steps searchable.
+     */
+    val FROM_3_TO_4 = object : Migration(3, 4) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            VERSION_4_STATEMENTS.forEach(db::execSQL)
+        }
+    }
+
+    val ALL: Array<Migration> = arrayOf(FROM_1_TO_2, FROM_2_TO_3, FROM_3_TO_4)
+
+    /** A line keeps its place among its neighbours by being created that many milliseconds after them. */
+    private val VERSION_4_STATEMENTS = listOf(
+        "INSERT INTO `task` (`id`, `parentId`, `name`, `description`, `daysOff`, `priority`, `carryCount`, " +
+            "`completedAt`, `createdAt`, `updatedAt`, `deletedAt`) " +
+            "SELECT `id`, `taskId`, `text`, '', 0, 'NONE', 0, " +
+            "CASE WHEN `checked` THEN `updatedAt` END, `createdAt` + `position`, `updatedAt`, `deletedAt` " +
+            "FROM `checklist_item`",
+        "DROP TABLE IF EXISTS `checklist_item_fts`",
+        "DROP TABLE IF EXISTS `checklist_item`",
+        "INSERT INTO `task_fts`(`task_fts`) VALUES('rebuild')",
+    )
 
     /** Copied from the exported schema `3.json`. */
     private val VERSION_3_STATEMENTS = listOf(
@@ -48,7 +75,8 @@ object Migrations {
 
     /**
      * Copied from the exported schema `2.json`. The search tables' sync triggers are
-     * not listed: Room creates those itself after every migration.
+     * not listed: Room creates those itself after every migration. The checklist
+     * tables made here are removed again by version 4.
      */
     private val VERSION_2_STATEMENTS = listOf(
         "CREATE TABLE IF NOT EXISTS `task` (`id` TEXT NOT NULL, `parentId` TEXT, " +

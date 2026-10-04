@@ -12,7 +12,6 @@ import androidx.room.RoomDatabase
     entities = [
         ChangeHistoryEntity::class,
         TaskEntity::class,
-        ChecklistItemEntity::class,
         NoteEntity::class,
         TagEntity::class,
         TaskTagEntity::class,
@@ -20,7 +19,6 @@ import androidx.room.RoomDatabase
         TaskOccurrenceEntity::class,
         TaskFtsEntity::class,
         NoteFtsEntity::class,
-        ChecklistItemFtsEntity::class,
         ReminderEntity::class,
         ReminderEventEntity::class,
     ],
@@ -30,7 +28,6 @@ import androidx.room.RoomDatabase
 abstract class AnujDatabase : RoomDatabase() {
     abstract fun changeHistoryDao(): ChangeHistoryDao
     abstract fun taskDao(): TaskDao
-    abstract fun checklistDao(): ChecklistDao
     abstract fun noteDao(): NoteDao
     abstract fun tagDao(): TagDao
     abstract fun attachmentDao(): AttachmentDao
@@ -39,6 +36,6 @@ abstract class AnujDatabase : RoomDatabase() {
 
     companion object {
         const val FILE_NAME = "anuj.db"
-        const val VERSION = 3
+        const val VERSION = 4
     }
 }

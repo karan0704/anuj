@@ -3,15 +3,16 @@
     <string name="app_name">Anuj</string>
 
     <!-- Bottom bar -->
-    <string name="nav_home">Home</string>
+    <string name="nav_home">Today</string>
     <string name="nav_tasks">Tasks</string>
     <string name="nav_inbox">Inbox</string>
-    <string name="nav_settings">Settings</string>
     <string name="nav_ask">Ask</string>
 
     <!-- Home -->
-    <string name="home_empty_title">Nothing here yet</string>
-    <string name="home_empty_body">Your tasks for today will show up here.</string>
+    <string name="home_search">Search</string>
+    <string name="home_menu">Menu</string>
+    <string name="home_menu_reminders">Reminders</string>
+    <string name="home_menu_trash">Trash</string>
 
     <!-- Lock -->
     <string name="lock_title">Anuj is locked</string>
@@ -42,6 +43,13 @@
     <string name="settings_colours">Colours</string>
     <string name="settings_colours_note">Each set of colours has a light and a dark form. Theme chooses which one is used.</string>
     <string name="settings_text_size">Text size</string>
+    <string name="settings_back">Back</string>
+    <string name="settings_hand">Hand</string>
+    <string name="settings_hand_note">The add button and the buttons at the head of a list sit on this side.</string>
+    <string name="hand_right">Right hand</string>
+    <string name="hand_left">Left hand</string>
+    <string name="settings_lower_lists">Start lists lower</string>
+    <string name="settings_lower_lists_detail">A list begins where your thumb is and rises as you scroll. The clock and titles stay at the top.</string>
     <string name="settings_app_lock">App lock</string>
     <string name="settings_app_lock_on">Asks for your fingerprint when you come back</string>
     <string name="settings_lock_after">Lock again after</string>
@@ -52,11 +60,18 @@
     <string name="settings_app_lock_unavailable">Set a screen lock on this phone first</string>
     <string name="settings_text_size_preview">This is how text will look.</string>
 
-    <string name="settings_section_display">Display and privacy</string>
+    <string name="settings_section_display">Display</string>
     <string name="settings_section_tasks">Tasks</string>
     <string name="settings_section_reminders">Reminders</string>
-    <string name="settings_section_backup">Backup</string>
     <string name="settings_section_voice">Voice</string>
+    <string name="settings_section_lock">App lock</string>
+    <string name="settings_section_backup">Backup</string>
+    <string name="settings_summary_display">Theme, colours, text size, which hand</string>
+    <string name="settings_summary_tasks">Unfinished tasks, times of day, lengths</string>
+    <string name="settings_summary_reminders">Calm mode, notifications, regular reminders, a check</string>
+    <string name="settings_summary_voice">The assistant\'s name, when it listens, how it answers</string>
+    <string name="settings_summary_lock">Fingerprint or screen lock, and when it locks again</string>
+    <string name="settings_summary_backup">Folder, schedule, password, restore</string>
 
     <!-- Backup -->
     <string name="backup_folder">Backup folder</string>

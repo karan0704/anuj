@@ -59,29 +59,6 @@ data class TaskEntity(
 
 @Serializable
 @Entity(
-    tableName = "checklist_item",
-    foreignKeys = [
-        ForeignKey(
-            entity = TaskEntity::class,
-            parentColumns = ["id"],
-            childColumns = ["taskId"],
-            onDelete = ForeignKey.CASCADE,
-            deferred = true,
-        ),
-    ],
-    indices = [Index("taskId")],
-)
-data class ChecklistItemEntity(
-    @PrimaryKey val id: String,
-    val taskId: String,
-    val text: String,
-    val checked: Boolean = false,
-    val position: Int = 0,
-    @Embedded val stamps: StampColumns,
-)
-
-@Serializable
-@Entity(
     tableName = "note",
     foreignKeys = [
         ForeignKey(
@@ -205,12 +182,6 @@ data class TaskFtsEntity(
 @Fts4(contentEntity = NoteEntity::class)
 @Entity(tableName = "note_fts")
 data class NoteFtsEntity(
-    val text: String,
-)
-
-@Fts4(contentEntity = ChecklistItemEntity::class)
-@Entity(tableName = "checklist_item_fts")
-data class ChecklistItemFtsEntity(
     val text: String,
 )
 

@@ -16,9 +16,8 @@ class TaskQueriesTest {
     private val observeToday = ObserveTodayUseCase(world.tasks, world.preferences)
     private val observeInbox = ObserveInboxUseCase(world.tasks)
     private val observeTree = ObserveTaskTreeUseCase(world.tasks)
-    private val applyTemplates = ApplyTemplatesUseCase(world.tasks, world.checklists, world.ids, world.clock)
+    private val applyTemplates = ApplyTemplatesUseCase(world.tasks, world.ids, world.clock)
     private val complete = CompleteTaskUseCase(world.tasks, world.editor, world.ids)
-    private val checklist = ChecklistActions(world.checklists, world.ids, world.clock)
     private val tags = TagActions(FakeTagRepository(), world.ids, world.clock)
 
     /** The test day runs from 0 to 100,000 on the fake clock. */
@@ -111,7 +110,7 @@ class TaskQueriesTest {
     }
 
     @Test
-    fun `templates become repeating tasks with their steps and checklist in order`() = runTest {
+    fun `templates become repeating tasks with their steps in order`() = runTest {
         applyTemplates(BuiltInTemplates.all, today = MONDAY)
 
         val morning = world.tasks.all.single { it.name == "Morning routine" }
@@ -125,34 +124,9 @@ class TaskQueriesTest {
         assertEquals("Eat breakfast", steps.last().name)
         assertEquals(
             listOf("Keys in pocket", "Phone and wallet", "Lights and fans off", "Taps closed", "Door locked"),
-            world.checklists.observeFor(leaving.id).first().sortedBy { it.position }.map { it.text },
+            world.tasks.all.filter { it.parentId == leaving.id }.sortedWith(TaskTree.treeOrder).map { it.name },
         )
         assertEquals(BuiltInTemplates.all.size, world.tasks.all.count { it.parentId == null })
-    }
-
-    @Test
-    fun `checklist lines are added at the end and blank ones ignored`() = runTest {
-        world.given("t")
-
-        checklist.add(TaskId("t"), "first")
-        checklist.add(TaskId("t"), "   ")
-        checklist.add(TaskId("t"), " second ")
-
-        val items = world.checklists.observeFor(TaskId("t")).first().sortedBy { it.position }
-        assertEquals(listOf("first" to 0, "second" to 1), items.map { it.text to it.position })
-    }
-
-    @Test
-    fun `a removed checklist line disappears and can be brought back`() = runTest {
-        world.given("t")
-        checklist.add(TaskId("t"), "line")
-        val item = world.checklists.all.single()
-
-        checklist.remove(item)
-        assertTrue(world.checklists.observeFor(TaskId("t")).first().isEmpty())
-
-        checklist.restore(world.checklists.all.single())
-        assertFalse(world.checklists.observeFor(TaskId("t")).first().isEmpty())
     }
 
     @Test

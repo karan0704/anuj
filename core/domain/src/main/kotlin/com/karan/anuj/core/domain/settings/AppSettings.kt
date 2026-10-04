@@ -8,6 +8,9 @@ enum class ThemeMode { SYSTEM, LIGHT, DARK }
  */
 enum class ColourStyle { TEAL, IVORY }
 
+/** Which thumb the screens are laid out for: it decides the side the add button and a list's actions sit on. */
+enum class HandSide { RIGHT, LEFT }
+
 /**
  * How much larger or smaller than the phone's own setting the app's text is.
  * A fixed set of steps, so it is picked with a tap rather than typed.
@@ -23,6 +26,9 @@ data class AppSettings(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val colourStyle: ColourStyle = ColourStyle.TEAL,
     val textScale: TextScale = TextScale.NORMAL,
+    val handSide: HandSide = HandSide.RIGHT,
+    /** A list starts part of the way down the screen, within the thumb's reach, and rises as it is scrolled. */
+    val lowerLists: Boolean = true,
     val appLockEnabled: Boolean = false,
     val onboardingDone: Boolean = false,
     /** How long the app may be out of view before it asks to be unlocked again, in seconds. */

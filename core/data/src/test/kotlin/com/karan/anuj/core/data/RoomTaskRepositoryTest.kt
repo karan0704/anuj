@@ -4,14 +4,12 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.karan.anuj.core.data.db.AnujDatabase
 import com.karan.anuj.core.data.task.RoomAttachmentRepository
-import com.karan.anuj.core.data.task.RoomChecklistRepository
 import com.karan.anuj.core.data.task.RoomNoteRepository
 import com.karan.anuj.core.data.task.RoomTagRepository
 import com.karan.anuj.core.data.task.RoomTaskRepository
 import com.karan.anuj.core.domain.record.RecordStamps
 import com.karan.anuj.core.domain.task.Attachment
 import com.karan.anuj.core.domain.task.CarryOverRule
-import com.karan.anuj.core.domain.task.ChecklistItem
 import com.karan.anuj.core.domain.task.ChildProgress
 import com.karan.anuj.core.domain.task.Energy
 import com.karan.anuj.core.domain.task.Note
@@ -51,7 +49,6 @@ class RoomTaskRepositoryTest {
 
     private lateinit var db: AnujDatabase
     private lateinit var tasks: RoomTaskRepository
-    private lateinit var checklists: RoomChecklistRepository
     private lateinit var notes: RoomNoteRepository
     private lateinit var tags: RoomTagRepository
     private lateinit var attachments: RoomAttachmentRepository
@@ -65,7 +62,6 @@ class RoomTaskRepositoryTest {
             .build()
         val io = Dispatchers.Unconfined
         tasks = RoomTaskRepository({ db.taskDao() }, io)
-        checklists = RoomChecklistRepository({ db.checklistDao() }, io)
         notes = RoomNoteRepository({ db.noteDao() }, io)
         tags = RoomTagRepository({ db.tagDao() }, io)
         attachments = RoomAttachmentRepository({ db.attachmentDao() }, io)
@@ -224,20 +220,19 @@ class RoomTaskRepositoryTest {
     }
 
     @Test
-    fun `search finds a task through its notes and checklist lines`() = runTest {
-        save(task("with note", name = "Doctor"), task("with list", name = "Trip"), task("neither", name = "Other"))
+    fun `search finds a task through its notes, and a step by its own name`() = runTest {
+        save(task("with note", name = "Doctor"), task("trip", name = "Trip"), task("neither", name = "Other"))
+        save(task("step", parent = "trip", name = "Pack passport"))
         notes.save(Note("n", TaskId("with note"), "bring the prescription", RecordStamps.created(1)))
-        checklists.save(listOf(ChecklistItem("c", TaskId("with list"), "passport", false, 0, RecordStamps.created(1))))
 
         assertEquals(listOf("Doctor"), search("prescription"))
-        assertEquals(listOf("Trip"), search("passport"))
+        assertEquals(listOf("Pack passport"), search("passport"))
     }
 
     @Test
-    fun `search leaves out trashed tasks and removed notes and checklist lines`() = runTest {
+    fun `search leaves out trashed tasks and removed notes`() = runTest {
         save(task("trashed", name = "Milk run", deletedAt = 5), task("live", name = "Errands"))
         notes.save(Note("n", TaskId("live"), "milk", RecordStamps(1, 1, deletedAt = 5)))
-        checklists.save(listOf(ChecklistItem("c", TaskId("live"), "milk", false, 0, RecordStamps(1, 1, deletedAt = 5))))
 
         assertTrue(search("milk").isEmpty())
     }
@@ -275,7 +270,6 @@ class RoomTaskRepositoryTest {
     fun `purging a task removes everything beneath and attached to it and nothing else`() = runTest {
         givenTags("home")
         save(task("root", tags = setOf("home")), task("child", parent = "root"), task("keep", tags = setOf("home")))
-        checklists.save(listOf(ChecklistItem("c", TaskId("child"), "line", false, 0, RecordStamps.created(1))))
         notes.save(Note("n", TaskId("root"), "note", RecordStamps.created(1)))
         attachments.save(Attachment("a", TaskId("root"), "photo.jpg", RecordStamps.created(1)))
         tasks.addOccurrence(TaskOccurrence("o", TaskId("root"), day, OccurrenceOutcome.DONE, 50))
@@ -284,7 +278,6 @@ class RoomTaskRepositoryTest {
 
         assertEquals(listOf("keep"), tasks.observeAll().first().map { it.name })
         assertNull("the sub-task goes with its parent", tasks.get(TaskId("child")))
-        assertTrue(checklists.getFor(listOf(TaskId("child"))).isEmpty())
         assertTrue(notes.observeFor(TaskId("root")).first().isEmpty())
         assertTrue(attachments.getFor(listOf(TaskId("root"))).isEmpty())
         assertTrue(tasks.observeOccurrencesBetween(0, 100).first().isEmpty())
@@ -339,21 +332,6 @@ class RoomTaskRepositoryTest {
 
         tasks.removeOccurrence("inside")
         assertTrue(tasks.observeOccurrencesBetween(100, 200).first().isEmpty())
-    }
-
-    @Test
-    fun `checklist lines come back in position order without removed ones`() = runTest {
-        save(task("t"))
-        checklists.save(
-            listOf(
-                ChecklistItem("b", TaskId("t"), "second", true, 1, RecordStamps.created(1)),
-                ChecklistItem("a", TaskId("t"), "first", false, 0, RecordStamps.created(1)),
-                ChecklistItem("x", TaskId("t"), "removed", false, 2, RecordStamps(1, 1, deletedAt = 2)),
-            ),
-        )
-
-        assertEquals(listOf("first", "second"), checklists.observeFor(TaskId("t")).first().map { it.text })
-        assertEquals(3, checklists.getFor(listOf(TaskId("t"))).size)
     }
 
     @Test

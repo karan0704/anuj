@@ -38,6 +38,7 @@ import com.karan.anuj.core.ui.components.FieldRow
 import com.karan.anuj.core.ui.components.PrimaryButton
 import com.karan.anuj.core.ui.components.SecondaryButton
 import com.karan.anuj.core.ui.components.Stepper
+import com.karan.anuj.feature.task.common.WriteScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Instant
 import java.time.ZoneId
@@ -50,7 +51,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 /** What to tell the user after a backup or restore, as a string resource so the wording lives with the other labels. */
 enum class BackupMessage(@StringRes val text: Int) {
@@ -79,6 +79,8 @@ data class BackupUiState(
 @HiltViewModel
 class BackupViewModel @Inject constructor(
     private val backup: BackupUseCase,
+    /** A backup, a restore or a changed setting must finish even if the screen is left while it runs. */
+    private val writes: WriteScope,
 ) : ViewModel() {
 
     private data class Progress(
@@ -95,19 +97,19 @@ class BackupViewModel @Inject constructor(
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), BackupUiState())
 
     fun setFolder(folderUri: String) {
-        viewModelScope.launch { backup.setFolder(folderUri) }
+        writes.launch { backup.setFolder(folderUri) }
     }
 
     fun setSchedule(schedule: BackupSchedule) {
-        viewModelScope.launch { backup.setSchedule(schedule) }
+        writes.launch { backup.setSchedule(schedule) }
     }
 
     fun setPassword(password: String?) {
-        viewModelScope.launch { backup.setPassword(password) }
+        writes.launch { backup.setPassword(password) }
     }
 
     fun setKeepCount(count: Int) {
-        viewModelScope.launch { backup.setKeepCount(count) }
+        writes.launch { backup.setKeepCount(count) }
     }
 
     fun backUpNow() = run(onSuccess = BackupMessage.BACKED_UP, fileUri = null) { backup.backUpNow() }
@@ -123,7 +125,7 @@ class BackupViewModel @Inject constructor(
     private fun run(onSuccess: BackupMessage, fileUri: String?, action: suspend () -> BackupResult) {
         if (progress.value.busy) return
         progress.value = Progress(busy = true)
-        viewModelScope.launch {
+        writes.launch {
             progress.value = when (val result = action()) {
                 BackupResult.Success -> Progress(message = onSuccess)
                 is BackupResult.Failure -> when (result.reason) {

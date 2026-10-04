@@ -32,6 +32,10 @@ class UpdateSettingUseCase @Inject constructor(
 
     suspend fun textScale(scale: TextScale) = tracked { repository.setTextScale(scale) }
 
+    suspend fun handSide(side: HandSide) = tracked { repository.setHandSide(side) }
+
+    suspend fun lowerLists(lower: Boolean) = tracked { repository.setLowerLists(lower) }
+
     suspend fun appLock(enabled: Boolean) = tracked { repository.setAppLockEnabled(enabled) }
 
     suspend fun onboardingDone(done: Boolean) = tracked { repository.setOnboardingDone(done) }
@@ -56,6 +60,8 @@ class UpdateSettingUseCase @Inject constructor(
         "themeMode" to themeMode.name,
         "colourStyle" to colourStyle.name,
         "textScale" to textScale.name,
+        "handSide" to handSide.name,
+        "lowerLists" to lowerLists.toString(),
         "appLockEnabled" to appLockEnabled.toString(),
         "onboardingDone" to onboardingDone.toString(),
         "lockAfterSeconds" to lockAfterSeconds.toString(),

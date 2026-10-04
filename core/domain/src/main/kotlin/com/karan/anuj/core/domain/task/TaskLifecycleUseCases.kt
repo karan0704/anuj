@@ -65,7 +65,6 @@ class UpdateTaskUseCase @Inject constructor(
 /** Everything a completion changed, so "Undo" can put it back exactly. */
 data class CompletionUndo(
     val tasks: List<Task>,
-    val checklist: List<ChecklistItem>,
     val occurrenceId: String?,
 )
 
@@ -81,7 +80,7 @@ class CompleteTaskUseCase @Inject constructor(
      * ticking the parent means the whole thing is finished.
      *
      * A repeating task is never closed. The round is recorded as done and the
-     * task moves to its next due day with its steps and checklist cleared.
+     * task moves to its next due day with its steps reopened.
      *
      * @return what to hand to [UndoCompletionUseCase], or null if the task
      * does not exist or is already closed
@@ -97,29 +96,25 @@ class CompleteTaskUseCase @Inject constructor(
         if (rule != null && due != null) {
             val occurrence = TaskOccurrence(ids.newId(), task.id, due, OccurrenceOutcome.DONE, now)
             val next = RepetitionCalculator.nextAfter(rule, due, today, task.daysOff)
-            val snapshot = editor.startNewRound(task, subtree, next, now)
+            val before = editor.startNewRound(task, subtree, next, now)
             tasks.addOccurrence(occurrence)
-            return CompletionUndo(snapshot.tasks, snapshot.checklist, occurrence.id)
+            return CompletionUndo(before, occurrence.id)
         }
 
         val closing = subtree.filter { it.isOpen }
         editor.apply(closing.map { it to it.copy(completedAt = now) }, now)
-        return CompletionUndo(tasks = closing, checklist = emptyList(), occurrenceId = null)
+        return CompletionUndo(tasks = closing, occurrenceId = null)
     }
 }
 
 class UndoCompletionUseCase @Inject constructor(
     private val tasks: TaskRepository,
-    private val checklists: ChecklistRepository,
     private val editor: TaskEditor,
 ) {
     suspend operator fun invoke(undo: CompletionUndo) {
         val now = editor.now()
         val changes = undo.tasks.mapNotNull { before -> tasks.get(before.id)?.let { current -> current to before } }
         editor.apply(changes, now)
-        if (undo.checklist.isNotEmpty()) {
-            checklists.save(undo.checklist.map { it.copy(stamps = it.stamps.touched(now)) })
-        }
         undo.occurrenceId?.let { tasks.removeOccurrence(it) }
     }
 }
@@ -162,13 +157,12 @@ class MoveTaskToDayUseCase @Inject constructor(
 
 class DuplicateTaskUseCase @Inject constructor(
     private val tasks: TaskRepository,
-    private val checklists: ChecklistRepository,
     private val ids: IdGenerator,
     private val time: TimeSource,
 ) {
     /**
-     * Copies a task with everything beneath it and its checklists. The copy
-     * starts fresh: nothing done, nothing ticked, never carried.
+     * Copies a task with every step beneath it. The copy starts fresh:
+     * nothing done, never carried.
      *
      * @return the id of the copy, or null if the task does not exist
      */
@@ -190,20 +184,6 @@ class DuplicateTaskUseCase @Inject constructor(
             )
         }
         tasks.save(copies)
-
-        val items = checklists.getFor(subtree.map { it.id }).filterNot { it.stamps.isDeleted }
-        if (items.isNotEmpty()) {
-            checklists.save(
-                items.map {
-                    it.copy(
-                        id = ids.newId(),
-                        taskId = newIds.getValue(it.taskId),
-                        checked = false,
-                        stamps = RecordStamps.created(now),
-                    )
-                },
-            )
-        }
         return newIds.getValue(id)
     }
 }

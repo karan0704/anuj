@@ -69,7 +69,7 @@ private class VoiceWorld {
             AddTaskCommand(CreateTaskUseCase(world.tasks, world.ids, world.clock)),
             SearchCommand(SearchTasksUseCase(world.tasks)),
             MarkDoneCommand(world.tasks, complete),
-            ChecklistCommand(world.tasks, world.checklists),
+            StepsCommand(world.tasks),
             WhatNowCommand(world.tasks),
             PriorityTasksCommand(world.tasks),
             TopicTasksCommand(world.tasks, tags),
@@ -77,7 +77,7 @@ private class VoiceWorld {
         ),
         settings = settings,
         taskPreferences = world.preferences,
-        undoCompletion = UndoCompletionUseCase(world.tasks, world.checklists, world.editor),
+        undoCompletion = UndoCompletionUseCase(world.tasks, world.editor),
         deleteTask = DeleteTaskUseCase(world.tasks, world.editor),
         standing = standing,
         torch = torch,
@@ -325,11 +325,11 @@ class VoiceAssistantTest {
     }
 
     @Test
-    fun `a checklist is read without the lines already ticked`() = runTest {
+    fun `the steps of a task are read without the ones already ticked`() = runTest {
         val voice = VoiceWorld()
-        voice.task("Leaving home")
-        voice.world.givenChecklistItem("Keys", "Leaving home", checked = true)
-        voice.world.givenChecklistItem("Door locked", "Leaving home", checked = false)
+        val home = voice.task("Leaving home")
+        voice.world.given("Keys", parent = home.id.value, completedAt = 10)
+        voice.world.given("Door locked", parent = home.id.value)
 
         val reply = voice.say("read the checklist of leaving home")
 

@@ -104,17 +104,6 @@ class FakeTaskRepository : TaskRepository {
     override suspend fun removeOccurrence(id: String) = rounds.update { list -> list.filterNot { it.id == id } }
 }
 
-class FakeChecklistRepository : ChecklistRepository {
-    private val rows = MutableStateFlow<Map<String, ChecklistItem>>(emptyMap())
-    val all: Collection<ChecklistItem> get() = rows.value.values
-
-    override fun observeFor(taskId: TaskId) =
-        rows.map { it.values.filter { item -> item.taskId == taskId && !item.stamps.isDeleted } }
-
-    override suspend fun getFor(taskIds: List<TaskId>): List<ChecklistItem> = all.filter { it.taskId in taskIds }
-    override suspend fun save(items: List<ChecklistItem>) = rows.update { it + items.associateBy { item -> item.id } }
-}
-
 class FakeAttachmentRepository : AttachmentRepository {
     val rows = mutableListOf<Attachment>()
     override fun observeFor(taskId: TaskId): Flow<List<Attachment>> = emptyFlow()
@@ -151,11 +140,10 @@ class TaskWorld {
     val ids = FakeIds()
     val history = FakeHistory()
     val tasks = FakeTaskRepository()
-    val checklists = FakeChecklistRepository()
     val attachments = FakeAttachmentRepository()
     val files = FakeFileStore()
     val preferences = FakeTaskPreferences()
-    val editor = TaskEditor(tasks, checklists, history, clock)
+    val editor = TaskEditor(tasks, history, clock)
 
     /** Stores a task directly, bypassing the use cases, to set a scene. */
     suspend fun given(
@@ -182,12 +170,6 @@ class TaskWorld {
         )
         tasks.save(listOf(task))
         return task
-    }
-
-    suspend fun givenChecklistItem(id: String, task: String, checked: Boolean): ChecklistItem {
-        val item = ChecklistItem(id, TaskId(task), id, checked, position = 0, stamps = RecordStamps.created(clock.now))
-        checklists.save(listOf(item))
-        return item
     }
 }
 

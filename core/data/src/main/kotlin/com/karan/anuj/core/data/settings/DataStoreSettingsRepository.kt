@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.karan.anuj.core.domain.settings.AppSettings
 import com.karan.anuj.core.domain.settings.ColourStyle
+import com.karan.anuj.core.domain.settings.HandSide
 import com.karan.anuj.core.domain.settings.SettingsRepository
 import com.karan.anuj.core.domain.settings.TextScale
 import com.karan.anuj.core.domain.settings.ThemeMode
@@ -38,6 +39,8 @@ class DataStoreSettingsRepository @Inject constructor(
                 themeMode = enumOr(prefs[THEME_MODE], ThemeMode.SYSTEM),
                 colourStyle = enumOr(prefs[COLOUR_STYLE], ColourStyle.TEAL),
                 textScale = enumOr(prefs[TEXT_SCALE], TextScale.NORMAL),
+                handSide = enumOr(prefs[HAND_SIDE], HandSide.RIGHT),
+                lowerLists = prefs[LOWER_LISTS] ?: true,
                 appLockEnabled = prefs[APP_LOCK] ?: false,
                 onboardingDone = prefs[ONBOARDING_DONE] ?: false,
                 lockAfterSeconds = prefs[LOCK_AFTER_SECONDS] ?: AppSettings.DEFAULT_LOCK_AFTER_SECONDS,
@@ -55,6 +58,14 @@ class DataStoreSettingsRepository @Inject constructor(
 
     override suspend fun setTextScale(scale: TextScale) {
         context.settingsStore.edit { it[TEXT_SCALE] = scale.name }
+    }
+
+    override suspend fun setHandSide(side: HandSide) {
+        context.settingsStore.edit { it[HAND_SIDE] = side.name }
+    }
+
+    override suspend fun setLowerLists(lower: Boolean) {
+        context.settingsStore.edit { it[LOWER_LISTS] = lower }
     }
 
     override suspend fun setAppLockEnabled(enabled: Boolean) {
@@ -77,6 +88,8 @@ class DataStoreSettingsRepository @Inject constructor(
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val COLOUR_STYLE = stringPreferencesKey("colour_style")
         val TEXT_SCALE = stringPreferencesKey("text_scale")
+        val HAND_SIDE = stringPreferencesKey("hand_side")
+        val LOWER_LISTS = booleanPreferencesKey("lower_lists")
         val APP_LOCK = booleanPreferencesKey("app_lock_enabled")
         val ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
         val LOCK_AFTER_SECONDS = intPreferencesKey("lock_after_seconds")

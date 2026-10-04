@@ -47,10 +47,10 @@ interface TaskRepository {
     /** Inserts new tasks and updates existing ones, tags included. A parent must come before its children. */
     suspend fun save(tasks: List<Task>)
 
-    /** Removes tasks for good, with their checklist, notes, photo records and history of rounds. */
+    /** Removes tasks for good, with their notes, photo records and history of rounds. */
     suspend fun purge(ids: List<TaskId>)
 
-    /** Tasks whose name, description, notes or checklist match, best candidates first. */
+    /** Tasks whose name, description or notes match, best candidates first. */
     suspend fun search(query: SearchQuery): List<Task>
 
     /** The most recently used distinct task names, newest first. */
@@ -62,12 +62,6 @@ interface TaskRepository {
     suspend fun addOccurrence(occurrence: TaskOccurrence)
 
     suspend fun removeOccurrence(id: String)
-}
-
-interface ChecklistRepository {
-    fun observeFor(taskId: TaskId): Flow<List<ChecklistItem>>
-    suspend fun getFor(taskIds: List<TaskId>): List<ChecklistItem>
-    suspend fun save(items: List<ChecklistItem>)
 }
 
 interface NoteRepository {

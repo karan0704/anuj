@@ -74,16 +74,6 @@ data class TaskDraft(
     val tagIds: Set<TagId> = emptySet(),
 )
 
-/** One line of a task's checklist: lighter than a sub-task, just text and a tick. */
-data class ChecklistItem(
-    val id: String,
-    val taskId: TaskId,
-    val text: String,
-    val checked: Boolean = false,
-    val position: Int,
-    val stamps: RecordStamps,
-)
-
 /** A timestamped note added to a task. */
 data class Note(
     val id: String,

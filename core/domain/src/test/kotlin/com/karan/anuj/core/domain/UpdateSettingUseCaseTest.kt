@@ -4,6 +4,7 @@ import com.karan.anuj.core.domain.history.ChangeHistoryRepository
 import com.karan.anuj.core.domain.history.RecordChange
 import com.karan.anuj.core.domain.settings.AppSettings
 import com.karan.anuj.core.domain.settings.ColourStyle
+import com.karan.anuj.core.domain.settings.HandSide
 import com.karan.anuj.core.domain.settings.SettingsRepository
 import com.karan.anuj.core.domain.settings.TextScale
 import com.karan.anuj.core.domain.settings.ThemeMode
@@ -47,6 +48,8 @@ class UpdateSettingUseCaseTest {
 
         override suspend fun setThemeMode(mode: ThemeMode) = state.update { it.copy(themeMode = mode) }
         override suspend fun setColourStyle(style: ColourStyle) = state.update { it.copy(colourStyle = style) }
+        override suspend fun setHandSide(side: HandSide) = state.update { it.copy(handSide = side) }
+        override suspend fun setLowerLists(lower: Boolean) = state.update { it.copy(lowerLists = lower) }
         override suspend fun setTextScale(scale: TextScale) = state.update { it.copy(textScale = scale) }
         override suspend fun setAppLockEnabled(enabled: Boolean) = state.update { it.copy(appLockEnabled = enabled) }
         override suspend fun setOnboardingDone(done: Boolean) = state.update { it.copy(onboardingDone = done) }

@@ -11,6 +11,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +22,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.karan.anuj.core.domain.settings.ThemeMode
 import com.karan.anuj.core.security.BiometricAuthenticator
 import com.karan.anuj.core.security.LockState
+import com.karan.anuj.core.ui.components.Hand
+import com.karan.anuj.core.ui.components.LocalOneHand
+import com.karan.anuj.core.ui.components.OneHand
 import com.karan.anuj.core.ui.theme.AnujPalette
 import com.karan.anuj.core.ui.theme.AnujTheme
 import com.karan.anuj.feature.reminder.platform.ReminderLinks
@@ -92,15 +96,19 @@ class MainActivity : FragmentActivity() {
                             onFinished = viewModel::finishOnboarding,
                         )
 
-                        else -> AnujApp(
-                            lockAvailable = lockAvailable,
-                            onAppLockToggled = { enable ->
-                                if (enable) confirmThenEnableLock() else viewModel.setAppLock(false)
-                            },
-                            onForeground = viewModel::onForeground,
-                            taskToOpen = taskToOpen,
-                            onTaskOpened = { taskToOpen = null },
-                        )
+                        else -> CompositionLocalProvider(
+                            LocalOneHand provides OneHand(Hand.named(current.settings.handSide.name), current.settings.lowerLists),
+                        ) {
+                            AnujApp(
+                                lockAvailable = lockAvailable,
+                                onAppLockToggled = { enable ->
+                                    if (enable) confirmThenEnableLock() else viewModel.setAppLock(false)
+                                },
+                                onForeground = viewModel::onForeground,
+                                taskToOpen = taskToOpen,
+                                onTaskOpened = { taskToOpen = null },
+                            )
+                        }
                     }
                 }
             }

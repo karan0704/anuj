@@ -24,7 +24,6 @@ import kotlinx.serialization.json.encodeToStream
 data class DatabaseSnapshot(
     val schemaVersion: Int,
     val tasks: List<TaskEntity> = emptyList(),
-    val checklistItems: List<ChecklistItemEntity> = emptyList(),
     val notes: List<NoteEntity> = emptyList(),
     val tags: List<TagEntity> = emptyList(),
     val taskTags: List<TaskTagEntity> = emptyList(),
@@ -62,7 +61,6 @@ object SnapshotFormat {
 abstract class SnapshotDao {
 
     @Query("SELECT * FROM task") abstract suspend fun tasks(): List<TaskEntity>
-    @Query("SELECT * FROM checklist_item") abstract suspend fun checklistItems(): List<ChecklistItemEntity>
     @Query("SELECT * FROM note") abstract suspend fun notes(): List<NoteEntity>
     @Query("SELECT * FROM tag") abstract suspend fun tags(): List<TagEntity>
     @Query("SELECT * FROM task_tag") abstract suspend fun taskTags(): List<TaskTagEntity>
@@ -73,7 +71,6 @@ abstract class SnapshotDao {
     @Query("SELECT * FROM reminder_event") abstract suspend fun reminderEvents(): List<ReminderEventEntity>
 
     @Insert abstract suspend fun insertTasks(rows: List<TaskEntity>)
-    @Insert abstract suspend fun insertChecklistItems(rows: List<ChecklistItemEntity>)
     @Insert abstract suspend fun insertNotes(rows: List<NoteEntity>)
     @Insert abstract suspend fun insertTags(rows: List<TagEntity>)
     @Insert abstract suspend fun insertTaskTags(rows: List<TaskTagEntity>)
@@ -94,7 +91,6 @@ abstract class SnapshotDao {
     open suspend fun read(schemaVersion: Int): DatabaseSnapshot = DatabaseSnapshot(
         schemaVersion = schemaVersion,
         tasks = tasks(),
-        checklistItems = checklistItems(),
         notes = notes(),
         tags = tags(),
         taskTags = taskTags(),
@@ -109,7 +105,7 @@ abstract class SnapshotDao {
      * Empties the database and fills it from [snapshot] as one step: if any
      * row fails to insert, nothing is changed and the old data is still there.
      *
-     * Deleting tasks and tags removes everything hanging off them (checklist,
+     * Deleting tasks and tags removes everything hanging off them (steps,
      * notes, photos, rounds, tag links, a task's reminders) through the
      * foreign keys. Reminders that stand on their own and the reminder log
      * hang off nothing, so they are cleared by name.
@@ -124,7 +120,6 @@ abstract class SnapshotDao {
 
         insertTags(snapshot.tags)
         insertTasks(snapshot.tasks)
-        insertChecklistItems(snapshot.checklistItems)
         insertNotes(snapshot.notes)
         insertTaskTags(snapshot.taskTags)
         insertAttachments(snapshot.attachments)

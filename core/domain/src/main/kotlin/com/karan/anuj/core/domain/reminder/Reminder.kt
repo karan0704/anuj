@@ -100,7 +100,7 @@ data class ReminderEvent(
  *
  * @property leadMinutes how long before the task's time this is; zero means "now"
  * @property isRepeat true when this is a repeat of one already shown
- * @property bring the task's unticked checklist lines: the things to have ready
+ * @property bring the task's steps not ticked yet: the things to have ready
  * @property snoozeMinutes the length of the one-tap snooze
  */
 data class ReminderNotice(

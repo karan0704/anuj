@@ -93,7 +93,7 @@ class ReminderWorld(settings: ReminderSettings = ReminderSettings(autoRemindTime
     private val zones = ZoneSource { INDIA }
 
     val sync = SyncRemindersUseCase(
-        reminders, world.tasks, world.checklists, this.settings, notifier, alarms, zones, clock, world.ids,
+        reminders, world.tasks, this.settings, notifier, alarms, zones, clock, world.ids,
     )
     val answer = AnswerReminderUseCase(
         reminders,

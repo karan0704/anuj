@@ -163,8 +163,10 @@ class AppJourneyTest {
         tapText("Undo")
         waitForNoText("Done today (1)")
 
-        // Quick add: two taps and a name.
-        tapLabel("Add a task")
+        // The add button asks what is being added, then takes a name.
+        tapLabel("Add")
+        waitForText("What are you adding?")
+        tapExactText("Task")
         waitForText("New task")
         type("Buy milk")
         tapText("Add task")
@@ -172,18 +174,29 @@ class AppJourneyTest {
         waitForNoText("New task")
         waitForText("Buy milk")
 
-        // Open the task and set its priority by tapping a chip.
+        // A routine is asked how often it comes round instead of which day, and says what it is in the list.
+        tapLabel("Add")
+        tapExactText("Routine")
+        waitForText("New routine")
+        type("Stretch")
+        tapText("Add routine")
+        waitForNoText("New routine")
+        waitForText("Routine · Today · Every day")
+
+        // A task opens with a few rows; the rest is under "More", which says what is hidden there.
         tapText("Buy milk")
-        waitForText("If not done on its day")
-        /** A new task has no steps, notes or photos, so only the controls that add them show, with no heading above nothing. */
-        waitForText("Add a step")
-        waitForText("Add a note")
-        waitForNoText("Steps")
+        waitForText("Remind me")
+        waitForText("Description, priority, tags, notes, photos")
+        waitForNoText("If not done on its day")
         waitForNoText("Notes")
         waitForNoText("Photos")
 
+        // A step is typed straight onto the task and is a task of its own.
+        type("Take a bag")
+        tapLabel("Add")
+        waitForText("Take a bag")
+
         // A reminder is set by tapping a chip; the repeat and style only appear once there is one.
-        waitForText("Remind me")
         tapText("Remind me")
         tapText("At the time")
         waitForText("Keep reminding until done")
@@ -191,9 +204,13 @@ class AppJourneyTest {
         tapText("OK")
         waitForNoText("Keep reminding until done")
         waitForText("At the time")
+
+        // Priority is under "More"; once set, the closed "More" line names it.
+        tapText("More")
+        waitForText("If not done on its day")
         tapText("High")
         tapLabel("Back")
-        waitForText("Today · High")
+        waitForText("Today · 0 of 1 steps · High")
 
         // The tree: a routine expands to show its steps.
         tapText("Tasks")
@@ -231,8 +248,8 @@ class AppJourneyTest {
 
         // Trash: delete from the task screen, find it in the trash, restore it.
         tapText("Buy milk")
-        waitForText("If not done on its day")
-        tapLabel("More")
+        waitForText("Remind me")
+        tapText("More")
         tapText("Move to trash")
         waitForNoText("Buy milk")
         tapLabel("More")
@@ -243,18 +260,38 @@ class AppJourneyTest {
         tapLabel("Back")
         waitForText("Buy milk")
 
-        // Settings carries the task and backup rows.
+        // Settings is opened from the home menu and is a tree: the first screen only names its branches.
+        tapExactText("Today")
+        tapLabel("Menu")
         tapText("Settings")
-        waitForText("Unfinished tasks")
-        waitForText("Backup folder")
+        waitForText("Theme, colours, text size, which hand")
+        waitForNoText("Backup folder")
 
-        // Values that used to be fixed in code are settings: the lock delay, the times of day, the backups kept.
-        waitForText("Lock again after")
+        // Display: the second set of colours and the hand the screens are laid out for.
+        tapText("Theme, colours, text size, which hand")
+        waitForText("Right hand")
+        waitForText("Start lists lower")
+        tapText("Colours")
+        tapText("Ivory")
+        tapLabel("Back")
+        tapText("Theme, colours, text size, which hand")
+        waitForText("Ivory")
+        tapLabel("Back")
+
+        // Tasks: values that used to be fixed in code are settings.
+        tapText("Unfinished tasks, times of day, lengths")
+        waitForText("Unfinished tasks")
         waitForText("Times of day")
         waitForText("8:00 am · 1:00 pm · 6:00 pm · 9:00 pm")
+        tapLabel("Back")
+
+        tapText("Folder, schedule, password, restore")
+        waitForText("Backup folder")
         waitForText("Backups kept")
+        tapLabel("Back")
 
         // Reminder settings: the daily limit is changed by a chip, and shows on its row.
+        tapText("Calm mode, notifications, regular reminders, a check")
         waitForText("Calm mode")
         tapText("Notifications")
         waitForText("Quiet hours")
@@ -281,9 +318,10 @@ class AppJourneyTest {
         waitForText("Notifications are allowed")
         waitForText("Send a test reminder")
         tapLabel("Back")
+        tapLabel("Back")
 
         // Voice settings: the name, when it listens, and how many tasks it reads.
-        tapText("The assistant's name")
+        tapText("The assistant's name, when it listens")
         waitForText("Teach it its name")
         waitForText("Things you can say")
         tapText("Tasks read out before")
@@ -292,10 +330,13 @@ class AppJourneyTest {
         waitForNoText("OK")
         tapLabel("Back")
 
-        waitForText("Backups kept")
+        // App lock: the delay is a chip.
+        tapText("Fingerprint or screen lock")
         tapText("Lock again after")
         tapText("5 min away")
         waitForText("Straight away")
+        tapLabel("Back")
+        tapLabel("Back")
 
         // The assistant by tap: a shortcut asks the same question a voice would.
         tapExactText("Ask")

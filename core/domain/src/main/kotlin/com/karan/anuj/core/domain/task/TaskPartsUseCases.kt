@@ -5,40 +5,6 @@ import com.karan.anuj.core.domain.time.TimeSource
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 
-class ChecklistActions @Inject constructor(
-    private val checklists: ChecklistRepository,
-    private val ids: IdGenerator,
-    private val time: TimeSource,
-) {
-    /** Adds a line at the end of the task's checklist. Blank text is ignored. */
-    suspend fun add(taskId: TaskId, text: String) {
-        val trimmed = text.trim()
-        if (trimmed.isEmpty()) return
-        val existing = checklists.getFor(listOf(taskId))
-        val item = ChecklistItem(
-            id = ids.newId(),
-            taskId = taskId,
-            text = trimmed,
-            position = (existing.maxOfOrNull { it.position } ?: -1) + 1,
-            stamps = RecordStamps.created(time.nowMillis()),
-        )
-        checklists.save(listOf(item))
-    }
-
-    suspend fun setChecked(item: ChecklistItem, checked: Boolean) {
-        if (item.checked == checked) return
-        checklists.save(listOf(item.copy(checked = checked, stamps = item.stamps.touched(time.nowMillis()))))
-    }
-
-    suspend fun remove(item: ChecklistItem) {
-        checklists.save(listOf(item.copy(stamps = item.stamps.deleted(time.nowMillis()))))
-    }
-
-    suspend fun restore(item: ChecklistItem) {
-        checklists.save(listOf(item.copy(stamps = item.stamps.restored(time.nowMillis()))))
-    }
-}
-
 class NoteActions @Inject constructor(
     private val notes: NoteRepository,
     private val ids: IdGenerator,
