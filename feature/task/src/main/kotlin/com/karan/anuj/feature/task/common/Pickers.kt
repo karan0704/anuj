@@ -15,7 +15,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-// import androidx.compose.material3.AlertDialog  // the clock is now ClockDialog in core:ui
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -26,9 +25,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-// import androidx.compose.material3.TimePicker  // the clock is now ClockDialog in core:ui
 import androidx.compose.material3.rememberDatePickerState
-// import androidx.compose.material3.rememberTimePickerState  // the clock is now ClockDialog in core:ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -68,12 +65,7 @@ import java.time.ZoneOffset
 
 /**
  * The clock times behind the part-of-day chips are the user's own, passed in
- * as [DayParts] and changed in Settings. They used to be fixed here:
- *
- *     private val Morning: LocalTime = LocalTime.of(8, 0)
- *     private val Afternoon: LocalTime = LocalTime.of(13, 0)
- *     private val Evening: LocalTime = LocalTime.of(18, 0)
- *     private val Night: LocalTime = LocalTime.of(21, 0)
+ * as [DayParts] and changed in Settings.
  */
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -104,25 +96,7 @@ fun DatePickDialog(initial: LocalDate, onPicked: (LocalDate) -> Unit, onDismiss:
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimePickDialog(initial: LocalTime, onPicked: (LocalTime) -> Unit, onDismiss: () -> Unit) {
-    /**
-     * The clock itself now lives in core:ui as [ClockDialog], because the
-     * reminder screens pick times too. Until then it was built here:
-     *
-     *     val state = rememberTimePickerState(initialHour = initial.hour, initialMinute = initial.minute, is24Hour = false)
-     *     AlertDialog(
-     *         onDismissRequest = onDismiss,
-     *         confirmButton = {
-     *             TextButton(
-     *                 onClick = {
-     *                     onPicked(LocalTime.of(state.hour, state.minute))
-     *                     onDismiss()
-     *                 },
-     *             ) { Text(stringResource(R.string.task_ok)) }
-     *         },
-     *         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.task_cancel)) } },
-     *         text = { TimePicker(state = state) },
-     *     )
-     */
+    /** The clock itself lives in core:ui as [ClockDialog], because the reminder screens pick times too. */
     ClockDialog(
         initial = initial,
         okLabel = stringResource(R.string.task_ok),

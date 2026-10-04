@@ -7,17 +7,6 @@ import androidx.room.RoomDatabase
  * The app's single database. Any change to an entity here needs a new version
  * number and a migration; the exported schema under `core/data/schemas` shows
  * what each version looked like.
- *
- * Version 3 adds the reminder table and the reminder log (see [Migrations]).
- * Version 2 added the task tables and their search indexes; its entity list
- * was everything below up to `ChecklistItemFtsEntity`.
- * Version 1, kept for comparison, held only the change history:
- *
- *     @Database(
- *         entities = [ChangeHistoryEntity::class],
- *         version = 1,
- *         exportSchema = true,
- *     )
  */
 @Database(
     entities = [

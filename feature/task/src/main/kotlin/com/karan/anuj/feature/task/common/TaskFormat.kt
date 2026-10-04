@@ -27,13 +27,7 @@ import java.util.Locale
 private val DayFormat = DateTimeFormatter.ofPattern("EEE d MMM", Locale.ENGLISH)
 private val DayWithYearFormat = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)
 
-/**
- * The wording of a clock time is shared with the other features through
- * `clockLabel` in core:ui. It used to be formatted here:
- *
- *     private val TimeFormat = DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH)
- *     fun timeLabel(time: LocalTime): String = time.format(TimeFormat).lowercase(Locale.ENGLISH)
- */
+/** The wording of a clock time is shared with the other features through `clockLabel` in core:ui. */
 fun timeLabel(time: LocalTime): String = clockLabel(time)
 
 @Composable

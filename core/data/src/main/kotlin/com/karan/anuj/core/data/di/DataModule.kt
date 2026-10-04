@@ -1,12 +1,9 @@
 package com.karan.anuj.core.data.di
 
-// import android.content.Context  // used only by provideDatabase, now in DatabaseModule
-// import androidx.room.Room  // used only by provideDatabase, now in DatabaseModule
 import com.karan.anuj.core.data.db.AnujDatabase
 import com.karan.anuj.core.data.db.AttachmentDao
 import com.karan.anuj.core.data.db.ChangeHistoryDao
 import com.karan.anuj.core.data.db.ChecklistDao
-// import com.karan.anuj.core.data.db.Migrations  // used only by provideDatabase, now in DatabaseModule
 import com.karan.anuj.core.data.db.NoteDao
 import com.karan.anuj.core.data.db.ReminderDao
 import com.karan.anuj.core.data.db.SnapshotDao
@@ -39,12 +36,10 @@ import com.karan.anuj.core.domain.task.TaskPreferencesRepository
 import com.karan.anuj.core.domain.task.TaskRepository
 import com.karan.anuj.core.domain.time.TimeSource
 import com.karan.anuj.core.domain.voice.VoiceSettingsRepository
-// import com.karan.anuj.core.security.DatabasePassphraseProvider  // used only by provideDatabase, now in DatabaseModule
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-// import dagger.hilt.android.qualifiers.ApplicationContext  // used only by provideDatabase, now in DatabaseModule
 import dagger.hilt.components.SingletonComponent
 import java.time.ZoneId
 import java.util.UUID
@@ -52,7 +47,6 @@ import javax.inject.Qualifier
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-// import net.zetetic.database.sqlcipher.SupportOpenHelperFactory  // used only by provideDatabase, now in DatabaseModule
 
 /** The dispatcher for database and file work. */
 @Qualifier
@@ -119,23 +113,7 @@ abstract class DataModule {
         @Singleton
         fun provideIdGenerator(): IdGenerator = IdGenerator { UUID.randomUUID().toString() }
 
-        /**
-         * The database itself is now provided by [DatabaseModule], so tests
-         * can replace only that. It used to be provided here:
-         *
-         *     @Provides
-         *     @Singleton
-         *     fun provideDatabase(
-         *         @ApplicationContext context: Context,
-         *         passphrase: DatabasePassphraseProvider,
-         *     ): AnujDatabase {
-         *         System.loadLibrary("sqlcipher")
-         *         return Room.databaseBuilder(context, AnujDatabase::class.java, AnujDatabase.FILE_NAME)
-         *             .openHelperFactory(SupportOpenHelperFactory(passphrase.passphrase()))
-         *             .addMigrations(*Migrations.ALL)
-         *             .build()
-         *     }
-         */
+        /** The database itself is provided by [DatabaseModule], so tests can replace only that. */
         @Provides
         fun provideChangeHistoryDao(database: AnujDatabase): ChangeHistoryDao = database.changeHistoryDao()
 

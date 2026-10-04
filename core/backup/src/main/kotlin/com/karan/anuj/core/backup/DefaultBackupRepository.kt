@@ -164,7 +164,6 @@ class DefaultBackupRepository @Inject constructor(
         const val PASSWORD_SECRET = "backup_password"
         const val MIME_ZIP = "application/zip"
         const val FILE_PREFIX = "anuj-backup-"
-        // const val BACKUPS_TO_KEEP = 10  // now BackupSettings.keepCount, set in Settings
         val FILE_STAMP: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")
     }
 }

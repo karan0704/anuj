@@ -103,12 +103,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import kotlinx.coroutines.launch
 
-/**
- * The time estimates offered as chips come from the user's settings
- * ([TaskPreferences.estimateChoices]). They used to be fixed here:
- *
- *     private val EstimateChoices: List<Int?> = listOf(null, 5, 15, 30, 60, 120)
- */
+/** The time estimates offered as chips come from the user's settings ([TaskPreferences.estimateChoices]). */
 
 /** Which sheet is open over the task. */
 private enum class DetailSheet { NONE, NAME, DESCRIPTION, DUE, REPEAT, TAGS, CARRY, ADD_STEP, ADD_NOTE }
@@ -322,12 +317,8 @@ private fun LoadedTask(
 
         /**
          * A section's heading is only drawn once the section has something
-         * in it. On a task with no checklist, steps, notes or photos the
-         * headings used to sit above nothing; now only the "add" controls
-         * show, each of which says what it adds. The four headings used to
-         * be unconditional, each written like this one:
-         *
-         *     item(key = "steps-title") { SectionTitle(stringResource(R.string.detail_steps)) }
+         * in it; on an empty task only the "add" controls show, each of which
+         * says what it adds.
          */
         if (detail.checklist.isNotEmpty()) {
             item(key = "checklist-title") { SectionTitle(stringResource(R.string.detail_checklist)) }

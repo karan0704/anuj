@@ -59,8 +59,6 @@ class MainViewModel @Inject constructor(
      * re-reading the day catches both. Reminders are checked too, in case an
      * alarm was held back by the phone while the app was closed.
      *
-     * Before phase 2 this was only `fun onForeground() = clock.refresh()`.
-     *
      * The phone only lets a microphone service start while the app is on
      * screen, so listening for the assistant's name is (re)started here too.
      */

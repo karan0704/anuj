@@ -131,14 +131,6 @@ fun AnujApp(
      * search, trash) it is hidden so the back arrow is the single way out.
      * Until the first destination is known the bar is shown, so it does not
      * pop in a frame late.
-     *
-     * Before phase 1 there were only tabs and the bar was always drawn:
-     *
-     *     AnujScaffold(
-     *         bottomBar = {
-     *             NavigationBar { ... }
-     *         },
-     *     ) {
      */
     val onTab = currentDestination == null ||
         TopLevelDestination.entries.any { tab -> currentDestination.hierarchy.any { it.route == tab.route } }
@@ -177,11 +169,6 @@ fun AnujApp(
             navController = navController,
             startDestination = TopLevelDestination.HOME.route,
         ) {
-            /**
-             * Home now shows today's tasks under the clock. Before phase 1:
-             *
-             *     composable(TopLevelDestination.HOME.route) { HomeScreen() }
-             */
             composable(TopLevelDestination.HOME.route) {
                 HomeScreen(snackbar = snackbar, onOpenTask = openTask)
             }
@@ -214,9 +201,7 @@ fun AnujApp(
                 /**
                  * The reminder row and the step-by-step player come from the
                  * reminder feature and are handed to the task screen here,
-                 * the one place that knows both. Before phase 2:
-                 *
-                 *     TaskDetailScreen(snackbar = snackbar, onBack = navController::popBackStack, onOpenTask = openTask)
+                 * the one place that knows both.
                  */
                 TaskDetailScreen(
                     snackbar = snackbar,

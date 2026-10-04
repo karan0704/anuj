@@ -43,44 +43,6 @@ private fun rememberNow(): LocalDateTime {
 /**
  * The clock, with today's tasks under it. The clock is the first item of
  * the task list, so it scrolls away with the list on a long day.
- *
- * Before phase 1 this screen had no tasks to show and drew the clock above a
- * fixed "Nothing here yet" message:
- *
- *     @Composable
- *     fun HomeScreen() {
- *         val now = rememberNow()
- *
- *         Column(
- *             modifier = Modifier
- *                 .fillMaxSize()
- *                 .padding(horizontal = 24.dp, vertical = 16.dp),
- *         ) {
- *             Text(now.format(TimeFormat), style = MaterialTheme.typography.displayMedium)
- *             Text(
- *                 now.format(DateFormat),
- *                 style = MaterialTheme.typography.titleMedium,
- *                 color = MaterialTheme.colorScheme.onSurfaceVariant,
- *             )
- *
- *             Column(
- *                 modifier = Modifier
- *                     .weight(1f)
- *                     .fillMaxWidth(),
- *                 verticalArrangement = Arrangement.Center,
- *                 horizontalAlignment = Alignment.CenterHorizontally,
- *             ) {
- *                 Text(stringResource(R.string.home_empty_title), style = MaterialTheme.typography.titleLarge)
- *                 Spacer(Modifier.height(8.dp))
- *                 Text(
- *                     stringResource(R.string.home_empty_body),
- *                     style = MaterialTheme.typography.bodyLarge,
- *                     color = MaterialTheme.colorScheme.onSurfaceVariant,
- *                     textAlign = TextAlign.Center,
- *                 )
- *             }
- *         }
- *     }
  */
 @Composable
 fun HomeScreen(

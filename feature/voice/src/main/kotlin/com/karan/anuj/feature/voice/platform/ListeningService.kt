@@ -170,16 +170,6 @@ class ListeningService : Service() {
      * recogniser. Only one of the two can hold the microphone at a time,
      * which is why this is a loop of two steps and not two things running
      * side by side.
-     *
-     * The first version did both jobs with the bundled model and one open
-     * microphone. On a real phone it misheard the name and the command:
-     *
-     *     talk.listen().collect { heard ->
-     *         if (heard !is Speech.Final || speaking) return@collect
-     *         val found = WakePhrase.find(heard.text, current)
-     *         ...
-     *         talk.say(command)
-     *     }
      */
     private suspend fun listenForName() {
         while (true) {

@@ -35,12 +35,7 @@ import dagger.multibindings.IntoSet
 @InstallIn(SingletonComponent::class)
 abstract class VoiceModule {
 
-    /**
-     * Sentences are taken down by the phone's own recogniser. Before the
-     * first test on a phone this was the bundled model:
-     *
-     *     abstract fun bindSpeechEngine(impl: VoskSpeechEngine): SpeechEngine
-     */
+    /** Sentences are taken down by the phone's own recogniser. */
     @Binds
     abstract fun bindSpeechEngine(impl: PhoneSpeechEngine): SpeechEngine
 
