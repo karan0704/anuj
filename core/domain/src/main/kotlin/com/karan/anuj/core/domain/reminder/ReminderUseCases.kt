@@ -172,6 +172,14 @@ class StandingRemindersUseCase @Inject constructor(
         reminders.save(listOf(reminder.copy(stamps = reminder.stamps.restored(time.nowMillis()))))
 }
 
+/**
+ * A reminder as the answer screen needs it.
+ *
+ * @property title its task's name, or its own
+ * @property isTask a task's reminder can be put off until tomorrow; a standing one cannot
+ */
+data class ReminderToAnswer(val title: String, val isTask: Boolean)
+
 /** What the user can do with a reminder that is showing. Each ends by re-planning the next alarm. */
 class AnswerReminderUseCase @Inject constructor(
     private val reminders: ReminderRepository,
@@ -205,10 +213,11 @@ class AnswerReminderUseCase @Inject constructor(
         reminder.taskId?.let { moveTask(it, today().plusDays(1), countsAsCarry = false) }
     }
 
-    /** The title to show for a reminder: its task's name, or its own. Null when it no longer exists. */
-    suspend fun titleOf(id: ReminderId): String? {
-        val reminder = reminders.get(id) ?: return null
-        return reminder.taskId?.let { tasks.get(it)?.name } ?: reminder.title
+    /** What the answer screen shows for a reminder. Null when it no longer exists. */
+    suspend fun describe(id: ReminderId): ReminderToAnswer? {
+        val reminder = reminders.get(id)?.takeUnless { it.stamps.isDeleted } ?: return null
+        val title = reminder.taskId?.let { tasks.get(it)?.name } ?: reminder.title
+        return ReminderToAnswer(title, isTask = !reminder.isStanding)
     }
 
     private suspend fun answer(id: ReminderId, kind: ReminderEventKind, action: suspend (Reminder, Long) -> Unit) {

@@ -120,12 +120,17 @@ private enum class DetailSheet { NONE, NAME, DESCRIPTION, DUE, REPEAT, TAGS, CAR
  * with its microphone available.
  *
  * @param onOpenTask opens another task: the parent, a step, or a fresh copy
+ * @param onPlaySteps opens the task's steps one at a time; when null the button is not shown
+ * @param extraFields rows another feature adds under "Repeat" (the reminder
+ * row). This screen only leaves the place, so tasks know nothing of reminders.
  */
 @Composable
 fun TaskDetailScreen(
     snackbar: SnackbarHostState,
     onBack: () -> Unit,
     onOpenTask: (TaskId) -> Unit,
+    onPlaySteps: ((TaskId) -> Unit)? = null,
+    extraFields: @Composable (Task) -> Unit = {},
     viewModel: TaskDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -153,7 +158,7 @@ fun TaskDetailScreen(
                 )
             }
             is TaskDetailUiState.Loaded ->
-                LoadedTask(current.detail, current.day, current.preferences, viewModel, onBack, onOpenTask)
+                LoadedTask(current.detail, current.day, current.preferences, viewModel, onBack, onOpenTask, onPlaySteps, extraFields)
         }
     }
 }
@@ -222,6 +227,8 @@ private fun LoadedTask(
     viewModel: TaskDetailViewModel,
     onBack: () -> Unit,
     onOpenTask: (TaskId) -> Unit,
+    onPlaySteps: ((TaskId) -> Unit)?,
+    extraFields: @Composable (Task) -> Unit,
 ) {
     val task = detail.task
     val today = day.date
@@ -272,6 +279,7 @@ private fun LoadedTask(
                     value = repetitionLabel(task.repetition, task.daysOff),
                     onClick = { sheet = DetailSheet.REPEAT },
                 )
+                extraFields(task)
                 ChipField(stringResource(R.string.detail_priority)) {
                     ChoiceChips(
                         options = Priority.entries,
@@ -331,6 +339,14 @@ private fun LoadedTask(
 
         if (detail.children.isNotEmpty()) {
             item(key = "steps-title") { SectionTitle(stringResource(R.string.detail_steps)) }
+        }
+        /** Offered only while there is a step left to do. */
+        if (onPlaySteps != null && detail.children.any { it.isOpen }) {
+            item(key = "steps-play") {
+                TextButton(onClick = { onPlaySteps(task.id) }, modifier = Modifier.padding(horizontal = 12.dp)) {
+                    Text(stringResource(R.string.detail_play_steps))
+                }
+            }
         }
         items(detail.children, key = { "step-${it.id.value}" }) { step ->
             TaskRow(

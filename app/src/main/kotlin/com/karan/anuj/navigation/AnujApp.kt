@@ -13,6 +13,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -30,6 +31,12 @@ import androidx.navigation.navArgument
 import com.karan.anuj.R
 import com.karan.anuj.core.domain.task.TaskId
 import com.karan.anuj.core.ui.components.AnujScaffold
+import com.karan.anuj.feature.reminder.health.ReminderCheckScreen
+import com.karan.anuj.feature.reminder.routine.RoutinePlayerScreen
+import com.karan.anuj.feature.reminder.routine.RoutinePlayerViewModel
+import com.karan.anuj.feature.reminder.settings.NotificationSettingsScreen
+import com.karan.anuj.feature.reminder.standing.StandingRemindersScreen
+import com.karan.anuj.feature.reminder.task.TaskReminderField
 import com.karan.anuj.feature.task.detail.TaskDetailScreen
 import com.karan.anuj.feature.task.detail.TaskDetailViewModel
 import com.karan.anuj.feature.task.inbox.InboxScreen
@@ -62,6 +69,14 @@ private object Routes {
     const val TASK_PATTERN = "$TASK/{${TaskDetailViewModel.TASK_ID_ARG}}"
 
     fun task(id: TaskId) = "$TASK/${id.value}"
+
+    const val NOTIFICATIONS = "settings/notifications"
+    const val REGULAR_REMINDERS = "settings/regular-reminders"
+    const val REMINDER_CHECK = "settings/reminder-check"
+    private const val ROUTINE = "routine"
+    const val ROUTINE_PATTERN = "$ROUTINE/{${RoutinePlayerViewModel.TASK_ID_ARG}}"
+
+    fun routine(id: TaskId) = "$ROUTINE/${id.value}"
 }
 
 /**
@@ -69,12 +84,16 @@ private object Routes {
  *
  * @param onForeground called each time the app comes into view, so work
  * that depends on the date (carrying unfinished tasks over) can run
+ * @param taskToOpen the id of a task a tapped reminder asked for, or null
+ * @param onTaskOpened called once that task's screen has been opened
  */
 @Composable
 fun AnujApp(
     lockAvailable: Boolean,
     onAppLockToggled: (Boolean) -> Unit,
     onForeground: () -> Unit,
+    taskToOpen: String? = null,
+    onTaskOpened: () -> Unit = {},
 ) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -86,6 +105,13 @@ fun AnujApp(
     LifecycleStartEffect(Unit) {
         onForeground()
         onStopOrDispose {}
+    }
+
+    LaunchedEffect(taskToOpen) {
+        if (taskToOpen != null) {
+            openTask(TaskId(taskToOpen))
+            onTaskOpened()
+        }
     }
 
     /**
@@ -149,6 +175,9 @@ fun AnujApp(
                 SettingsScreen(
                     lockAvailable = lockAvailable,
                     onAppLockToggled = onAppLockToggled,
+                    onOpenNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
+                    onOpenRegularReminders = { navController.navigate(Routes.REGULAR_REMINDERS) },
+                    onOpenReminderCheck = { navController.navigate(Routes.REMINDER_CHECK) },
                 )
             }
 
@@ -156,7 +185,35 @@ fun AnujApp(
                 route = Routes.TASK_PATTERN,
                 arguments = listOf(navArgument(TaskDetailViewModel.TASK_ID_ARG) { type = NavType.StringType }),
             ) {
-                TaskDetailScreen(snackbar = snackbar, onBack = navController::popBackStack, onOpenTask = openTask)
+                /**
+                 * The reminder row and the step-by-step player come from the
+                 * reminder feature and are handed to the task screen here,
+                 * the one place that knows both. Before phase 2:
+                 *
+                 *     TaskDetailScreen(snackbar = snackbar, onBack = navController::popBackStack, onOpenTask = openTask)
+                 */
+                TaskDetailScreen(
+                    snackbar = snackbar,
+                    onBack = navController::popBackStack,
+                    onOpenTask = openTask,
+                    onPlaySteps = { navController.navigate(Routes.routine(it)) },
+                    extraFields = { task -> TaskReminderField(taskId = task.id, hasDay = task.dueDate != null) },
+                )
+            }
+            composable(
+                route = Routes.ROUTINE_PATTERN,
+                arguments = listOf(navArgument(RoutinePlayerViewModel.TASK_ID_ARG) { type = NavType.StringType }),
+            ) {
+                RoutinePlayerScreen(onBack = navController::popBackStack)
+            }
+            composable(Routes.NOTIFICATIONS) {
+                NotificationSettingsScreen(onBack = navController::popBackStack)
+            }
+            composable(Routes.REGULAR_REMINDERS) {
+                StandingRemindersScreen(snackbar = snackbar, onBack = navController::popBackStack)
+            }
+            composable(Routes.REMINDER_CHECK) {
+                ReminderCheckScreen(onBack = navController::popBackStack)
             }
             composable(Routes.SEARCH) {
                 SearchScreen(snackbar = snackbar, onBack = navController::popBackStack, onOpenTask = openTask)

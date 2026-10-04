@@ -20,7 +20,7 @@ Library versions are pinned in `gradle/libs.versions.toml`. They are a known-wor
 
 ## Module Layout
 
-`app`, the five `core` modules and `feature/task` exist (phases 0 and 1). Every other `feature/` module is planned and not built yet. Package root: `com.karan.anuj` (**assumption pending confirmation**). minSdk 26, also an assumption.
+`app`, the five `core` modules, `feature/task` and `feature/reminder` exist (phases 0 to 2). Every other `feature/` module is planned and not built yet. Package root: `com.karan.anuj` (**assumption pending confirmation**). minSdk 26, also an assumption.
 
 ```
 app/                      navigation, Hilt entry point
@@ -30,7 +30,7 @@ core/ui/                  theme, shared Compose components
 core/security/            app lock, database encryption
 core/backup/              backup, restore, export
 feature/task/             nested tasks, checklist, repetition, carry-over, tags, search, trash
-feature/reminder/         alarms, nagging, notification categories, health check
+feature/reminder/         the alarm, notifications, full-screen alarm, reminder settings, regular reminders, routine player, reminder check
 feature/tracker/          trackers, entries, charts, journal
 feature/voice/            wake name, commands, voice notes
 feature/place/            location + Wi-Fi triggers, leaving-home checklist
@@ -46,6 +46,7 @@ Extension points that must stay as interfaces so new variants need no edits to e
 - `VoiceCommand` — one handler class per spoken command
 - `TrackerType` — duration, number, pair, counter, scale, amount-with-text
 - `CarryOverRule` — next day, next week/month/year, in N days, specific date, ask me, don't carry
+- `ReminderSchedule` — before a task's time, at clock times, every N minutes, once; each kind works out its own next time
 - `TextScanner` — the OCR engine, so it can be swapped without touching the screens that use it
 
 ---
@@ -196,9 +197,9 @@ Each phase must end in an installable, usable app (see Phased Independent Testab
 
 | Phase | Name | What gets built | Usable result | Status |
 |---|---|---|---|---|
-| 0 | Foundation | Project + modules, encrypted Room database with base columns and change history, navigation, theme with dark mode and text size, app lock, permissions onboarding, test setup | App opens, locks, and has an empty home screen | Built and unit-tested; not yet run on a phone |
-| 1 | Tasks | Area A, plus backup and restore | A full to-do app with nesting, carry-over, search, tags and safe data | Built and tested on the computer; not yet run on a phone |
-| 2 | Reminders | Area B (except leave-by) | Tasks remind and nag reliably, without overwhelming | Not started |
+| 0 | Foundation | Project + modules, encrypted Room database with base columns and change history, navigation, theme with dark mode and text size, app lock, permissions onboarding, test setup | App opens, locks, and has an empty home screen | Built; run on a device by the developer. The step-by-step guide has not been confirmed |
+| 1 | Tasks | Area A, plus backup and restore | A full to-do app with nesting, carry-over, search, tags and safe data | Built; run on a device by the developer, two layout faults reported and fixed. The step-by-step guide has not been confirmed |
+| 2 | Reminders | Area B (except leave-by) | Tasks remind and nag reliably, without overwhelming | Built and tested on the computer; not yet run on a phone. Missed-call follow-up is not built (see Phase 2 gaps) |
 | 3 | Tracking | Area C (except mood log and watch import) | Sleep, water, food, weight, BP, journal, doctor export | Not started |
 | 4 | Voice | Area D | Hands-free: named assistant, voice notes, voice add | Not started |
 | 5 | Place | Area E, plus leave-by alerts | Leaving-home checklist and location reminders | Not started |
@@ -217,11 +218,31 @@ Phases 0–2 are the minimum that makes the app worth using daily. Phases 3–6 
 **Phase 1 gaps, known and deliberate** — none of these block daily use; each is small enough to add when it is missed:
 - A task cannot be moved under a different parent, and rows cannot be reordered by hand (order is priority, then age).
 - A note, a checklist line and a tag can be added and removed but not edited in place.
-- The part-of-day chips (Morning 8:00, Afternoon 1:00, Evening 6:00, Night 9:00) are fixed times, not yet user-set.
+- (Closed.) The part-of-day chips were fixed times; they are now a setting, "Times of day".
 - The trash is never emptied automatically.
-- A task has no voice path yet (phase 4) and no reminder (phase 2); until phase 4 a task name is typed, dictated with the keyboard's own microphone, or picked from the "Add again" chips.
+- A task has no voice path yet (phase 4); until then a task name is typed, dictated with the keyboard's own microphone, or picked from the "Add again" chips.
 - Deleting from the task screen shows no "Undo" message, because the screen closes; the task is restored from the trash instead.
 - Not exercised by any test, because they need a phone: the encrypted database, the camera and photo picker, choosing a backup folder, and the scheduled backup.
+
+**Phase 2 gaps, known and deliberate**:
+- **Follow-up from a missed call is not built.** It needs the call-log permission and a phone to test on; a "reply to this person" task is added like any other task. This is the one item of area B that is open.
+- Nothing has been run on a phone. Whether a given phone lets the alarm through with the app closed is exactly what cannot be shown on the computer; the in-app Reminder check exists to find that out.
+- The routine player's countdown and "time nearly up" warning only run while its screen is open. A reminder set on the routine or on a step still arrives with the app closed.
+- Reminder edits are not written to the change history (task edits are).
+- Reminder settings live in a settings file and are not part of a backup; reminders themselves and their log are.
+- Medication, water and meal reminders only remind. Counting glasses or doses is phase 3 (trackers).
+- The app lock does not cover the answer screen: it shows a reminder's name and its answers over the lock screen, as the notification itself already does.
+
+**Reminders** — one `reminder` table. A reminder either belongs to a task (timed from the task's day and time, minus a lead) or stands on its own with clock times (medication, water, meals). Its next time is never stored: `ReminderPlanner` works it out from the schedule and from what has already shown, so it cannot go stale.
+
+- **One alarm, one sync.** The phone holds a single wake-up, for the earliest due moment. `SyncRemindersUseCase` shows everything due, then sets the next wake-up. It is safe to run any number of times and is run by the alarm, a restart, a clock or zone change, the app coming to the front, and any change to a task, a reminder or the settings (`ReminderRunner` watches for those). **Never set an alarm or post a reminder notification from a feature**: change the data and the sync follows.
+- **Every notification passes `NotificationPolicy.decide`**, which applies the kind's on/off switch, "wait for the summary", calm mode, quiet hours and the daily limit. A held reminder is listed in the next summary (at the user's summary times, and when quiet hours end).
+- **Kinds** (`ReminderCategory`): task, alarm, early warning, regular, summary. Each has its own tone, vibration and rules. Android fixes a channel's sound when the channel is made, so the tone is part of the channel id and choosing another tone replaces the channel.
+- **Repeats** stop when the reminder is answered, its limit is reached, or (for a task) the task is finished or moves to another time.
+- **A task with a time is reminded at that time without being asked** (a setting). Removing a task's reminder keeps the removed row, which is what stops the automatic one from coming back.
+- **Things to bring** are the task's unticked checklist lines, shown in its reminder.
+- **Full-screen alarm**: a notification with a full-screen intent to `ReminderActivity`, on a channel that plays at the alarm volume, and it keeps sounding until answered.
+- **Settings, not constants**: snooze lengths, repeat gaps, "remind me" times, snooze reasons, quiet hours, the daily limit, summary times and the routine warning are all in `ReminderSettings`, each with a default. Lists are edited by switching candidates on and off (see `rules/clean-code.md`).
 
 **Task tree** — one `task` table with a `parentId` column. Fields: name, description, checklist items, due time, repetition rule, days off, priority, tags, energy tag, estimated minutes, carry-over rule, carry count, optional tracker, optional per-task notification tone, photo attachments.
 
@@ -250,7 +271,7 @@ Every entry can carry a typed or voice note. Heart rate is typed in or imported 
 
 **Shopping and purchases** — a shopping item becomes a purchase record when ticked off (price and shop optional). Items bought repeatedly can carry a re-buy interval that puts them back on the list.
 
-**Backup** — one zip file (`manifest.json`, `data.json` with every row, `attachments/` with the photos) written to a folder the user picks with the system file picker, by hand or every day / week; the newest 10 are kept. A password is optional: with one, the rows and photos are AES-256 encrypted inside the zip and the file still opens in any zip tool that supports AES. Rows are stored as JSON rather than as a copy of the database file because that file is encrypted with a key that cannot leave the phone. Restore replaces everything, and is tested: every way it can fail leaves the existing data untouched.
+**Backup** — one zip file (`manifest.json`, `data.json` with every row, `attachments/` with the photos) written to a folder the user picks with the system file picker, by hand or every day / week; the newest few are kept (10 unless changed in Settings). A password is optional: with one, the rows and photos are AES-256 encrypted inside the zip and the file still opens in any zip tool that supports AES. Rows are stored as JSON rather than as a copy of the database file because that file is encrypted with a key that cannot leave the phone. Restore replaces everything, and is tested: every way it can fail leaves the existing data untouched.
 
 **Automatic task breakdown** — cannot be done well offline: needs an online AI model or built-in templates. **Not decided yet.**
 

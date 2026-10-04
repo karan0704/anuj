@@ -100,6 +100,15 @@ data class ReminderSettings(
         val LEAD_CANDIDATES: List<Int> = listOf(0, 5, 10, 15, 30, 45, 60, 120, 1440)
         val SNOOZE_CANDIDATES: List<Int> = listOf(5, 10, 15, 30, 60, 120, 180)
         val NAG_CANDIDATES: List<Int> = listOf(5, 10, 15, 30, 60)
+
+        /** Gaps offered for an "every so often" reminder, in minutes. */
+        val INTERVAL_CANDIDATES: List<Int> = listOf(30, 60, 90, 120, 180, 240)
+
+        /** Daily limits offered as chips; zero is "no limit". */
+        val DAILY_LIMIT_CHOICES: List<Int> = listOf(0, 10, 20, 30, 50, 100)
+
+        /** Routine warnings offered as chips, in minutes; zero is "no warning". */
+        val ROUTINE_WARNING_CHOICES: List<Int> = listOf(0, 1, 2, 5, 10)
         val DAILY_LIMIT_RANGE: IntRange = 0..200
         val NAG_TIMES_RANGE: IntRange = 1..20
         val ROUTINE_WARNING_RANGE: IntRange = 0..15

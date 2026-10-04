@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared -->
+    <string name="reminder_ok">OK</string>
+    <string name="reminder_cancel">Cancel</string>
+    <string name="reminder_back">Back</string>
+    <string name="reminder_undo">Undo</string>
+    <string name="reminder_less">One less</string>
+    <string name="reminder_more">One more</string>
+    <string name="reminder_add_time">Add a time</string>
+
+    <!-- Lengths -->
+    <string name="reminder_minutes">%1$d min</string>
+    <string name="reminder_hours">%1$d h</string>
+    <string name="reminder_hours_minutes">%1$d h %2$d min</string>
+    <plurals name="reminder_days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+
+    <!-- The kinds of notification. These are also the names shown in the phone's own notification settings. -->
+    <string name="channel_task">Task reminders</string>
+    <string name="channel_alarm">Alarms</string>
+    <string name="channel_heads_up">Early warnings</string>
+    <string name="channel_health">Regular reminders</string>
+    <string name="channel_summary">Summary of held reminders</string>
+    <string name="channel_own_tone">%1$s (own tone)</string>
+
+    <!-- A notification -->
+    <string name="notice_lead">In %1$s: %2$s</string>
+    <string name="notice_repeat">Still to do: %1$s</string>
+    <string name="notice_bring">Have ready: %1$s</string>
+    <string name="action_done">Done</string>
+    <string name="action_snooze">Snooze %1$s</string>
+    <string name="action_later">Later</string>
+    <plurals name="summary_title">
+        <item quantity="one">%1$d reminder was held back</item>
+        <item quantity="other">%1$d reminders were held back</item>
+    </plurals>
+
+    <!-- Answering a reminder -->
+    <string name="answer_reason">Why not now? (optional)</string>
+    <string name="answer_again_in">Remind me again in</string>
+    <string name="answer_tomorrow">Move it to tomorrow</string>
+
+    <!-- A reminder on a task -->
+    <string name="remind_title">Remind me</string>
+    <string name="remind_off">Off</string>
+    <string name="remind_needs_day">Pick a day for this task first</string>
+    <string name="lead_at_time">At the time</string>
+    <string name="lead_before">%1$s before</string>
+    <string name="nag_title">Keep reminding until done</string>
+    <string name="nag_off">Off</string>
+    <string name="nag_every">Every %1$s</string>
+    <string name="nag_value">Every %1$s, up to %2$d times</string>
+    <plurals name="nag_times">
+        <item quantity="one">%1$d more time</item>
+        <item quantity="other">%1$d more times</item>
+    </plurals>
+    <string name="style_title">Show as</string>
+    <string name="style_notification">Notification</string>
+    <string name="style_alarm">Full-screen alarm</string>
+    <string name="tone_title">Tone</string>
+    <string name="tone_default">Phone default</string>
+    <string name="tone_of_kind">Same as its kind of reminder</string>
+
+    <!-- Schedules -->
+    <string name="schedule_every">Every %1$s, %2$s to %3$s</string>
+    <string name="schedule_once">Once</string>
+    <string name="schedule_on_days">%1$s · %2$s</string>
+
+    <!-- Settings rows -->
+    <string name="calm_title">Calm mode</string>
+    <string name="calm_detail">Only alarms get through. Everything else waits for the summary.</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_notifications_detail">Quiet hours, daily limit, tones and choices</string>
+    <string name="regular_title">Regular reminders</string>
+    <string name="regular_detail">Medication, water, meals</string>
+    <string name="check_title">Reminder check</string>
+    <string name="check_detail">See whether this phone lets reminders through</string>
+
+    <!-- Notification settings -->
+    <string name="section_quiet">Quiet time</string>
+    <string name="quiet_title">Quiet hours</string>
+    <string name="quiet_detail">Reminders in these hours wait until they end</string>
+    <string name="quiet_from">Quiet from</string>
+    <string name="quiet_until">Quiet until</string>
+    <string name="limit_title">Daily limit</string>
+    <string name="limit_none">No limit</string>
+    <string name="limit_value">Up to %1$d a day</string>
+    <string name="summary_times_title">Summary times</string>
+    <string name="summary_times_none">None</string>
+    <string name="summary_times_hint">Held reminders are shown together at these times. Tap a time to remove it.</string>
+    <string name="section_kinds">Kinds of reminder</string>
+    <string name="kind_off">Off</string>
+    <string name="kind_on_now">On · Interrupts</string>
+    <string name="kind_on_summary">On · Waits for the summary</string>
+    <string name="kind_enabled">Switched on</string>
+    <string name="kind_when">When it is due</string>
+    <string name="kind_delivery_now">Interrupt me</string>
+    <string name="kind_delivery_summary">Wait for the summary</string>
+    <string name="kind_vibrate">Vibrate</string>
+    <string name="kind_breaks_quiet">Gets through quiet hours and calm mode</string>
+    <string name="kind_counts">Counts toward the daily limit</string>
+    <string name="section_tasks">Tasks</string>
+    <string name="auto_title">Remind me of timed tasks</string>
+    <string name="auto_detail">A task given a time is reminded at that time without being asked</string>
+    <string name="auto_repeat_title">Those reminders repeat</string>
+    <string name="all_day_title">A task with no time is reminded at</string>
+    <string name="section_choices">Choices offered</string>
+    <string name="choices_leads">Reminder times offered</string>
+    <string name="choices_snoozes">Snooze lengths</string>
+    <string name="snooze_one_tap">One-tap snooze on a notification</string>
+    <string name="choices_gaps">Keep-reminding gaps</string>
+    <string name="choices_reasons">Reasons for snoozing</string>
+    <string name="reasons_none">None</string>
+    <string name="reasons_hint">Tap a reason to remove it</string>
+    <string name="reasons_add">Add a reason</string>
+    <string name="routine_warning_title">Routine warning</string>
+    <string name="routine_warning_off">Off</string>
+    <string name="routine_warning_value">%1$s before a step is over</string>
+
+    <!-- Regular reminders -->
+    <string name="regular_empty">Nothing here yet. Tap one below to start; you can change its times afterwards.</string>
+    <string name="regular_add">Add a reminder</string>
+    <string name="preset_medication">Medication</string>
+    <string name="preset_water">Water</string>
+    <string name="preset_meals">Meals</string>
+    <string name="preset_custom">Something else</string>
+    <string name="regular_switch">Switch %1$s on or off</string>
+    <string name="regular_removed">Removed: %1$s</string>
+    <string name="regular_name">Name</string>
+    <string name="regular_rhythm">When</string>
+    <string name="rhythm_at_times">At set times</string>
+    <string name="rhythm_every">Every so often</string>
+    <string name="regular_times_hint">Tap a time to remove it</string>
+    <string name="regular_gap">How often</string>
+    <string name="regular_from">From</string>
+    <string name="regular_until">Until</string>
+    <string name="regular_days_hint">Only on these days (none chosen means every day)</string>
+    <string name="regular_remove">Remove this reminder</string>
+
+    <!-- Reminder check -->
+    <string name="check_ok">Fine</string>
+    <string name="check_problem">Needs attention</string>
+    <string name="check_fix">Allow</string>
+    <string name="check_notifications">Notifications are allowed</string>
+    <string name="check_notifications_problem">Notifications are switched off for Anuj, so no reminder can show.</string>
+    <string name="check_exact">Alarms can go off on time</string>
+    <string name="check_exact_problem">Without this the phone may deliver a reminder several minutes late.</string>
+    <string name="check_battery">The phone will not put Anuj to sleep</string>
+    <string name="check_battery_problem">Battery saving can stop reminders while the app is closed.</string>
+    <string name="check_full_screen">Alarms can take over the screen</string>
+    <string name="check_full_screen_problem">Without this a full-screen alarm shows as an ordinary notification.</string>
+    <string name="maker_title">On this phone</string>
+    <string name="maker_open">Open the settings for Anuj</string>
+    <string name="maker_xiaomi">Xiaomi, Redmi and Poco phones also need Autostart switched on for Anuj, and Battery saver set to No restrictions.</string>
+    <string name="maker_samsung">Samsung phones put unused apps to sleep. In Battery, add Anuj to Never sleeping apps.</string>
+    <string name="maker_oppo">Oppo, Realme and OnePlus phones also need Allow auto-launch and Allow background activity switched on for Anuj.</string>
+    <string name="maker_vivo">Vivo phones also need Autostart switched on for Anuj and High background power usage allowed.</string>
+    <string name="maker_huawei">Huawei and Honor phones need App launch for Anuj set to Manage manually, with all three switches on.</string>
+    <string name="test_title">Try it</string>
+    <string name="test_body">Send a real reminder a little later, close the app, and see whether it arrives.</string>
+    <string name="test_send">Send a test reminder</string>
+    <string name="test_reminder_title">Test reminder from Anuj</string>
+    <string name="test_waiting">Sent. You can close the app now.</string>
+    <string name="test_on_time">It arrived on time.</string>
+    <string name="test_late">It arrived %1$d seconds late. Check the items above.</string>
+    <plurals name="test_in_seconds">
+        <item quantity="one">In %1$d second</item>
+        <item quantity="other">In %1$d seconds</item>
+    </plurals>
+    <plurals name="test_in_minutes">
+        <item quantity="one">In %1$d minute</item>
+        <item quantity="other">In %1$d minutes</item>
+    </plurals>
+
+    <!-- Routine player -->
+    <string name="routine_step_of">Step %1$d of %2$d</string>
+    <string name="routine_done_next">Done, next</string>
+    <string name="routine_skip">Not now</string>
+    <string name="routine_all_done">All steps done</string>
+    <string name="routine_none_left">No steps left for now</string>
+    <string name="routine_left">%1$d:%2$02d left</string>
+    <string name="routine_over">Time is up for this step</string>
+    <string name="routine_then">%1$s left, then: %2$s</string>
+</resources>

@@ -18,6 +18,7 @@ import androidx.room.Room
 import com.karan.anuj.core.data.db.AnujDatabase
 import com.karan.anuj.core.data.di.DatabaseModule
 import com.karan.anuj.core.security.AppLockController
+import com.karan.anuj.feature.reminder.platform.ReminderRunner
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -72,11 +73,15 @@ class AppJourneyTest {
     @Inject
     lateinit var appLock: AppLockController
 
+    @Inject
+    lateinit var reminders: ReminderRunner
+
     @Before
     fun start() {
         hilt.inject()
-        /** The real Application does this on start; the test application is a stand-in that does not. */
+        /** The real Application does these on start; the test application is a stand-in that does not. */
         appLock.attach()
+        reminders.attach()
     }
 
     /**
@@ -169,6 +174,16 @@ class AppJourneyTest {
         waitForNoText("Steps")
         waitForNoText("Notes")
         waitForNoText("Photos")
+
+        // A reminder is set by tapping a chip; the repeat and style only appear once there is one.
+        waitForText("Remind me")
+        tapText("Remind me")
+        tapText("At the time")
+        waitForText("Keep reminding until done")
+        waitForText("Full-screen alarm")
+        tapText("OK")
+        waitForNoText("Keep reminding until done")
+        waitForText("At the time")
         tapText("High")
         tapLabel("Back")
         waitForText("Today · High")
@@ -177,6 +192,20 @@ class AppJourneyTest {
         tapText("Tasks")
         tapLabel("Show steps of Morning routine")
         waitForText("Brush teeth")
+
+        // A routine's steps are played one at a time.
+        tapText("Morning routine")
+        waitForText("Do the steps one by one")
+        tapText("Do the steps one by one")
+        waitForText("Step 1 of 5")
+        waitForText("Drink a glass of water")
+        tapText("Done, next")
+        waitForText("Step 2 of 5")
+        tapText("Not now")
+        waitForText("Brush teeth")
+        tapLabel("Back")
+        waitForText("Do the steps one by one")
+        tapLabel("Back")
 
         // Inbox: a thought is caught without leaving the screen.
         tapText("Inbox")
@@ -216,6 +245,36 @@ class AppJourneyTest {
         waitForText("Lock again after")
         waitForText("Times of day")
         waitForText("8:00 am · 1:00 pm · 6:00 pm · 9:00 pm")
+        waitForText("Backups kept")
+
+        // Reminder settings: the daily limit is changed by a chip, and shows on its row.
+        waitForText("Calm mode")
+        tapText("Notifications")
+        waitForText("Quiet hours")
+        waitForText("Kinds of reminder")
+        waitForText("Up to 30 a day")
+        tapText("Daily limit")
+        tapText("No limit")
+        tapText("OK")
+        waitForNoText("Up to 30 a day")
+        tapLabel("Back")
+
+        // A regular reminder is added from a ready-made chip, with nothing typed.
+        tapText("Regular reminders")
+        waitForText("Nothing here yet")
+        tapText("Water")
+        waitForText("Every so often")
+        tapText("OK")
+        waitForNoText("Every so often")
+        waitForText("Every 2 h, 9:00 am to 9:00 pm")
+        tapLabel("Back")
+
+        // The reminder check lists what the phone must allow and offers a test.
+        tapText("Reminder check")
+        waitForText("Notifications are allowed")
+        waitForText("Send a test reminder")
+        tapLabel("Back")
+
         waitForText("Backups kept")
         tapText("Lock again after")
         tapText("5 min away")

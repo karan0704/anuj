@@ -1,5 +1,6 @@
 package com.karan.anuj
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.SystemBarStyle
@@ -12,6 +13,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -19,6 +22,7 @@ import com.karan.anuj.core.domain.settings.ThemeMode
 import com.karan.anuj.core.security.BiometricAuthenticator
 import com.karan.anuj.core.security.LockState
 import com.karan.anuj.core.ui.theme.AnujTheme
+import com.karan.anuj.feature.reminder.platform.ReminderLinks
 import com.karan.anuj.navigation.AnujApp
 import com.karan.anuj.ui.lock.LockScreen
 import com.karan.anuj.ui.onboarding.OnboardingScreen
@@ -37,9 +41,14 @@ class MainActivity : FragmentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
 
+    /** The task a tapped reminder asked to open, until the app has opened it. */
+    private var taskToOpen by mutableStateOf<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        /** Only on a fresh start: after a rotation the same intent is delivered again and must not reopen the task. */
+        if (savedInstanceState == null) taskToOpen = intent.getStringExtra(ReminderLinks.EXTRA_TASK_ID)
 
         setContent {
             val root by viewModel.state.collectAsStateWithLifecycle()
@@ -87,11 +96,19 @@ class MainActivity : FragmentActivity() {
                                 if (enable) confirmThenEnableLock() else viewModel.setAppLock(false)
                             },
                             onForeground = viewModel::onForeground,
+                            taskToOpen = taskToOpen,
+                            onTaskOpened = { taskToOpen = null },
                         )
                     }
                 }
             }
         }
+    }
+
+    /** A reminder tapped while the app is already open arrives here instead of starting the app again. */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        taskToOpen = intent.getStringExtra(ReminderLinks.EXTRA_TASK_ID)
     }
 
     private fun promptUnlock() {

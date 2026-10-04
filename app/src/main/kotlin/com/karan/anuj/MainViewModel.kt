@@ -8,6 +8,7 @@ import com.karan.anuj.core.domain.settings.UpdateSettingUseCase
 import com.karan.anuj.core.domain.task.RollOverTasksUseCase
 import com.karan.anuj.core.security.AppLockController
 import com.karan.anuj.core.security.LockState
+import com.karan.anuj.feature.reminder.platform.ReminderRunner
 import com.karan.anuj.feature.task.common.DayClock
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -29,6 +30,7 @@ class MainViewModel @Inject constructor(
     private val updateSetting: UpdateSettingUseCase,
     private val appLock: AppLockController,
     private val rollOverTasks: RollOverTasksUseCase,
+    private val reminders: ReminderRunner,
 ) : ViewModel() {
 
     /** Null until the saved settings have been read, so nothing is drawn with the wrong theme or before the lock is known. */
@@ -50,8 +52,17 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    /** The phone may have slept through midnight or changed time zone; re-reading the day catches both. */
-    fun onForeground() = clock.refresh()
+    /**
+     * The phone may have slept through midnight or changed time zone;
+     * re-reading the day catches both. Reminders are checked too, in case an
+     * alarm was held back by the phone while the app was closed.
+     *
+     * Before phase 2 this was only `fun onForeground() = clock.refresh()`.
+     */
+    fun onForeground() {
+        clock.refresh()
+        reminders.syncNow()
+    }
 
     fun onUnlocked() = appLock.unlock()
 
