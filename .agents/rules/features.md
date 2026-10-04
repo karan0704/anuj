@@ -20,7 +20,7 @@ Library versions are pinned in `gradle/libs.versions.toml`. They are a known-wor
 
 ## Module Layout
 
-`app`, the five `core` modules, `feature/task` and `feature/reminder` exist (phases 0 to 2). Every other `feature/` module is planned and not built yet. Package root: `com.karan.anuj` (**assumption pending confirmation**). minSdk 26, also an assumption.
+`app`, the five `core` modules, `feature/task`, `feature/reminder` and `feature/voice` exist (phases 0 to 2, and 4), plus `quality` (tests about the code). Every other `feature/` module is planned and not built yet. Package root: `com.karan.anuj` (**assumption pending confirmation**). minSdk 26, also an assumption.
 
 ```
 app/                      navigation, Hilt entry point
@@ -212,7 +212,7 @@ Each phase must end in an installable, usable app (see Phased Independent Testab
 | 1 | Tasks | Area A, plus backup and restore | A full to-do app with nesting, carry-over, search, tags and safe data | Built; run on a device by the developer, two layout faults reported and fixed. The step-by-step guide has not been confirmed |
 | 2 | Reminders | Area B (except leave-by) | Tasks remind and nag reliably, without overwhelming | Built and tested on the computer; not yet run on a phone. Missed-call follow-up is not built (see Phase 2 gaps) |
 | 3 | Tracking | Area C (except mood log and watch import) | Sleep, water, food, weight, BP, journal, doctor export | Not started |
-| 4 | Voice | Area D | Hands-free: named assistant, voice notes, voice add | Not started |
+| 4 | Voice | Area D | Hands-free: named assistant, voice notes, voice add | Built and tested on the computer; speech itself has not been run on a phone. Several items are open (see Phase 4 gaps) |
 | 5 | Place | Area E, plus leave-by alerts | Leaving-home checklist and location reminders | Not started |
 | 6 | Scan and shopping | Areas F and G | Scan pages and receipts, shopping list, purchases, bills | Not started |
 | 7 | Phone use and focus | Area H | Phone-use nudges, focus mode, pick for me | Not started |
@@ -243,6 +243,23 @@ Phases 0–2 are the minimum that makes the app worth using daily. Phases 3–6 
 - Reminder settings live in a settings file and are not part of a backup; reminders themselves and their log are.
 - Medication, water and meal reminders only remind. Counting glasses or doses is phase 3 (trackers).
 - The app lock does not cover the answer screen: it shows a reminder's name and its answers over the lock screen, as the notification itself already does.
+
+**Phase 4 gaps, known and deliberate**:
+- **Nothing spoken has been tried on a phone.** The rules that read a sentence are tested; whether the engine hears the sentence correctly is not.
+- **The audio of a voice note is not kept.** Speaking fills the text field; the recording itself is thrown away.
+- The microphone button is on the new-task name only. Notes, descriptions, checklist lines, search and the inbox do not have it yet.
+- "Log water" and "log sleep" wait for trackers (phase 3).
+- Voice has no reminder commands yet ("snooze", "remind me in an hour" as a reminder rather than a task).
+- The topic words behind "office tasks" and "tasks related to money" have defaults but no screen to change them.
+- The engine is Vosk's small English model: fast and light, less accurate than larger engines. It is behind `SpeechEngine`, so it can be swapped.
+- Asked for on 2026-10-04 and not built: calling a contact by voice (phone app or WhatsApp, asking which one when several match); choosing the assistant's voice; using the assistant's name as the app's name on every screen; reading text on another app's screen aloud (needs the accessibility permission, and the scanner from phase 6).
+
+**Voice** — the assistant is a list of `VoiceCommand`s in `core:domain`, asked in order; the first one that recognises the sentence answers. A tapped shortcut sends the same sentence a voice would, so tap and voice end in the same use case. `VoiceAssistant` remembers what the last command changed, which is what "undo" takes back.
+
+- **The name is learnt, not spelt.** An offline engine only writes dictionary words, so "Anuj" comes out as other words. Settings, Voice, "Teach it its name" records what the engine writes, and any of those phrases wakes the assistant (`VoiceSettings.soundsLike`).
+- **Listening for the name** is a foreground microphone service with its own low-importance notification, started only while the app is on screen (Android refuses otherwise). It is off until the user chooses when it listens.
+- **The speech model is not in the repository.** `feature/voice` downloads it (about 40 MB) the first time it is built and packs it into the app, so the first build needs the internet and the phone never does.
+- **The microphone on a text field** comes through `LocalVoiceInput` in `core:ui`, supplied once by `AnujApp`, so no feature depends on the voice feature.
 
 **Reminders** — one `reminder` table. A reminder either belongs to a task (timed from the task's day and time, minus a lead) or stands on its own with clock times (medication, water, meals). Its next time is never stored: `ReminderPlanner` works it out from the schedule and from what has already shown, so it cannot go stale.
 

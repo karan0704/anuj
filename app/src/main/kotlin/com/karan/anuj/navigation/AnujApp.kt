@@ -13,10 +13,15 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -31,6 +36,7 @@ import androidx.navigation.navArgument
 import com.karan.anuj.R
 import com.karan.anuj.core.domain.task.TaskId
 import com.karan.anuj.core.ui.components.AnujScaffold
+import com.karan.anuj.core.ui.components.LocalVoiceInput
 import com.karan.anuj.feature.reminder.health.ReminderCheckScreen
 import com.karan.anuj.feature.reminder.routine.RoutinePlayerScreen
 import com.karan.anuj.feature.reminder.routine.RoutinePlayerViewModel
@@ -43,6 +49,9 @@ import com.karan.anuj.feature.task.inbox.InboxScreen
 import com.karan.anuj.feature.task.search.SearchScreen
 import com.karan.anuj.feature.task.search.TrashScreen
 import com.karan.anuj.feature.task.tree.TaskTreeScreen
+import com.karan.anuj.feature.voice.assistant.AssistantSheet
+import com.karan.anuj.feature.voice.dictate.DictationButton
+import com.karan.anuj.feature.voice.settings.VoiceSettingsScreen
 import com.karan.anuj.ui.home.HomeScreen
 import com.karan.anuj.ui.settings.SettingsScreen
 
@@ -73,6 +82,7 @@ private object Routes {
     const val NOTIFICATIONS = "settings/notifications"
     const val REGULAR_REMINDERS = "settings/regular-reminders"
     const val REMINDER_CHECK = "settings/reminder-check"
+    const val VOICE = "settings/voice"
     private const val ROUTINE = "routine"
     const val ROUTINE_PATTERN = "$ROUTINE/{${RoutinePlayerViewModel.TASK_ID_ARG}}"
 
@@ -101,6 +111,8 @@ fun AnujApp(
     /** One host for the whole app, so an "Undo" message looks and sits the same on every screen. */
     val snackbar = remember { SnackbarHostState() }
     val openTask: (TaskId) -> Unit = { navController.navigate(Routes.task(it)) }
+    /** The assistant is a sheet over whichever tab is showing, not a screen of its own. */
+    var assistantOpen by rememberSaveable { mutableStateOf(false) }
 
     LifecycleStartEffect(Unit) {
         onForeground()
@@ -144,10 +156,23 @@ fun AnujApp(
                             label = { Text(stringResource(destination.label)) },
                         )
                     }
+                    /** "Ask" opens the assistant. It sits in the bar so the thumb reaches it from every tab. */
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = { assistantOpen = true },
+                        icon = { Icon(painterResource(R.drawable.ic_ask), contentDescription = null) },
+                        label = { Text(stringResource(R.string.nav_ask)) },
+                    )
                 }
             }
         },
     ) {
+        /**
+         * Every text field in the app gets its microphone from here. The
+         * fields live in other features, which must not depend on the
+         * voice feature, so the button is handed down instead.
+         */
+        CompositionLocalProvider(LocalVoiceInput provides { onText -> DictationButton(onText = onText) }) {
         NavHost(
             navController = navController,
             startDestination = TopLevelDestination.HOME.route,
@@ -178,6 +203,7 @@ fun AnujApp(
                     onOpenNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                     onOpenRegularReminders = { navController.navigate(Routes.REGULAR_REMINDERS) },
                     onOpenReminderCheck = { navController.navigate(Routes.REMINDER_CHECK) },
+                    onOpenVoice = { navController.navigate(Routes.VOICE) },
                 )
             }
 
@@ -221,6 +247,13 @@ fun AnujApp(
             composable(Routes.TRASH) {
                 TrashScreen(onBack = navController::popBackStack)
             }
+            composable(Routes.VOICE) {
+                VoiceSettingsScreen(onBack = navController::popBackStack)
+            }
+        }
+        }
+        if (assistantOpen) {
+            AssistantSheet(onDismiss = { assistantOpen = false }, onOpenTask = openTask)
         }
     }
 }

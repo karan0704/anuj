@@ -15,6 +15,7 @@ import com.karan.anuj.core.data.db.TaskDao
 import com.karan.anuj.core.data.history.RoomChangeHistoryRepository
 import com.karan.anuj.core.data.reminder.DataStoreReminderSettingsRepository
 import com.karan.anuj.core.data.reminder.RoomReminderRepository
+import com.karan.anuj.core.data.voice.DataStoreVoiceSettingsRepository
 import com.karan.anuj.core.data.settings.DataStoreSettingsRepository
 import com.karan.anuj.core.data.task.DataStoreTaskPreferencesRepository
 import com.karan.anuj.core.data.task.FileAttachmentStore
@@ -37,6 +38,7 @@ import com.karan.anuj.core.domain.task.TagRepository
 import com.karan.anuj.core.domain.task.TaskPreferencesRepository
 import com.karan.anuj.core.domain.task.TaskRepository
 import com.karan.anuj.core.domain.time.TimeSource
+import com.karan.anuj.core.domain.voice.VoiceSettingsRepository
 // import com.karan.anuj.core.security.DatabasePassphraseProvider  // used only by provideDatabase, now in DatabaseModule
 import dagger.Binds
 import dagger.Module
@@ -93,6 +95,9 @@ abstract class DataModule {
 
     @Binds
     abstract fun bindReminderSettingsRepository(impl: DataStoreReminderSettingsRepository): ReminderSettingsRepository
+
+    @Binds
+    abstract fun bindVoiceSettingsRepository(impl: DataStoreVoiceSettingsRepository): VoiceSettingsRepository
 
     companion object {
 

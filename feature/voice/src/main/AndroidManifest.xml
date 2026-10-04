@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Asked for the first time the microphone button is tapped, never at install. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!--
+        Listening for the assistant's name with the app closed needs a
+        service the phone will not stop, which must show a notification.
+        From Android 14 the service must also say that it uses the microphone.
+    -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+
+    <!-- The flashlight is part of the camera. No picture is ever taken here. -->
+    <uses-feature
+        android:name="android.hardware.camera.flash"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="false" />
+
+    <application>
+
+        <!-- Not exported: only this app starts and stops it. -->
+        <service
+            android:name=".platform.ListeningService"
+            android:exported="false"
+            android:foregroundServiceType="microphone" />
+
+    </application>
+
+</manifest>

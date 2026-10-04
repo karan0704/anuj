@@ -35,6 +35,7 @@ import com.karan.anuj.core.ui.components.MinTouchTarget
 import com.karan.anuj.core.ui.components.SectionTitle
 import com.karan.anuj.feature.reminder.settings.ReminderSettingsRows
 import com.karan.anuj.feature.task.settings.TaskSettingsRows
+import com.karan.anuj.feature.voice.settings.VoiceSettingsRows
 
 @StringRes
 private fun ThemeMode.labelRes(): Int = when (this) {
@@ -81,6 +82,7 @@ fun SettingsScreen(
     onOpenNotifications: () -> Unit = {},
     onOpenRegularReminders: () -> Unit = {},
     onOpenReminderCheck: () -> Unit = {},
+    onOpenVoice: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -162,6 +164,10 @@ fun SettingsScreen(
             onOpenRegular = onOpenRegularReminders,
             onOpenCheck = onOpenReminderCheck,
         )
+
+        HorizontalDivider()
+        SectionTitle(stringResource(R.string.settings_section_voice))
+        VoiceSettingsRows(onOpenVoice = onOpenVoice)
 
         HorizontalDivider()
         SectionTitle(stringResource(R.string.settings_section_backup))
