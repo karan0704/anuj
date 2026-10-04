@@ -34,6 +34,11 @@ class RoomChangeHistoryRepository @Inject constructor(
             emitAll(dao.get().observeFor(table, rowId).map { rows -> rows.map { it.toDomain() } })
         }.flowOn(io)
 
+    override fun observeRecent(limit: Int): Flow<List<RecordChange>> =
+        flow { emitAll(dao.get().observeRecent(limit).map { rows -> rows.map { it.toDomain() } }) }.flowOn(io)
+
+    override suspend fun deleteBefore(millis: Long) = withContext(io) { dao.get().deleteBefore(millis) }
+
     private fun RecordChange.toEntity() = ChangeHistoryEntity(
         tableName = table,
         rowId = rowId,

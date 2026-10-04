@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -46,6 +47,7 @@ enum class SettingsSection(val route: String, @StringRes val title: Int, @String
     VOICE("settings/voice", R.string.settings_section_voice, R.string.settings_summary_voice),
     LOCK("settings/lock", R.string.settings_section_lock, R.string.settings_summary_lock),
     BACKUP("settings/backup", R.string.settings_section_backup, R.string.settings_summary_backup),
+    STORAGE("settings/storage", R.string.settings_section_storage, R.string.settings_summary_storage),
 }
 
 /** The root of the settings tree: one row per branch and nothing else. */
@@ -81,6 +83,7 @@ fun SettingsScreen(onBack: () -> Unit, onOpen: (SettingsSection) -> Unit) {
  * on first shows the system unlock prompt
  * @param onOpenNotifications, onOpenRegularReminders, onOpenReminderCheck open
  * the reminder screens one level further down
+ * @param onOpenHistory opens the screen that shows the logs
  */
 @Composable
 fun SettingsSectionScreen(
@@ -91,6 +94,7 @@ fun SettingsSectionScreen(
     onOpenNotifications: () -> Unit,
     onOpenRegularReminders: () -> Unit,
     onOpenReminderCheck: () -> Unit,
+    onOpenHistory: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         ScreenHeader(
@@ -109,6 +113,7 @@ fun SettingsSectionScreen(
                 )
                 SettingsSection.LOCK -> LockSettingsRows(lockAvailable, onAppLockToggled)
                 SettingsSection.BACKUP -> BackupSettingsRows()
+                SettingsSection.STORAGE -> StorageSettingsRows(onOpenHistory)
                 /** Voice has a full screen of its own in its feature; the root row opens that one directly. */
                 SettingsSection.VOICE -> Unit
             }
@@ -265,4 +270,93 @@ private fun LockSettingsRows(
             )
         }
     }
+}
+
+/** "Never", "1 week", "3 months": a number of days in the words a person would use. */
+@Composable
+private fun daysLabel(days: Int?, @StringRes whenNull: Int, @StringRes whenZero: Int = whenNull): String = when {
+    days == null -> stringResource(whenNull)
+    days <= 0 -> stringResource(whenZero)
+    days % DAYS_PER_YEAR == 0 -> pluralStringResource(R.plurals.keep_years, days / DAYS_PER_YEAR, days / DAYS_PER_YEAR)
+    days % DAYS_PER_MONTH == 0 -> pluralStringResource(R.plurals.keep_months, days / DAYS_PER_MONTH, days / DAYS_PER_MONTH)
+    days % DAYS_PER_WEEK == 0 -> pluralStringResource(R.plurals.keep_weeks, days / DAYS_PER_WEEK, days / DAYS_PER_WEEK)
+    else -> pluralStringResource(R.plurals.keep_days, days, days)
+}
+
+private const val DAYS_PER_WEEK = 7
+private const val DAYS_PER_MONTH = 30
+private const val DAYS_PER_YEAR = 365
+
+private enum class StorageSheet { NONE, TRASH, PHOTOS, HISTORY }
+
+/**
+ * What the app throws away by itself, and when. Out of the box the answer
+ * is nothing: the trash waits to be emptied by hand, and the logs are kept.
+ * Each of the three is the user's to change, and the logs can be read from
+ * the last row.
+ */
+@Composable
+private fun StorageSettingsRows(onOpenHistory: () -> Unit, viewModel: SettingsViewModel = hiltViewModel()) {
+    val settings by viewModel.settings.collectAsStateWithLifecycle()
+    var sheet by rememberSaveable { mutableStateOf(StorageSheet.NONE) }
+    val close = { sheet = StorageSheet.NONE }
+
+    FieldRow(
+        stringResource(R.string.storage_trash),
+        daysLabel(settings.emptyTrashAfterDays, R.string.storage_trash_never),
+        { sheet = StorageSheet.TRASH },
+    )
+    FieldRow(
+        stringResource(R.string.storage_photos),
+        daysLabel(settings.keepRemovedPhotosDays, R.string.storage_photos_at_once),
+        { sheet = StorageSheet.PHOTOS },
+    )
+    FieldRow(
+        stringResource(R.string.storage_history),
+        daysLabel(settings.keepHistoryDays, R.string.storage_history_always),
+        { sheet = StorageSheet.HISTORY },
+    )
+    HorizontalDivider()
+    FieldRow(stringResource(R.string.storage_see_history_detail), stringResource(R.string.history_title), onOpenHistory, valueFirst = true)
+
+    when (sheet) {
+        StorageSheet.NONE -> Unit
+
+        StorageSheet.TRASH -> AnujBottomSheet(onDismiss = close, title = stringResource(R.string.storage_trash)) {
+            ChoiceChips(
+                /** "Never" first; a wait saved by another version of the app still shows as the selected chip. */
+                options = (listOf<Int?>(null) + AppSettings.TRASH_DAYS_CHOICES + settings.emptyTrashAfterDays).distinct(),
+                selected = settings.emptyTrashAfterDays,
+                label = { daysLabel(it, R.string.storage_trash_never) },
+                onSelect = viewModel::setEmptyTrashAfter,
+            )
+            SheetNote(R.string.storage_trash_note)
+        }
+
+        StorageSheet.PHOTOS -> AnujBottomSheet(onDismiss = close, title = stringResource(R.string.storage_photos)) {
+            ChoiceChips(
+                options = (AppSettings.PHOTO_DAYS_CHOICES + settings.keepRemovedPhotosDays).distinct().sorted(),
+                selected = settings.keepRemovedPhotosDays,
+                label = { daysLabel(it, R.string.storage_photos_at_once) },
+                onSelect = viewModel::setKeepRemovedPhotos,
+            )
+            SheetNote(R.string.storage_photos_note)
+        }
+
+        StorageSheet.HISTORY -> AnujBottomSheet(onDismiss = close, title = stringResource(R.string.storage_history)) {
+            ChoiceChips(
+                options = (listOf<Int?>(null) + AppSettings.HISTORY_DAYS_CHOICES + settings.keepHistoryDays).distinct(),
+                selected = settings.keepHistoryDays,
+                label = { daysLabel(it, R.string.storage_history_always) },
+                onSelect = viewModel::setKeepHistory,
+            )
+            SheetNote(R.string.storage_history_note)
+        }
+    }
+}
+
+@Composable
+private fun SheetNote(@StringRes text: Int) {
+    Spacer(Modifier.height(16.dp))
+    Text(stringResource(text), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
 }

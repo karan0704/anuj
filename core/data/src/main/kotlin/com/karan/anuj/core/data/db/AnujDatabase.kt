@@ -36,6 +36,6 @@ abstract class AnujDatabase : RoomDatabase() {
 
     companion object {
         const val FILE_NAME = "anuj.db"
-        const val VERSION = 4
+        const val VERSION = 5
     }
 }

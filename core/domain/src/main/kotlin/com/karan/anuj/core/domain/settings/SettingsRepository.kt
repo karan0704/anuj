@@ -13,4 +13,7 @@ interface SettingsRepository {
     suspend fun setAppLockEnabled(enabled: Boolean)
     suspend fun setOnboardingDone(done: Boolean)
     suspend fun setLockAfterSeconds(seconds: Int)
+    suspend fun setEmptyTrashAfterDays(days: Int?)
+    suspend fun setKeepRemovedPhotosDays(days: Int)
+    suspend fun setKeepHistoryDays(days: Int?)
 }

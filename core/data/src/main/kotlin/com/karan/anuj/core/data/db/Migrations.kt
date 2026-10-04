@@ -42,7 +42,14 @@ object Migrations {
         }
     }
 
-    val ALL: Array<Migration> = arrayOf(FROM_1_TO_2, FROM_2_TO_3, FROM_3_TO_4)
+    /** Version 5 adds an index on the time of a change, for the History screen and for clearing old history. */
+    val FROM_4_TO_5 = object : Migration(4, 5) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_change_history_changedAt` ON `change_history` (`changedAt`)")
+        }
+    }
+
+    val ALL: Array<Migration> = arrayOf(FROM_1_TO_2, FROM_2_TO_3, FROM_3_TO_4, FROM_4_TO_5)
 
     /** A line keeps its place among its neighbours by being created that many milliseconds after them. */
     private val VERSION_4_STATEMENTS = listOf(

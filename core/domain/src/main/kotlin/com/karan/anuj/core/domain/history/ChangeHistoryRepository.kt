@@ -8,4 +8,10 @@ interface ChangeHistoryRepository {
 
     /** Changes to one row, newest first. */
     fun observeFor(table: String, rowId: String): Flow<List<RecordChange>>
+
+    /** The latest changes to anything, newest first. */
+    fun observeRecent(limit: Int): Flow<List<RecordChange>>
+
+    /** Forgets every change made before [millis]. */
+    suspend fun deleteBefore(millis: Long)
 }

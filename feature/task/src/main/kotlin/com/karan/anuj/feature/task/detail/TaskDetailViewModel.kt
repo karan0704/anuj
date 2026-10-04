@@ -2,6 +2,9 @@ package com.karan.anuj.feature.task.detail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.karan.anuj.core.domain.history.HistoryLine
+import com.karan.anuj.core.domain.history.HistoryText
+import com.karan.anuj.core.domain.history.ObserveHistoryUseCase
 import com.karan.anuj.core.domain.task.Attachment
 import com.karan.anuj.core.domain.task.AttachmentActions
 import com.karan.anuj.core.domain.task.CreateTaskUseCase
@@ -26,6 +29,7 @@ import com.karan.anuj.feature.task.common.TaskActions
 import com.karan.anuj.feature.task.common.TaskActionsViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.DayOfWeek
+import java.time.ZoneId
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -64,6 +68,7 @@ class TaskDetailViewModel @Inject constructor(
     private val duplicateTask: DuplicateTaskUseCase,
     private val actions: TaskActions,
     preferences: TaskPreferencesUseCase,
+    observeHistory: ObserveHistoryUseCase,
 ) : TaskActionsViewModel(actions) {
 
     private val taskId = TaskId(checkNotNull(savedState.get<String>(TASK_ID_ARG)) { "Task screen opened without a task id" })
@@ -74,6 +79,13 @@ class TaskDetailViewModel @Inject constructor(
             if (detail == null || detail.task.stamps.isDeleted) TaskDetailUiState.Gone
             else TaskDetailUiState.Loaded(detail, day, prefs)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TaskDetailUiState.Loading)
+
+    /** Every recorded edit of this task, newest first. Only read while its sheet is open. */
+    val history: StateFlow<List<HistoryLine>> =
+        observeHistory.ofTask(taskId, ZoneId.systemDefault())
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    fun historyMoment(line: HistoryLine): String = HistoryText.moment(line.at, ZoneId.systemDefault())
 
     private val removedChannel = Channel<RemovedPart>(Channel.BUFFERED)
     val removedParts: Flow<RemovedPart> = removedChannel.receiveAsFlow()

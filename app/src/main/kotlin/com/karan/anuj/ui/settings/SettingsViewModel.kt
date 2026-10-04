@@ -47,6 +47,18 @@ class SettingsViewModel @Inject constructor(
         writes.launch { updateSetting.textScale(scale) }
     }
 
+    fun setEmptyTrashAfter(days: Int?) {
+        writes.launch { updateSetting.emptyTrashAfter(days) }
+    }
+
+    fun setKeepRemovedPhotos(days: Int) {
+        writes.launch { updateSetting.keepRemovedPhotos(days) }
+    }
+
+    fun setKeepHistory(days: Int?) {
+        writes.launch { updateSetting.keepHistory(days) }
+    }
+
     fun setLockAfter(seconds: Int) {
         writes.launch { updateSetting.lockAfter(seconds) }
     }

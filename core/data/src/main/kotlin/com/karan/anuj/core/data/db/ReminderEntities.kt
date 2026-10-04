@@ -118,4 +118,10 @@ interface ReminderDao {
 
     @Query("SELECT MAX(at) FROM reminder_event WHERE kind = :kind")
     suspend fun lastEventAt(kind: String): Long?
+
+    @Query("SELECT * FROM reminder_event ORDER BY at DESC LIMIT :limit")
+    fun observeRecentEvents(limit: Int): Flow<List<ReminderEventEntity>>
+
+    @Query("DELETE FROM reminder_event WHERE at < :millis")
+    suspend fun deleteEventsBefore(millis: Long)
 }

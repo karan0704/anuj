@@ -2,6 +2,7 @@ package com.karan.anuj
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.karan.anuj.core.domain.history.HouseKeepingUseCase
 import com.karan.anuj.core.domain.settings.AppSettings
 import com.karan.anuj.core.domain.settings.ObserveSettingsUseCase
 import com.karan.anuj.core.domain.settings.UpdateSettingUseCase
@@ -33,6 +34,7 @@ class MainViewModel @Inject constructor(
     private val rollOverTasks: RollOverTasksUseCase,
     private val reminders: ReminderRunner,
     private val voice: VoiceRunner,
+    private val houseKeeping: HouseKeepingUseCase,
 ) : ViewModel() {
 
     /** Null until the saved settings have been read, so nothing is drawn with the wrong theme or before the lock is known. */
@@ -66,6 +68,8 @@ class MainViewModel @Inject constructor(
         clock.refresh()
         reminders.syncNow()
         voice.onForeground()
+        /** The clean-up the user has chosen in Settings; with the defaults it removes nothing. */
+        viewModelScope.launch { houseKeeping() }
     }
 
     fun onUnlocked() = appLock.unlock()

@@ -100,6 +100,16 @@ interface AttachmentFileStore {
     fun pathOf(fileName: String): String
 
     suspend fun delete(fileNames: List<String>)
+
+    /**
+     * Sets files aside instead of deleting them: they leave the photo folder,
+     * so nothing shows or backs them up any more, and are remembered with the
+     * moment they were set aside.
+     */
+    suspend fun setAside(fileNames: List<String>)
+
+    /** Deletes the files that were set aside before [millis]. */
+    suspend fun deleteSetAsideBefore(millis: Long)
 }
 
 /**

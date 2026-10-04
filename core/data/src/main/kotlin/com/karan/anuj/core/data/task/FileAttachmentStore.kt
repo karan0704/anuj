@@ -61,6 +61,22 @@ class FileAttachmentStore @Inject constructor(
         fileNames.forEach { fileOf(it).delete() }
     }
 
+    /** A moved file is stamped with the time of the move, which is the only record of when it was set aside. */
+    override suspend fun setAside(fileNames: List<String>) = withContext(io) {
+        val now = System.currentTimeMillis()
+        fileNames.forEach { name ->
+            val held = File(heldFolder, File(name).name)
+            if (fileOf(name).renameTo(held)) held.setLastModified(now)
+        }
+    }
+
+    override suspend fun deleteSetAsideBefore(millis: Long) = withContext(io) {
+        heldFolder.listFiles().orEmpty().filter { it.lastModified() < millis }.forEach { it.delete() }
+    }
+
+    /** Beside the photo folder, not inside it, so a backup of the photo folder never picks these up. */
+    private val heldFolder: File get() = File(context.filesDir, HELD_FOLDER).apply { mkdirs() }
+
     private fun newFile() = File(directory.folder, "${ids.newId()}.jpg")
 
     /** Only the last path segment is used, so a stored name can never point outside the attachment folder. */
@@ -69,5 +85,6 @@ class FileAttachmentStore @Inject constructor(
     private companion object {
         /** Must match the provider authority in this module's AndroidManifest.xml. */
         const val AUTHORITY_SUFFIX = ".files"
+        const val HELD_FOLDER = "attachments-removed"
     }
 }

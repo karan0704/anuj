@@ -69,6 +69,7 @@ import com.karan.anuj.core.domain.task.Task
 import com.karan.anuj.core.domain.task.TaskDetail
 import com.karan.anuj.core.domain.task.TaskId
 import com.karan.anuj.core.domain.task.TaskPreferences
+import com.karan.anuj.core.ui.components.AnujBottomSheet
 import com.karan.anuj.core.ui.components.ChoiceChips
 import com.karan.anuj.core.ui.components.FieldRow
 import com.karan.anuj.core.ui.components.MinTouchTarget
@@ -100,7 +101,7 @@ import java.time.ZoneId
 import kotlinx.coroutines.launch
 
 /** Which sheet is open over the task. */
-private enum class DetailSheet { NONE, NAME, DESCRIPTION, DUE, REPEAT, TAGS, CARRY, ADD_NOTE }
+private enum class DetailSheet { NONE, NAME, DESCRIPTION, DUE, REPEAT, TAGS, CARRY, ADD_NOTE, HISTORY }
 
 /**
  * One task with everything that belongs to it.
@@ -342,6 +343,9 @@ private fun LoadedTask(
                     }
                     PhotoButtons(viewModel)
                     HorizontalDivider()
+                    TextButton(onClick = { sheet = DetailSheet.HISTORY }, modifier = Modifier.padding(horizontal = 12.dp)) {
+                        Text(stringResource(R.string.detail_history))
+                    }
                     TextButton(
                         onClick = { viewModel.duplicate({ copyName }, onOpenTask) },
                         modifier = Modifier.padding(horizontal = 12.dp),
@@ -409,6 +413,7 @@ private fun LoadedTask(
             onChange = { rule: CarryOverRule? -> viewModel.update { it.copy(carryOver = rule) } },
             onDismiss = closeSheet,
         )
+        DetailSheet.HISTORY -> HistorySheet(viewModel, onDismiss = closeSheet)
         DetailSheet.ADD_NOTE -> TextEditSheet(
             title = stringResource(R.string.detail_add_note),
             initial = "",
@@ -431,6 +436,29 @@ private fun LoadedTask(
         )
     }
 }
+
+/** What has been changed on this task and when, to read only. */
+@Composable
+private fun HistorySheet(viewModel: TaskDetailViewModel, onDismiss: () -> Unit) {
+    val lines by viewModel.history.collectAsStateWithLifecycle()
+    AnujBottomSheet(onDismiss = onDismiss, title = stringResource(R.string.detail_history)) {
+        if (lines.isEmpty()) {
+            Text(stringResource(R.string.detail_history_empty), style = MaterialTheme.typography.bodyLarge)
+        }
+        /** The newest few are enough on a sheet; the full log is in Settings. */
+        lines.take(HISTORY_LINES_SHOWN).forEach { line ->
+            Text(line.what, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                viewModel.historyMoment(line),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+        }
+    }
+}
+
+private const val HISTORY_LINES_SHOWN = 20
 
 /** What is already set among the things under "More", so nothing set is ever out of sight. */
 @Composable

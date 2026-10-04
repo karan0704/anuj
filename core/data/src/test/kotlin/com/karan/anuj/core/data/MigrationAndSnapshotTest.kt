@@ -145,6 +145,22 @@ class MigrationAndSnapshotTest {
     }
 
     @Test
+    fun `a version 4 database upgrades with its history kept and old history removable`() = runTest {
+        createDatabaseAtVersion(4, "upgrade4.db") {
+            it.execSQL(
+                "INSERT INTO change_history (tableName, rowId, field, oldValue, newValue, changedAt) VALUES " +
+                    "('task', 't', 'name', 'a', 'b', 10), ('task', 't', 'name', 'b', 'c', 50)",
+            )
+        }
+
+        val upgraded = openCurrent("upgrade4.db")
+        upgraded.changeHistoryDao().deleteBefore(20)
+
+        assertEquals(listOf(50L), upgraded.snapshotDao().changeHistory().map { it.changedAt })
+        assertEquals(AnujDatabase.VERSION, upgraded.openHelper.readableDatabase.version)
+    }
+
+    @Test
     fun `a version 2 database upgrades with its tasks kept and reminders working`() = runTest {
         createDatabaseAtVersion(2, "upgrade2.db") {
             it.execSQL(

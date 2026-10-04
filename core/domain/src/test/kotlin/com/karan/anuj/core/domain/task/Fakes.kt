@@ -3,6 +3,7 @@ package com.karan.anuj.core.domain.task
 import com.karan.anuj.core.domain.history.ChangeHistoryRepository
 import com.karan.anuj.core.domain.history.RecordChange
 import com.karan.anuj.core.domain.record.RecordStamps
+import com.karan.anuj.core.domain.settings.FakeSettingsRepository
 import com.karan.anuj.core.domain.time.TimeSource
 import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
@@ -30,6 +31,11 @@ class FakeHistory : ChangeHistoryRepository {
     }
 
     override fun observeFor(table: String, rowId: String): Flow<List<RecordChange>> = emptyFlow()
+    override fun observeRecent(limit: Int): Flow<List<RecordChange>> = emptyFlow()
+
+    override suspend fun deleteBefore(millis: Long) {
+        recorded.removeAll { it.changedAt < millis }
+    }
 }
 
 class FakeTaskRepository : TaskRepository {
@@ -123,6 +129,20 @@ class FakeFileStore : AttachmentFileStore {
     override suspend fun delete(fileNames: List<String>) {
         deleted += fileNames
     }
+
+    /** File name to the moment it was set aside. */
+    val setAside = mutableMapOf<String, Long>()
+    var now = 0L
+
+    override suspend fun setAside(fileNames: List<String>) {
+        fileNames.forEach { setAside[it] = now }
+    }
+
+    override suspend fun deleteSetAsideBefore(millis: Long) {
+        val old = setAside.filterValues { it < millis }.keys.toList()
+        deleted += old
+        old.forEach(setAside::remove)
+    }
 }
 
 class FakeTaskPreferences(initial: TaskPreferences = TaskPreferences()) : TaskPreferencesRepository {
@@ -143,6 +163,7 @@ class TaskWorld {
     val attachments = FakeAttachmentRepository()
     val files = FakeFileStore()
     val preferences = FakeTaskPreferences()
+    val settings = FakeSettingsRepository()
     val editor = TaskEditor(tasks, history, clock)
 
     /** Stores a task directly, bypassing the use cases, to set a scene. */

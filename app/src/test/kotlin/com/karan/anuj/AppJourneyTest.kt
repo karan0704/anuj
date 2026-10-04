@@ -330,6 +330,17 @@ class AppJourneyTest {
         waitForNoText("OK")
         tapLabel("Back")
 
+        // History and storage: nothing is thrown away unless asked for, and the logs can be read.
+        tapText("The trash, photos of deleted tasks, the logs")
+        waitForText("Never")
+        waitForText("Deleted with the task")
+        waitForText("Always")
+        tapText("What was edited, and every reminder")
+        waitForText("Edits")
+        waitForText("Priority: NONE → HIGH")
+        tapLabel("Back")
+        tapLabel("Back")
+
         // App lock: the delay is a chip.
         tapText("Fingerprint or screen lock")
         tapText("Lock again after")

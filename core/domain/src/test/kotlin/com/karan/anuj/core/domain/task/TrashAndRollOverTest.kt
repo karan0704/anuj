@@ -16,7 +16,7 @@ class TrashAndRollOverTest {
     private val world = TaskWorld()
     private val delete = DeleteTaskUseCase(world.tasks, world.editor)
     private val restore = RestoreTaskUseCase(world.tasks, world.editor)
-    private val purge = PurgeTasksUseCase(world.tasks, world.attachments, world.files)
+    private val purge = PurgeTasksUseCase(world.tasks, world.attachments, world.files, world.settings)
     private val emptyTrash = EmptyTrashUseCase(world.tasks, purge)
     private val observeTrash = ObserveTrashUseCase(world.tasks)
     private val rollOver = RollOverTasksUseCase(world.tasks, world.preferences, world.editor, world.ids)

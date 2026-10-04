@@ -44,6 +44,9 @@ class DataStoreSettingsRepository @Inject constructor(
                 appLockEnabled = prefs[APP_LOCK] ?: false,
                 onboardingDone = prefs[ONBOARDING_DONE] ?: false,
                 lockAfterSeconds = prefs[LOCK_AFTER_SECONDS] ?: AppSettings.DEFAULT_LOCK_AFTER_SECONDS,
+                emptyTrashAfterDays = prefs[EMPTY_TRASH_DAYS],
+                keepRemovedPhotosDays = prefs[KEEP_PHOTOS_DAYS] ?: 0,
+                keepHistoryDays = prefs[KEEP_HISTORY_DAYS],
             )
         }
         .distinctUntilChanged()
@@ -80,6 +83,19 @@ class DataStoreSettingsRepository @Inject constructor(
         context.settingsStore.edit { it[LOCK_AFTER_SECONDS] = seconds }
     }
 
+    override suspend fun setEmptyTrashAfterDays(days: Int?) = setOrClear(EMPTY_TRASH_DAYS, days)
+
+    override suspend fun setKeepRemovedPhotosDays(days: Int) {
+        context.settingsStore.edit { it[KEEP_PHOTOS_DAYS] = days }
+    }
+
+    override suspend fun setKeepHistoryDays(days: Int?) = setOrClear(KEEP_HISTORY_DAYS, days)
+
+    /** "Never" and "always" are stored as the key being absent, so there is no magic number standing for them. */
+    private suspend fun setOrClear(key: Preferences.Key<Int>, value: Int?) {
+        context.settingsStore.edit { if (value == null) it.remove(key) else it[key] = value }
+    }
+
     /** A value saved by a newer version of the app that this one does not know falls back to the default. */
     private inline fun <reified T : Enum<T>> enumOr(stored: String?, default: T): T =
         enumValues<T>().firstOrNull { it.name == stored } ?: default
@@ -93,5 +109,8 @@ class DataStoreSettingsRepository @Inject constructor(
         val APP_LOCK = booleanPreferencesKey("app_lock_enabled")
         val ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
         val LOCK_AFTER_SECONDS = intPreferencesKey("lock_after_seconds")
+        val EMPTY_TRASH_DAYS = intPreferencesKey("empty_trash_after_days")
+        val KEEP_PHOTOS_DAYS = intPreferencesKey("keep_removed_photos_days")
+        val KEEP_HISTORY_DAYS = intPreferencesKey("keep_history_days")
     }
 }

@@ -42,6 +42,12 @@ class UpdateSettingUseCase @Inject constructor(
 
     suspend fun lockAfter(seconds: Int) = tracked { repository.setLockAfterSeconds(seconds.coerceAtLeast(0)) }
 
+    suspend fun emptyTrashAfter(days: Int?) = tracked { repository.setEmptyTrashAfterDays(days?.coerceAtLeast(1)) }
+
+    suspend fun keepRemovedPhotos(days: Int) = tracked { repository.setKeepRemovedPhotosDays(days.coerceAtLeast(0)) }
+
+    suspend fun keepHistory(days: Int?) = tracked { repository.setKeepHistoryDays(days?.coerceAtLeast(1)) }
+
     private suspend fun tracked(change: suspend () -> Unit) {
         val before = repository.settings.first()
         change()
@@ -65,5 +71,8 @@ class UpdateSettingUseCase @Inject constructor(
         "appLockEnabled" to appLockEnabled.toString(),
         "onboardingDone" to onboardingDone.toString(),
         "lockAfterSeconds" to lockAfterSeconds.toString(),
+        "emptyTrashAfterDays" to emptyTrashAfterDays?.toString(),
+        "keepRemovedPhotosDays" to keepRemovedPhotosDays.toString(),
+        "keepHistoryDays" to keepHistoryDays?.toString(),
     )
 }

@@ -72,6 +72,47 @@
     <string name="settings_summary_voice">The assistant\'s name, when it listens, how it answers</string>
     <string name="settings_summary_lock">Fingerprint or screen lock, and when it locks again</string>
     <string name="settings_summary_backup">Folder, schedule, password, restore</string>
+    <string name="settings_section_storage">History and storage</string>
+    <string name="settings_summary_storage">The trash, photos of deleted tasks, the logs</string>
+
+    <!-- History and storage -->
+    <string name="storage_trash">Empty the trash by itself</string>
+    <string name="storage_trash_never">Never</string>
+    <string name="storage_trash_note">A task that has been in the trash this long is removed for good. With \"Never\", nothing leaves the trash until you empty it yourself.</string>
+    <string name="storage_photos">Photos of tasks removed for good</string>
+    <string name="storage_photos_at_once">Deleted with the task</string>
+    <string name="storage_photos_note">When a task is removed for good, its photo files can go with it or stay on the phone a while longer. They are not shown anywhere in the app while they wait.</string>
+    <string name="storage_history">Keep the logs for</string>
+    <string name="storage_history_always">Always</string>
+    <string name="storage_history_note">The logs are what was edited and which reminders were shown. Older lines are forgotten after this long. Finished rounds of routines are always kept.</string>
+    <string name="storage_see_history_detail">What was edited, and every reminder shown, held back or answered</string>
+    <plurals name="keep_days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <plurals name="keep_weeks">
+        <item quantity="one">%1$d week</item>
+        <item quantity="other">%1$d weeks</item>
+    </plurals>
+    <plurals name="keep_months">
+        <item quantity="one">%1$d month</item>
+        <item quantity="other">%1$d months</item>
+    </plurals>
+    <plurals name="keep_years">
+        <item quantity="one">%1$d year</item>
+        <item quantity="other">%1$d years</item>
+    </plurals>
+    <string name="history_title">History</string>
+    <string name="history_edits">Edits</string>
+    <string name="history_reminders">Reminders</string>
+    <string name="history_empty">Nothing here yet.</string>
+    <string name="history_event_shown">Shown</string>
+    <string name="history_event_nagged">Shown again</string>
+    <string name="history_event_held">Held back</string>
+    <string name="history_event_snoozed">Snoozed</string>
+    <string name="history_event_done">Done</string>
+    <string name="history_event_moved">Moved to another day</string>
+    <string name="history_event_summary">Summary shown</string>
 
     <!-- Backup -->
     <string name="backup_folder">Backup folder</string>

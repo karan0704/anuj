@@ -31,11 +31,26 @@ data class AppSettings(
     val lowerLists: Boolean = true,
     val appLockEnabled: Boolean = false,
     val onboardingDone: Boolean = false,
+    /** How many days a task stays in the trash before it is removed for good; null keeps it until the user empties the trash. */
+    val emptyTrashAfterDays: Int? = null,
+    /** How many days the photos of a task removed for good are held back before their files are deleted; 0 deletes them with the task. */
+    val keepRemovedPhotosDays: Int = 0,
+    /** How many days the logs (what was edited, which reminders were shown) are kept; null keeps them always. */
+    val keepHistoryDays: Int? = null,
     /** How long the app may be out of view before it asks to be unlocked again, in seconds. */
     val lockAfterSeconds: Int = DEFAULT_LOCK_AFTER_SECONDS,
 ) {
     companion object {
         const val DEFAULT_LOCK_AFTER_SECONDS = 60
+
+        /** A week, one, two, three and six months, a year: the waits offered before the trash is emptied by itself. */
+        val TRASH_DAYS_CHOICES: List<Int> = listOf(7, 30, 60, 90, 180, 365)
+
+        /** At once, a week, a month, three months. */
+        val PHOTO_DAYS_CHOICES: List<Int> = listOf(0, 7, 30, 90)
+
+        /** One, three and six months, a year. Never shorter than a month, because the daily reminder limit reads today's log. */
+        val HISTORY_DAYS_CHOICES: List<Int> = listOf(30, 90, 180, 365)
 
         /** The delays offered as chips: straight away, half a minute, one, five and fifteen minutes. */
         val LOCK_AFTER_CHOICES: List<Int> = listOf(0, 30, 60, 300, 900)

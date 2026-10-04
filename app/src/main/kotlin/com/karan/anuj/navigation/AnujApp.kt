@@ -51,6 +51,7 @@ import com.karan.anuj.feature.task.tree.TaskTreeScreen
 import com.karan.anuj.feature.voice.assistant.AssistantSheet
 import com.karan.anuj.feature.voice.dictate.DictationButton
 import com.karan.anuj.feature.voice.settings.VoiceSettingsScreen
+import com.karan.anuj.ui.history.HistoryScreen
 import com.karan.anuj.ui.home.HomeLinks
 import com.karan.anuj.ui.home.HomeScreen
 import com.karan.anuj.ui.settings.SettingsScreen
@@ -81,6 +82,7 @@ private object Routes {
     fun task(id: TaskId) = "$TASK/${id.value}"
 
     const val SETTINGS = "settings"
+    const val HISTORY = "settings/history"
     const val NOTIFICATIONS = "settings/notifications"
     const val REGULAR_REMINDERS = "settings/regular-reminders"
     const val REMINDER_CHECK = "settings/reminder-check"
@@ -208,8 +210,12 @@ fun AnujApp(
                         onOpenNotifications = { navController.navigate(Routes.NOTIFICATIONS) },
                         onOpenRegularReminders = { navController.navigate(Routes.REGULAR_REMINDERS) },
                         onOpenReminderCheck = { navController.navigate(Routes.REMINDER_CHECK) },
+                        onOpenHistory = { navController.navigate(Routes.HISTORY) },
                     )
                 }
+            }
+            composable(Routes.HISTORY) {
+                HistoryScreen(onBack = navController::popBackStack)
             }
             composable(SettingsSection.VOICE.route) {
                 VoiceSettingsScreen(onBack = navController::popBackStack)
