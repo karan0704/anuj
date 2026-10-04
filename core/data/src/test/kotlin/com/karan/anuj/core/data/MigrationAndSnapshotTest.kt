@@ -12,6 +12,8 @@ import com.karan.anuj.core.data.db.ChangeHistoryEntity
 import com.karan.anuj.core.data.db.DatabaseSnapshot
 import com.karan.anuj.core.data.db.Migrations
 import com.karan.anuj.core.data.db.NoteEntity
+import com.karan.anuj.core.data.db.PlaceEntity
+import com.karan.anuj.core.data.db.PlaceVisitEntity
 import com.karan.anuj.core.data.db.ReminderEntity
 import com.karan.anuj.core.data.db.ReminderEventEntity
 import com.karan.anuj.core.data.db.SnapshotFormat
@@ -19,6 +21,7 @@ import com.karan.anuj.core.data.db.StampColumns
 import com.karan.anuj.core.data.db.TagEntity
 import com.karan.anuj.core.data.db.TaskEntity
 import com.karan.anuj.core.data.db.TaskOccurrenceEntity
+import com.karan.anuj.core.data.db.TaskPlaceEntity
 import com.karan.anuj.core.data.db.TaskTagEntity
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -161,6 +164,29 @@ class MigrationAndSnapshotTest {
     }
 
     @Test
+    fun `a version 5 database upgrades with its tasks kept and places working`() = runTest {
+        createDatabaseAtVersion(5, "upgrade5.db") {
+            it.execSQL(
+                "INSERT INTO task (id, name, description, daysOff, priority, carryCount, createdAt, updatedAt) " +
+                    "VALUES ('t', 'Buy the water can', '', 0, 'NONE', 0, 1, 1)",
+            )
+        }
+
+        val upgraded = openCurrent("upgrade5.db")
+        val places = upgraded.placeDao()
+        places.upsert(PlaceEntity("shop", "Shop", 21.1, 79.0, 100, "SAVED", stamps = stamps))
+        places.upsertVisit(PlaceVisitEntity("v", "shop", arrivedAt = 5))
+        places.upsertTie(TaskPlaceEntity("t", "shop", "ARRIVE"))
+
+        assertEquals(listOf("t"), places.tiesOf("shop").map { it.taskId })
+        places.delete("shop")
+        assertTrue("a place takes its visits and its ties with it", places.tiesOf("shop").isEmpty())
+        assertEquals(0, places.countVisits("shop"))
+        assertEquals(listOf("Buy the water can"), upgraded.snapshotDao().tasks().map { it.name })
+        assertEquals(AnujDatabase.VERSION, upgraded.openHelper.readableDatabase.version)
+    }
+
+    @Test
     fun `a version 2 database upgrades with its tasks kept and reminders working`() = runTest {
         createDatabaseAtVersion(2, "upgrade2.db") {
             it.execSQL(
@@ -240,6 +266,9 @@ class MigrationAndSnapshotTest {
             ),
             ReminderEntity(id = "water", title = "Drink water", schedule = "EVERY;120;540;1260;0", enabled = false, stamps = stamps),
         ),
+        places = listOf(PlaceEntity("home", "Home", 21.1458, 79.0882, 100, "SAVED", isHome = true, stamps = stamps)),
+        placeVisits = listOf(PlaceVisitEntity("v", "home", arrivedAt = 3, leftAt = 9)),
+        taskPlaces = listOf(TaskPlaceEntity("parent", "home", "LEAVE")),
         reminderEvents = listOf(ReminderEventEntity("e", "r", "parent", "Trip", "SNOOZED", 8, minutes = 10, reason = "Busy")),
     )
 

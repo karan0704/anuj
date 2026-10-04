@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Places screen -->
+    <string name="places_title">Places</string>
+    <string name="places_back">Back</string>
+    <string name="places_enable">Notice places</string>
+    <string name="places_enable_detail">Uses the phone\'s location. Works without internet, Wi-Fi or Bluetooth. Nothing leaves the phone.</string>
+    <string name="places_closed">Also work while the app is closed</string>
+    <string name="places_closed_detail">Choose \"Allow all the time\". Without it, places are only checked when you open the app.</string>
+    <string name="places_check">Check where I am now</string>
+    <string name="places_check_detail">Reads the phone\'s position once and applies the rules below</string>
+    <string name="places_checking">Finding where you are…</string>
+    <string name="places_checked">Done. Your position was read.</string>
+    <string name="places_no_position">No position could be read. Switch Location on, or step outside for a moment.</string>
+    <string name="places_saved_here">Saved this spot.</string>
+    <string name="places_save_here">Save where I am now</string>
+    <string name="places_group_noticed">New spots</string>
+    <string name="places_group_saved">Saved places</string>
+    <string name="places_group_visited">Only visited</string>
+    <string name="places_group_ignored">Ignored</string>
+    <string name="places_rules">How places work</string>
+    <string name="places_radius">Size of a place</string>
+    <string name="places_metres">%1$d metres around it</string>
+    <string name="places_ask">Ask me about new spots</string>
+    <string name="places_ask_detail">Off keeps them in the list here without a notification.</string>
+    <string name="places_notice_minutes">Ask after one stay of</string>
+    <string name="places_minutes">%1$d minutes</string>
+    <string name="places_notice_visits">Or after coming back</string>
+    <string name="places_visits">%1$d times</string>
+    <string name="places_settle">Start the leaving list fresh after being home for</string>
+
+    <!-- One place -->
+    <string name="place_unnamed">A place without a name</string>
+    <string name="place_is_home">Home</string>
+    <string name="place_kind_saved">Saved place</string>
+    <string name="place_kind_visited">Only visited</string>
+    <string name="place_kind_ignored">Ignored</string>
+    <string name="place_kind_noticed">New spot</string>
+    <string name="place_noticed_question">You stayed here a while, or keep coming back. What is this spot?</string>
+    <string name="place_answer_save">Save it as a place</string>
+    <string name="place_answer_visited">Keep it only as visited</string>
+    <string name="place_answer_ignore">Ignore it</string>
+    <string name="place_name_hint">Name, such as Home or Water shop</string>
+    <string name="place_home">This is home</string>
+    <string name="place_home_detail">The leaving list belongs to home.</string>
+    <string name="place_save">Save</string>
+    <string name="place_remove">Remove this place</string>
+
+    <!-- The place row on a task -->
+    <string name="task_place">Place</string>
+    <string name="task_place_none">No place</string>
+    <string name="task_place_arrive">When I get to %1$s</string>
+    <string name="task_place_leave">Before I leave %1$s</string>
+    <string name="task_place_when_arrive">When I get there</string>
+    <string name="task_place_when_leave">Before I leave</string>
+    <string name="task_place_arrive_note">The task is brought up a few minutes after you arrive, not when you only pass by.</string>
+    <string name="task_place_leave_note">Tick the steps before going out. If you leave with one still open, you are told which. The ticks stay until you are back and settled.</string>
+</resources>

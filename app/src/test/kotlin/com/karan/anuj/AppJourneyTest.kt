@@ -320,6 +320,15 @@ class AppJourneyTest {
         tapLabel("Back")
         tapLabel("Back")
 
+        // Places: off until switched on, and every number the rules use is a setting.
+        tapText("Home, saved places, the leaving list, new spots")
+        waitForText("Notice places")
+        waitForText("Works without internet, Wi-Fi or Bluetooth")
+        waitForText("100 metres around it")
+        waitForText("Ask after one stay of")
+        waitForNoText("Check where I am now")
+        tapLabel("Back")
+
         // Voice settings: the name, when it listens, and how many tasks it reads.
         tapText("The assistant's name, when it listens")
         waitForText("Teach it its name")

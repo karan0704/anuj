@@ -144,7 +144,7 @@ class AndroidReminderNotifier @Inject constructor(
 
     /** An early warning and the summary arrive quietly in the shade; the rest pop up. */
     private fun importanceOf(category: ReminderCategory): Int = when (category) {
-        ReminderCategory.HEADS_UP, ReminderCategory.SUMMARY -> NotificationManager.IMPORTANCE_DEFAULT
+        ReminderCategory.HEADS_UP, ReminderCategory.SUMMARY, ReminderCategory.PLACE -> NotificationManager.IMPORTANCE_DEFAULT
         ReminderCategory.TASK, ReminderCategory.ALARM, ReminderCategory.HEALTH -> NotificationManager.IMPORTANCE_HIGH
     }
 

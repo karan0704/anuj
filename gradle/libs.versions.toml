@@ -28,6 +28,7 @@ javaxInject = "1"
 junit = "4.13.2"
 serializationJson = "1.8.1"
 work = "2.10.1"
+playServicesLocation = "21.3.0"
 documentfile = "1.0.1"
 coil = "2.7.0"
 zip4j = "2.11.5"
@@ -76,6 +77,7 @@ javax-inject = { module = "javax.inject:javax.inject", version.ref = "javaxInjec
 junit = { module = "junit:junit", version.ref = "junit" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serializationJson" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
+play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
 androidx-documentfile = { module = "androidx.documentfile:documentfile", version.ref = "documentfile" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 zip4j = { module = "net.lingala.zip4j:zip4j", version.ref = "zip4j" }

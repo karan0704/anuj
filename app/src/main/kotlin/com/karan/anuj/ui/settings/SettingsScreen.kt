@@ -44,6 +44,7 @@ enum class SettingsSection(val route: String, @StringRes val title: Int, @String
     DISPLAY("settings/display", R.string.settings_section_display, R.string.settings_summary_display),
     TASKS("settings/tasks", R.string.settings_section_tasks, R.string.settings_summary_tasks),
     REMINDERS("settings/reminders", R.string.settings_section_reminders, R.string.settings_summary_reminders),
+    PLACES("settings/places", R.string.settings_section_places, R.string.settings_summary_places),
     VOICE("settings/voice", R.string.settings_section_voice, R.string.settings_summary_voice),
     LOCK("settings/lock", R.string.settings_section_lock, R.string.settings_summary_lock),
     BACKUP("settings/backup", R.string.settings_section_backup, R.string.settings_summary_backup),
@@ -114,8 +115,8 @@ fun SettingsSectionScreen(
                 SettingsSection.LOCK -> LockSettingsRows(lockAvailable, onAppLockToggled)
                 SettingsSection.BACKUP -> BackupSettingsRows()
                 SettingsSection.STORAGE -> StorageSettingsRows(onOpenHistory)
-                /** Voice has a full screen of its own in its feature; the root row opens that one directly. */
-                SettingsSection.VOICE -> Unit
+                /** Places and voice each have a full screen of their own in their feature; the root rows open those directly. */
+                SettingsSection.PLACES, SettingsSection.VOICE -> Unit
             }
             Spacer(Modifier.height(24.dp))
         }

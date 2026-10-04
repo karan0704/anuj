@@ -64,6 +64,8 @@
     <string name="settings_section_tasks">Tasks</string>
     <string name="settings_section_reminders">Reminders</string>
     <string name="settings_section_voice">Voice</string>
+    <string name="settings_section_places">Places</string>
+    <string name="settings_summary_places">Home, saved places, the leaving list, new spots</string>
     <string name="settings_section_lock">App lock</string>
     <string name="settings_section_backup">Backup</string>
     <string name="settings_summary_display">Theme, colours, text size, which hand</string>

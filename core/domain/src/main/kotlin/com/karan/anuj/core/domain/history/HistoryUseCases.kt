@@ -1,5 +1,6 @@
 package com.karan.anuj.core.domain.history
 
+import com.karan.anuj.core.domain.place.PlaceRepository
 import com.karan.anuj.core.domain.reminder.ReminderEvent
 import com.karan.anuj.core.domain.reminder.ReminderRepository
 import com.karan.anuj.core.domain.settings.SettingsRepository
@@ -99,6 +100,7 @@ class HouseKeepingUseCase @Inject constructor(
     private val purge: PurgeTasksUseCase,
     private val history: ChangeHistoryRepository,
     private val reminders: ReminderRepository,
+    private val places: PlaceRepository,
     private val files: AttachmentFileStore,
     private val time: TimeSource,
 ) {
@@ -114,6 +116,7 @@ class HouseKeepingUseCase @Inject constructor(
             val cutoff = now - days * MILLIS_PER_DAY
             history.deleteBefore(cutoff)
             reminders.deleteEventsBefore(cutoff)
+            places.deleteVisitsBefore(cutoff)
         }
         /** With "delete at once" nothing is ever set aside, and anything left from an earlier, longer choice goes now. */
         files.deleteSetAsideBefore(now - current.keepRemovedPhotosDays * MILLIS_PER_DAY)

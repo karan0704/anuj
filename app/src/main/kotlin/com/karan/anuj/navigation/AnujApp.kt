@@ -36,6 +36,8 @@ import com.karan.anuj.R
 import com.karan.anuj.core.domain.task.TaskId
 import com.karan.anuj.core.ui.components.AnujScaffold
 import com.karan.anuj.core.ui.components.LocalVoiceInput
+import com.karan.anuj.feature.place.settings.PlacesScreen
+import com.karan.anuj.feature.place.task.TaskPlaceField
 import com.karan.anuj.feature.reminder.health.ReminderCheckScreen
 import com.karan.anuj.feature.reminder.routine.RoutinePlayerScreen
 import com.karan.anuj.feature.reminder.routine.RoutinePlayerViewModel
@@ -200,7 +202,7 @@ fun AnujApp(
             composable(Routes.SETTINGS) {
                 SettingsScreen(onBack = navController::popBackStack, onOpen = { navController.navigate(it.route) })
             }
-            SettingsSection.entries.filter { it != SettingsSection.VOICE }.forEach { section ->
+            SettingsSection.entries.filter { it != SettingsSection.VOICE && it != SettingsSection.PLACES }.forEach { section ->
                 composable(section.route) {
                     SettingsSectionScreen(
                         section = section,
@@ -217,6 +219,9 @@ fun AnujApp(
             composable(Routes.HISTORY) {
                 HistoryScreen(onBack = navController::popBackStack)
             }
+            composable(SettingsSection.PLACES.route) {
+                PlacesScreen(onBack = navController::popBackStack)
+            }
             composable(SettingsSection.VOICE.route) {
                 VoiceSettingsScreen(onBack = navController::popBackStack)
             }
@@ -227,15 +232,19 @@ fun AnujApp(
             ) {
                 /**
                  * The reminder row and the step-by-step player come from the
-                 * reminder feature and are handed to the task screen here,
-                 * the one place that knows both.
+                 * reminder feature, and the place row from the place feature.
+                 * They are handed to the task screen here, the one place
+                 * that knows all three.
                  */
                 TaskDetailScreen(
                     snackbar = snackbar,
                     onBack = navController::popBackStack,
                     onOpenTask = openTask,
                     onPlaySteps = { navController.navigate(Routes.routine(it)) },
-                    extraFields = { task -> TaskReminderField(taskId = task.id, hasDay = task.dueDate != null) },
+                    extraFields = { task ->
+                        TaskReminderField(taskId = task.id, hasDay = task.dueDate != null)
+                        TaskPlaceField(taskId = task.id)
+                    },
                 )
             }
             composable(

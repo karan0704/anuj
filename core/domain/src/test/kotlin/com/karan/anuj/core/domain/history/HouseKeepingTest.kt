@@ -1,5 +1,6 @@
 package com.karan.anuj.core.domain.history
 
+import com.karan.anuj.core.domain.place.FakePlaceRepository
 import com.karan.anuj.core.domain.record.RecordStamps
 import com.karan.anuj.core.domain.reminder.FakeReminderRepository
 import com.karan.anuj.core.domain.reminder.ReminderEvent
@@ -19,9 +20,10 @@ class HouseKeepingTest {
 
     private val world = TaskWorld()
     private val reminders = FakeReminderRepository()
+    private val places = FakePlaceRepository()
     private val purge = PurgeTasksUseCase(world.tasks, world.attachments, world.files, world.settings)
     private val houseKeeping =
-        HouseKeepingUseCase(world.settings, world.tasks, purge, world.history, reminders, world.files, world.clock)
+        HouseKeepingUseCase(world.settings, world.tasks, purge, world.history, reminders, places, world.files, world.clock)
 
     private fun days(count: Int) = count * 24L * 60 * 60 * 1_000
 

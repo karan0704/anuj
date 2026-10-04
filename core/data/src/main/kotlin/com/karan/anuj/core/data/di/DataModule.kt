@@ -4,11 +4,14 @@ import com.karan.anuj.core.data.db.AnujDatabase
 import com.karan.anuj.core.data.db.AttachmentDao
 import com.karan.anuj.core.data.db.ChangeHistoryDao
 import com.karan.anuj.core.data.db.NoteDao
+import com.karan.anuj.core.data.db.PlaceDao
 import com.karan.anuj.core.data.db.ReminderDao
 import com.karan.anuj.core.data.db.SnapshotDao
 import com.karan.anuj.core.data.db.TagDao
 import com.karan.anuj.core.data.db.TaskDao
 import com.karan.anuj.core.data.history.RoomChangeHistoryRepository
+import com.karan.anuj.core.data.place.DataStorePlaceSettingsRepository
+import com.karan.anuj.core.data.place.RoomPlaceRepository
 import com.karan.anuj.core.data.reminder.DataStoreReminderSettingsRepository
 import com.karan.anuj.core.data.reminder.RoomReminderRepository
 import com.karan.anuj.core.data.voice.DataStoreVoiceSettingsRepository
@@ -20,6 +23,8 @@ import com.karan.anuj.core.data.task.RoomNoteRepository
 import com.karan.anuj.core.data.task.RoomTagRepository
 import com.karan.anuj.core.data.task.RoomTaskRepository
 import com.karan.anuj.core.domain.history.ChangeHistoryRepository
+import com.karan.anuj.core.domain.place.PlaceRepository
+import com.karan.anuj.core.domain.place.PlaceSettingsRepository
 import com.karan.anuj.core.domain.reminder.ReminderRepository
 import com.karan.anuj.core.domain.reminder.ReminderSettingsRepository
 import com.karan.anuj.core.domain.reminder.ZoneSource
@@ -87,6 +92,12 @@ abstract class DataModule {
     @Binds
     abstract fun bindVoiceSettingsRepository(impl: DataStoreVoiceSettingsRepository): VoiceSettingsRepository
 
+    @Binds
+    abstract fun bindPlaceRepository(impl: RoomPlaceRepository): PlaceRepository
+
+    @Binds
+    abstract fun bindPlaceSettingsRepository(impl: DataStorePlaceSettingsRepository): PlaceSettingsRepository
+
     companion object {
 
         @Provides
@@ -128,5 +139,8 @@ abstract class DataModule {
 
         @Provides
         fun provideReminderDao(database: AnujDatabase): ReminderDao = database.reminderDao()
+
+        @Provides
+        fun providePlaceDao(database: AnujDatabase): PlaceDao = database.placeDao()
     }
 }

@@ -24,6 +24,7 @@
     <string name="channel_heads_up">Early warnings</string>
     <string name="channel_health">Regular reminders</string>
     <string name="channel_summary">Summary of held reminders</string>
+    <string name="channel_place">Places</string>
     <string name="channel_own_tone">%1$s (own tone)</string>
 
     <!-- A notification -->

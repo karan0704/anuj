@@ -9,6 +9,7 @@ import com.karan.anuj.core.domain.settings.UpdateSettingUseCase
 import com.karan.anuj.core.domain.task.RollOverTasksUseCase
 import com.karan.anuj.core.security.AppLockController
 import com.karan.anuj.core.security.LockState
+import com.karan.anuj.feature.place.platform.PlaceRunner
 import com.karan.anuj.feature.reminder.platform.ReminderRunner
 import com.karan.anuj.feature.voice.platform.VoiceRunner
 import com.karan.anuj.feature.task.common.DayClock
@@ -35,6 +36,7 @@ class MainViewModel @Inject constructor(
     private val reminders: ReminderRunner,
     private val voice: VoiceRunner,
     private val houseKeeping: HouseKeepingUseCase,
+    private val places: PlaceRunner,
 ) : ViewModel() {
 
     /** Null until the saved settings have been read, so nothing is drawn with the wrong theme or before the lock is known. */
@@ -68,6 +70,8 @@ class MainViewModel @Inject constructor(
         clock.refresh()
         reminders.syncNow()
         voice.onForeground()
+        /** Where the phone is now is read once each time the app is opened, when places are switched on. */
+        places.onForeground()
         /** The clean-up the user has chosen in Settings; with the defaults it removes nothing. */
         viewModelScope.launch { houseKeeping() }
     }

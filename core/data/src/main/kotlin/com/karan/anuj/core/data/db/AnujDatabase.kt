@@ -21,6 +21,9 @@ import androidx.room.RoomDatabase
         NoteFtsEntity::class,
         ReminderEntity::class,
         ReminderEventEntity::class,
+        PlaceEntity::class,
+        PlaceVisitEntity::class,
+        TaskPlaceEntity::class,
     ],
     version = AnujDatabase.VERSION,
     exportSchema = true,
@@ -33,9 +36,10 @@ abstract class AnujDatabase : RoomDatabase() {
     abstract fun attachmentDao(): AttachmentDao
     abstract fun snapshotDao(): SnapshotDao
     abstract fun reminderDao(): ReminderDao
+    abstract fun placeDao(): PlaceDao
 
     companion object {
         const val FILE_NAME = "anuj.db"
-        const val VERSION = 5
+        const val VERSION = 6
     }
 }

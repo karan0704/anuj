@@ -49,7 +49,31 @@ object Migrations {
         }
     }
 
-    val ALL: Array<Migration> = arrayOf(FROM_1_TO_2, FROM_2_TO_3, FROM_3_TO_4, FROM_4_TO_5)
+    /** Version 6 adds places, the stays at them, and the tie between a task and a place. Nothing existing is altered. */
+    val FROM_5_TO_6 = object : Migration(5, 6) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            VERSION_6_STATEMENTS.forEach(db::execSQL)
+        }
+    }
+
+    val ALL: Array<Migration> = arrayOf(FROM_1_TO_2, FROM_2_TO_3, FROM_3_TO_4, FROM_4_TO_5, FROM_5_TO_6)
+
+    /** Copied from the exported schema `6.json`. */
+    private val VERSION_6_STATEMENTS = listOf(
+        "CREATE TABLE IF NOT EXISTS `place` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `latitude` REAL NOT NULL, " +
+            "`longitude` REAL NOT NULL, `radiusMeters` INTEGER NOT NULL, `kind` TEXT NOT NULL, `isHome` INTEGER NOT NULL, " +
+            "`createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `deletedAt` INTEGER, PRIMARY KEY(`id`))",
+        "CREATE TABLE IF NOT EXISTS `place_visit` (`id` TEXT NOT NULL, `placeId` TEXT NOT NULL, `arrivedAt` INTEGER NOT NULL, " +
+            "`leftAt` INTEGER, PRIMARY KEY(`id`), " +
+            "FOREIGN KEY(`placeId`) REFERENCES `place`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED)",
+        "CREATE INDEX IF NOT EXISTS `index_place_visit_placeId` ON `place_visit` (`placeId`)",
+        "CREATE INDEX IF NOT EXISTS `index_place_visit_arrivedAt` ON `place_visit` (`arrivedAt`)",
+        "CREATE TABLE IF NOT EXISTS `task_place` (`taskId` TEXT NOT NULL, `placeId` TEXT NOT NULL, `moment` TEXT NOT NULL, " +
+            "PRIMARY KEY(`taskId`), " +
+            "FOREIGN KEY(`taskId`) REFERENCES `task`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED, " +
+            "FOREIGN KEY(`placeId`) REFERENCES `place`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED)",
+        "CREATE INDEX IF NOT EXISTS `index_task_place_placeId` ON `task_place` (`placeId`)",
+    )
 
     /** A line keeps its place among its neighbours by being created that many milliseconds after them. */
     private val VERSION_4_STATEMENTS = listOf(

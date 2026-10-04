@@ -32,6 +32,9 @@ data class DatabaseSnapshot(
     val changeHistory: List<ChangeHistoryEntity> = emptyList(),
     val reminders: List<ReminderEntity> = emptyList(),
     val reminderEvents: List<ReminderEventEntity> = emptyList(),
+    val places: List<PlaceEntity> = emptyList(),
+    val placeVisits: List<PlaceVisitEntity> = emptyList(),
+    val taskPlaces: List<TaskPlaceEntity> = emptyList(),
 )
 
 /**
@@ -69,6 +72,9 @@ abstract class SnapshotDao {
     @Query("SELECT * FROM change_history") abstract suspend fun changeHistory(): List<ChangeHistoryEntity>
     @Query("SELECT * FROM reminder") abstract suspend fun reminders(): List<ReminderEntity>
     @Query("SELECT * FROM reminder_event") abstract suspend fun reminderEvents(): List<ReminderEventEntity>
+    @Query("SELECT * FROM place") abstract suspend fun places(): List<PlaceEntity>
+    @Query("SELECT * FROM place_visit") abstract suspend fun placeVisits(): List<PlaceVisitEntity>
+    @Query("SELECT * FROM task_place") abstract suspend fun taskPlaces(): List<TaskPlaceEntity>
 
     @Insert abstract suspend fun insertTasks(rows: List<TaskEntity>)
     @Insert abstract suspend fun insertNotes(rows: List<NoteEntity>)
@@ -79,12 +85,16 @@ abstract class SnapshotDao {
     @Insert abstract suspend fun insertChangeHistory(rows: List<ChangeHistoryEntity>)
     @Insert abstract suspend fun insertReminders(rows: List<ReminderEntity>)
     @Insert abstract suspend fun insertReminderEvents(rows: List<ReminderEventEntity>)
+    @Insert abstract suspend fun insertPlaces(rows: List<PlaceEntity>)
+    @Insert abstract suspend fun insertPlaceVisits(rows: List<PlaceVisitEntity>)
+    @Insert abstract suspend fun insertTaskPlaces(rows: List<TaskPlaceEntity>)
 
     @Query("DELETE FROM task") abstract suspend fun clearTasks()
     @Query("DELETE FROM tag") abstract suspend fun clearTags()
     @Query("DELETE FROM change_history") abstract suspend fun clearChangeHistory()
     @Query("DELETE FROM reminder") abstract suspend fun clearReminders()
     @Query("DELETE FROM reminder_event") abstract suspend fun clearReminderEvents()
+    @Query("DELETE FROM place") abstract suspend fun clearPlaces()
 
     /** All tables are read inside one transaction so the copy is of a single moment. */
     @Transaction
@@ -99,6 +109,9 @@ abstract class SnapshotDao {
         changeHistory = changeHistory(),
         reminders = reminders(),
         reminderEvents = reminderEvents(),
+        places = places(),
+        placeVisits = placeVisits(),
+        taskPlaces = taskPlaces(),
     )
 
     /**
@@ -108,7 +121,8 @@ abstract class SnapshotDao {
      * Deleting tasks and tags removes everything hanging off them (steps,
      * notes, photos, rounds, tag links, a task's reminders) through the
      * foreign keys. Reminders that stand on their own and the reminder log
-     * hang off nothing, so they are cleared by name.
+     * hang off nothing, so they are cleared by name; so are places, which
+     * take their visits and their ties to tasks with them.
      */
     @Transaction
     open suspend fun replaceWith(snapshot: DatabaseSnapshot) {
@@ -117,6 +131,7 @@ abstract class SnapshotDao {
         clearChangeHistory()
         clearReminders()
         clearReminderEvents()
+        clearPlaces()
 
         insertTags(snapshot.tags)
         insertTasks(snapshot.tasks)
@@ -127,5 +142,8 @@ abstract class SnapshotDao {
         insertChangeHistory(snapshot.changeHistory)
         insertReminders(snapshot.reminders)
         insertReminderEvents(snapshot.reminderEvents)
+        insertPlaces(snapshot.places)
+        insertPlaceVisits(snapshot.placeVisits)
+        insertTaskPlaces(snapshot.taskPlaces)
     }
 }

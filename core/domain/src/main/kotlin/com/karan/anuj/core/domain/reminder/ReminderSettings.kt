@@ -44,6 +44,9 @@ enum class ReminderCategory(val defaults: CategorySettings) {
 
     /** The summary of what was held back. */
     SUMMARY(CategorySettings(countsTowardLimit = false)),
+
+    /** Something a place set off: a task tied to it, a leaving list left open, a new spot noticed. */
+    PLACE(CategorySettings()),
 }
 
 /** A stretch of the day in which reminders are held back. It may run over midnight. */
