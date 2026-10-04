@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Shared -->
+    <string name="task_back">Back</string>
+    <string name="task_add">Add</string>
+    <string name="task_save">Save</string>
+    <string name="task_cancel">Cancel</string>
+    <string name="task_ok">OK</string>
+    <string name="task_undo">Undo</string>
+    <string name="task_more">More</string>
+    <string name="task_none">None</string>
+    <string name="task_remove">Remove</string>
+    <string name="task_mark_done">Mark %1$s as done</string>
+    <string name="task_done_message">Done: %1$s</string>
+    <string name="task_deleted_message">Moved to trash: %1$s</string>
+    <string name="task_moved_message">Moved: %1$s</string>
+    <string name="task_removed_message">Removed: %1$s</string>
+    <string name="task_swipe_done">Done</string>
+    <string name="task_swipe_tomorrow">Tomorrow</string>
+
+    <!-- Row details -->
+    <string name="task_progress">%1$d of %2$d steps</string>
+    <string name="task_carried">Carried %1$d×</string>
+    <string name="task_missed">Missed</string>
+
+    <!-- Dates and times -->
+    <string name="task_today">Today</string>
+    <string name="task_tomorrow">Tomorrow</string>
+    <string name="task_yesterday">Yesterday</string>
+    <string name="task_next_week">Next week</string>
+    <string name="task_next_month">Next month</string>
+    <string name="task_no_date">No date</string>
+    <string name="task_pick_date">Pick a date</string>
+    <string name="task_morning">Morning</string>
+    <string name="task_afternoon">Afternoon</string>
+    <string name="task_evening">Evening</string>
+    <string name="task_night">Night</string>
+    <string name="task_no_time">No time</string>
+    <string name="task_pick_time">Pick a time</string>
+    <string name="task_date_and_time">%1$s, %2$s</string>
+
+    <!-- Quick add -->
+    <string name="quick_add_title">New task</string>
+    <string name="quick_add_subtask_title">New step</string>
+    <string name="quick_add_name">What needs doing?</string>
+    <string name="quick_add_suggestions">Add again</string>
+    <string name="quick_add_button">Add task</string>
+    <string name="quick_add_open">Add a task</string>
+
+    <!-- Today -->
+    <string name="today_decide_title">Not done on their day</string>
+    <string name="today_due_title">Today</string>
+    <string name="today_done_title">Done today (%1$d)</string>
+    <string name="today_empty_title">Nothing for today</string>
+    <string name="today_empty_body">Tap + to add something, or enjoy the quiet.</string>
+    <string name="today_stuck">Carried %1$d times. What now?</string>
+    <string name="today_stuck_break">Break into steps</string>
+    <string name="today_stuck_reschedule">Pick a new day</string>
+    <string name="today_stuck_drop">Drop it</string>
+    <string name="today_decide_drop">Drop</string>
+    <string name="today_reopen">Put back on the list</string>
+
+    <!-- Tasks tree -->
+    <string name="tasks_title">Tasks</string>
+    <string name="tasks_search">Search</string>
+    <string name="tasks_trash">Trash</string>
+    <string name="tasks_templates">Add a routine</string>
+    <string name="tasks_show_finished">Show finished</string>
+    <string name="tasks_all_tags">All</string>
+    <string name="tasks_expand">Show steps of %1$s</string>
+    <string name="tasks_collapse">Hide steps of %1$s</string>
+    <string name="tasks_empty_title">No tasks yet</string>
+    <string name="tasks_empty_body">Tap + to add your first task.</string>
+
+    <!-- Inbox -->
+    <string name="inbox_title">Inbox</string>
+    <string name="inbox_hint">Catch a thought…</string>
+    <string name="inbox_send">Save thought</string>
+    <string name="inbox_empty_title">Inbox is empty</string>
+    <string name="inbox_empty_body">Thoughts you catch here wait until you give them a day.</string>
+
+    <!-- Task detail -->
+    <string name="detail_title">Task</string>
+    <string name="detail_parent">Part of %1$s</string>
+    <string name="detail_duplicate">Make a copy</string>
+    <string name="detail_delete">Move to trash</string>
+    <string name="detail_copy_name">%1$s (copy)</string>
+    <string name="detail_name">Name</string>
+    <string name="detail_description">Description</string>
+    <string name="detail_description_empty">Add a description</string>
+    <string name="detail_when">When</string>
+    <string name="detail_repeat">Repeat</string>
+    <string name="detail_priority">Priority</string>
+    <string name="detail_tags">Tags</string>
+    <string name="detail_tags_none">No tags</string>
+    <string name="detail_energy">Energy needed</string>
+    <string name="detail_estimate">Time needed</string>
+    <string name="detail_carry">If not done on its day</string>
+    <string name="detail_checklist">Checklist</string>
+    <string name="detail_checklist_hint">Add a checklist line</string>
+    <string name="detail_checklist_remove">Remove %1$s</string>
+    <string name="detail_steps">Steps</string>
+    <string name="detail_add_step">Add a step</string>
+    <string name="detail_notes">Notes</string>
+    <string name="detail_add_note">Add a note</string>
+    <string name="detail_note_hint">Write a note</string>
+    <string name="detail_photos">Photos</string>
+    <string name="detail_take_photo">Take photo</string>
+    <string name="detail_choose_photo">Choose photo</string>
+    <string name="detail_photo">Photo</string>
+    <string name="detail_gone">This task no longer exists.</string>
+    <string name="detail_note_remove">Remove note</string>
+    <string name="detail_photo_close">Close</string>
+    <string name="detail_edit_name">Edit name</string>
+
+    <!-- Priority, energy, estimate -->
+    <string name="priority_none">None</string>
+    <string name="priority_low">Low</string>
+    <string name="priority_medium">Medium</string>
+    <string name="priority_high">High</string>
+    <string name="energy_low">Low</string>
+    <string name="energy_medium">Medium</string>
+    <string name="energy_high">High</string>
+    <string name="estimate_minutes">%1$d min</string>
+    <string name="estimate_hours">%1$d h</string>
+    <string name="estimate_hours_minutes">%1$d h %2$d min</string>
+
+    <!-- Repetition -->
+    <string name="repeat_never">Does not repeat</string>
+    <string name="repeat_daily">Every day</string>
+    <string name="repeat_weekdays">Weekdays</string>
+    <string name="repeat_weekly">Every week</string>
+    <string name="repeat_monthly">Every month</string>
+    <string name="repeat_yearly">Every year</string>
+    <string name="repeat_every_days">Every %1$d days</string>
+    <string name="repeat_every_weeks">Every %1$d weeks</string>
+    <string name="repeat_every_months">Every %1$d months</string>
+    <string name="repeat_every_years">Every %1$d years</string>
+    <string name="repeat_on_days">%1$s on %2$s</string>
+    <string name="repeat_except">%1$s, except %2$s</string>
+    <string name="repeat_gap">Every</string>
+    <string name="repeat_gap_less">One less</string>
+    <string name="repeat_gap_more">One more</string>
+    <string name="repeat_on">On these days</string>
+    <string name="repeat_days_off">Days off</string>
+    <string name="repeat_days_off_hint">The task skips these days.</string>
+
+    <!-- Carry-over -->
+    <string name="carry_inherit">Same as the task above it</string>
+    <string name="carry_inherit_default">App default</string>
+    <string name="carry_next_day">Move to the next day</string>
+    <string name="carry_next_week">Move to next week</string>
+    <string name="carry_next_month">Move to next month</string>
+    <string name="carry_next_year">Move to next year</string>
+    <string name="carry_in_days">Move on by %1$d days</string>
+    <string name="carry_in_days_choice">Move on by a few days</string>
+    <string name="carry_on_date">Move to %1$s</string>
+    <string name="carry_on_date_choice">Move to a date I pick</string>
+    <string name="carry_ask">Ask me</string>
+    <string name="carry_dont">Leave it and mark it missed</string>
+    <string name="carry_repeating_default">Mark the round missed</string>
+    <string name="carry_days_less">One day less</string>
+    <string name="carry_days_more">One day more</string>
+    <string name="carry_default_title">Unfinished tasks</string>
+    <string name="carry_limit_title">Ask what to do after</string>
+    <string name="carry_limit_value">%1$d carries</string>
+    <string name="settings_day_parts">Times of day</string>
+    <string name="settings_estimates">Lengths offered for \"Time needed\"</string>
+
+    <!-- Tags -->
+    <string name="tags_title">Tags</string>
+    <string name="tags_new">New tag</string>
+    <string name="tags_new_hint">Tag name</string>
+    <string name="tags_color">Colour %1$d</string>
+    <string name="tags_manage">Remove tags</string>
+    <string name="tags_manage_done">Done removing</string>
+    <string name="tags_remove">Remove tag %1$s</string>
+
+    <!-- Search -->
+    <string name="search_title">Search</string>
+    <string name="search_hint">Search tasks, notes and checklists</string>
+    <string name="search_clear">Clear search</string>
+    <string name="search_empty">Nothing found</string>
+
+    <!-- Trash -->
+    <string name="trash_title">Trash</string>
+    <string name="trash_empty_title">Trash is empty</string>
+    <string name="trash_empty_body">Deleted tasks wait here until you remove them for good.</string>
+    <string name="trash_restore">Restore</string>
+    <string name="trash_delete_forever">Delete forever</string>
+    <string name="trash_empty_all">Empty trash</string>
+    <string name="trash_confirm_one_title">Delete forever?</string>
+    <string name="trash_confirm_one_body">“%1$s”, its steps, notes and photos will be gone for good.</string>
+    <string name="trash_confirm_all_title">Empty the trash?</string>
+    <string name="trash_confirm_all_body">Everything in the trash will be gone for good.</string>
+
+    <!-- Templates -->
+    <string name="templates_title">Start with some routines?</string>
+    <string name="templates_body">Tap the ones you want. You can change or delete them later.</string>
+    <string name="templates_add">Add selected</string>
+    <string name="templates_skip">Skip</string>
+    <string name="templates_sheet_title">Add a routine</string>
+</resources>

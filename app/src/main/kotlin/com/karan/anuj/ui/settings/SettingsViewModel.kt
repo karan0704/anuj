@@ -30,4 +30,8 @@ class SettingsViewModel @Inject constructor(
     fun setTextScale(scale: TextScale) {
         viewModelScope.launch { updateSetting.textScale(scale) }
     }
+
+    fun setLockAfter(seconds: Int) {
+        viewModelScope.launch { updateSetting.lockAfter(seconds) }
+    }
 }

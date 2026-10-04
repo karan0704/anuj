@@ -37,19 +37,26 @@ import com.karan.anuj.R
 import com.karan.anuj.core.ui.components.AnujScaffold
 import com.karan.anuj.core.ui.components.PrimaryButton
 import com.karan.anuj.core.ui.components.SecondaryButton
+import com.karan.anuj.feature.task.templates.TemplateOnboardingStep
 
 /**
  * One page of the first-run walk-through. A later phase that needs its own
  * permission (microphone, location, usage access) adds a step here; the
  * screen itself does not change.
  */
-private enum class OnboardingStep { WELCOME, NOTIFICATIONS, APP_LOCK }
+/**
+ * Phase 1 adds the routines step. Before it:
+ *
+ *     private enum class OnboardingStep { WELCOME, NOTIFICATIONS, APP_LOCK }
+ */
+private enum class OnboardingStep { WELCOME, NOTIFICATIONS, APP_LOCK, ROUTINES }
 
 /** The notification permission only exists from Android 13; older phones allow notifications without asking. */
 private fun stepsForThisPhone(): List<OnboardingStep> = buildList {
     add(OnboardingStep.WELCOME)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) add(OnboardingStep.NOTIFICATIONS)
     add(OnboardingStep.APP_LOCK)
+    add(OnboardingStep.ROUTINES)
 }
 
 /**
@@ -118,6 +125,9 @@ fun OnboardingScreen(
                     onPrimary = next,
                 )
             }
+
+            /** The task feature draws this page itself; onboarding only gives it a place and tells it where to go next. */
+            OnboardingStep.ROUTINES -> TemplateOnboardingStep(onDone = next)
         }
     }
 }

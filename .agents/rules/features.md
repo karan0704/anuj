@@ -20,7 +20,7 @@ Library versions are pinned in `gradle/libs.versions.toml`. They are a known-wor
 
 ## Module Layout
 
-`app` and the four `core` modules below it exist (phase 0). `core/backup` and every `feature/` module are planned and not built yet. Package root: `com.karan.anuj` (**assumption pending confirmation**). minSdk 26, also an assumption.
+`app`, the five `core` modules and `feature/task` exist (phases 0 and 1). Every other `feature/` module is planned and not built yet. Package root: `com.karan.anuj` (**assumption pending confirmation**). minSdk 26, also an assumption.
 
 ```
 app/                      navigation, Hilt entry point
@@ -197,7 +197,7 @@ Each phase must end in an installable, usable app (see Phased Independent Testab
 | Phase | Name | What gets built | Usable result | Status |
 |---|---|---|---|---|
 | 0 | Foundation | Project + modules, encrypted Room database with base columns and change history, navigation, theme with dark mode and text size, app lock, permissions onboarding, test setup | App opens, locks, and has an empty home screen | Built and unit-tested; not yet run on a phone |
-| 1 | Tasks | Area A, plus backup and restore | A full to-do app with nesting, carry-over, search, tags and safe data | Not started |
+| 1 | Tasks | Area A, plus backup and restore | A full to-do app with nesting, carry-over, search, tags and safe data | Built and tested on the computer; not yet run on a phone |
 | 2 | Reminders | Area B (except leave-by) | Tasks remind and nag reliably, without overwhelming | Not started |
 | 3 | Tracking | Area C (except mood log and watch import) | Sleep, water, food, weight, BP, journal, doctor export | Not started |
 | 4 | Voice | Area D | Hands-free: named assistant, voice notes, voice add | Not started |
@@ -213,6 +213,15 @@ Phases 0–2 are the minimum that makes the app worth using daily. Phases 3–6 
 ---
 
 ## Feature Details Worth Not Re-Deriving
+
+**Phase 1 gaps, known and deliberate** — none of these block daily use; each is small enough to add when it is missed:
+- A task cannot be moved under a different parent, and rows cannot be reordered by hand (order is priority, then age).
+- A note, a checklist line and a tag can be added and removed but not edited in place.
+- The part-of-day chips (Morning 8:00, Afternoon 1:00, Evening 6:00, Night 9:00) are fixed times, not yet user-set.
+- The trash is never emptied automatically.
+- A task has no voice path yet (phase 4) and no reminder (phase 2); until phase 4 a task name is typed, dictated with the keyboard's own microphone, or picked from the "Add again" chips.
+- Deleting from the task screen shows no "Undo" message, because the screen closes; the task is restored from the trash instead.
+- Not exercised by any test, because they need a phone: the encrypted database, the camera and photo picker, choosing a backup folder, and the scheduled backup.
 
 **Task tree** — one `task` table with a `parentId` column. Fields: name, description, checklist items, due time, repetition rule, days off, priority, tags, energy tag, estimated minutes, carry-over rule, carry count, optional tracker, optional per-task notification tone, photo attachments.
 
@@ -241,7 +250,7 @@ Every entry can carry a typed or voice note. Heart rate is typed in or imported 
 
 **Shopping and purchases** — a shopping item becomes a purchase record when ticked off (price and shop optional). Items bought repeatedly can carry a re-buy interval that puts them back on the list.
 
-**Backup** — one encrypted file containing the database, voice recordings and photos, written on a schedule to a folder the user picks. Restore is tested as part of phase 1, not assumed.
+**Backup** — one zip file (`manifest.json`, `data.json` with every row, `attachments/` with the photos) written to a folder the user picks with the system file picker, by hand or every day / week; the newest 10 are kept. A password is optional: with one, the rows and photos are AES-256 encrypted inside the zip and the file still opens in any zip tool that supports AES. Rows are stored as JSON rather than as a copy of the database file because that file is encrypted with a key that cannot leave the phone. Restore replaces everything, and is tested: every way it can fail leaves the existing data untouched.
 
 **Automatic task breakdown** — cannot be done well offline: needs an online AI model or built-in templates. **Not decided yet.**
 

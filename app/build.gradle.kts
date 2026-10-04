@@ -38,6 +38,11 @@ android {
     buildFeatures {
         compose = true
     }
+
+    /** The app's own test drives the real screens on the computer with Robolectric, which needs the Android resources. */
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
 }
 
 kotlin {
@@ -49,6 +54,8 @@ dependencies {
     implementation(project(":core:data"))
     implementation(project(":core:security"))
     implementation(project(":core:ui"))
+    implementation(project(":core:backup"))
+    implementation(project(":feature:task"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
@@ -63,4 +70,11 @@ dependencies {
     ksp(libs.hilt.compiler)
 
     testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core.ktx)
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.androidx.room.runtime)
+    testImplementation(libs.hilt.android.testing)
+    kspTest(libs.hilt.compiler)
 }

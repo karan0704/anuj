@@ -86,6 +86,7 @@ class MainActivity : FragmentActivity() {
                             onAppLockToggled = { enable ->
                                 if (enable) confirmThenEnableLock() else viewModel.setAppLock(false)
                             },
+                            onForeground = viewModel::onForeground,
                         )
                     }
                 }

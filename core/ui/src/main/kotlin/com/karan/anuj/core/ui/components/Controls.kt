@@ -11,12 +11,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /** The smallest height of anything meant to be tapped, sized for a thumb. */
 val MinTouchTarget: Dp = 56.dp
+
+/** The gap between chips, sideways and between wrapped rows. */
+val ChipSpacing: Dp = 8.dp
+
+/** How tall a chip is drawn: its whole height is the touch target. */
+private val ChipHeight: Dp = 48.dp
 
 /** The one main action of a screen or sheet. */
 @Composable
@@ -68,16 +75,62 @@ fun <T> ChoiceChips(
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    /**
+     * The chips fill their whole 48dp row, so without a gap between rows a
+     * second line of chips sat flush against the first and looked overlapped.
+     * The row used to be laid out with the sideways gap only:
+     *
+     *     FlowRow(
+     *         modifier = modifier.fillMaxWidth(),
+     *         horizontalArrangement = Arrangement.spacedBy(8.dp),
+     *     )
+     */
     FlowRow(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(ChipSpacing),
+        verticalArrangement = Arrangement.spacedBy(ChipSpacing),
     ) {
         options.forEach { option ->
             FilterChip(
                 selected = option == selected,
                 onClick = { onSelect(option) },
                 label = { Text(label(option), style = MaterialTheme.typography.titleSmall) },
-                modifier = Modifier.heightIn(min = 48.dp),
+                modifier = Modifier.heightIn(min = ChipHeight),
+            )
+        }
+    }
+}
+
+/**
+ * A row of chips where any number can be switched on: the tap replacement
+ * for a list of checkboxes. Spaced and wrapped exactly like [ChoiceChips].
+ *
+ * @param centered lines the chips up in the middle, for a page whose text is centred
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun <T> ToggleChips(
+    options: List<T>,
+    selected: Set<T>,
+    label: @Composable (T) -> String,
+    onToggle: (T) -> Unit,
+    modifier: Modifier = Modifier,
+    centered: Boolean = false,
+) {
+    FlowRow(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(
+            ChipSpacing,
+            if (centered) Alignment.CenterHorizontally else Alignment.Start,
+        ),
+        verticalArrangement = Arrangement.spacedBy(ChipSpacing),
+    ) {
+        options.forEach { option ->
+            FilterChip(
+                selected = option in selected,
+                onClick = { onToggle(option) },
+                label = { Text(label(option), style = MaterialTheme.typography.titleSmall) },
+                modifier = Modifier.heightIn(min = ChipHeight),
             )
         }
     }

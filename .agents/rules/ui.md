@@ -41,7 +41,10 @@ The app must be handy: usable one-handed, by taps and by voice, with the user wr
 * **Short input and choices open in `AnujBottomSheet`** (`core/ui/components/AnujBottomSheet.kt`), the equivalent of an RBSheet: opens fully in one motion, closes on swipe down or tap outside, content moves up with the keyboard.
 * **Shared controls, not one-off ones**: `PrimaryButton`, `SecondaryButton`, `ChoiceChips` and `MinTouchTarget` from `core/ui/components/Controls.kt`, so spacing and sizes match on every screen.
 * **Consistent spacing**: 24dp screen side padding, 16dp between groups, 8dp between related items.
-* **Bottom tab bar for top-level areas**; a new area adds one entry to `TopLevelDestination` in `app/.../navigation/AnujApp.kt`.
+* **Bottom tab bar for top-level areas**; a new area adds one entry to `TopLevelDestination` in `app/.../navigation/AnujApp.kt`. The bar is hidden on pushed screens (one task, search, trash), where the back arrow is the single way out.
+* **Screen titles use `ScreenHeader`**, group labels `SectionTitle`, tap-to-change values `FieldRow`, numbers `Stepper` (all in `core/ui/components`). A feature's settings are a composable of `FieldRow`s that the Settings screen places under a `SectionTitle` — see `TaskSettingsRows`.
+* **One "Undo" host**: `AnujApp` owns the single `SnackbarHostState` and passes it to screens; a screen never creates its own.
+* **Swipe needs a twin**: anything a swipe does must also be a named screen-reader action on the row and reachable by a tap. `SwipeActions` in `feature/task/common/TaskRow.kt` does this; use it rather than a bare `SwipeToDismissBox`.
 * **All user-visible text comes from `strings.xml`**, never a literal in a Composable.
 
 ## Calm, Clear Screens

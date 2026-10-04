@@ -26,6 +26,12 @@ class AppLockPolicyTest {
     }
 
     @Test
+    fun `a delay chosen by the user replaces the built-in one`() {
+        assertTrue(policy.shouldLock(lockEnabled = true, backgroundedAt = 1_000, now = 1_000, graceMillis = 0))
+        assertFalse(policy.shouldLock(lockEnabled = true, backgroundedAt = 1_000, now = 200_000, graceMillis = 300_000))
+    }
+
+    @Test
     fun `being away for the full grace period locks`() {
         assertTrue(policy.shouldLock(lockEnabled = true, backgroundedAt = 1_000, now = 61_000))
     }

@@ -18,4 +18,13 @@ data class AppSettings(
     val textScale: TextScale = TextScale.NORMAL,
     val appLockEnabled: Boolean = false,
     val onboardingDone: Boolean = false,
-)
+    /** How long the app may be out of view before it asks to be unlocked again, in seconds. */
+    val lockAfterSeconds: Int = DEFAULT_LOCK_AFTER_SECONDS,
+) {
+    companion object {
+        const val DEFAULT_LOCK_AFTER_SECONDS = 60
+
+        /** The delays offered as chips: straight away, half a minute, one, five and fifteen minutes. */
+        val LOCK_AFTER_CHOICES: List<Int> = listOf(0, 30, 60, 300, 900)
+    }
+}

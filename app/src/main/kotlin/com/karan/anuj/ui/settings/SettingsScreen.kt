@@ -26,11 +26,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.karan.anuj.R
+import com.karan.anuj.core.domain.settings.AppSettings
 import com.karan.anuj.core.domain.settings.TextScale
 import com.karan.anuj.core.domain.settings.ThemeMode
 import com.karan.anuj.core.ui.components.AnujBottomSheet
 import com.karan.anuj.core.ui.components.ChoiceChips
 import com.karan.anuj.core.ui.components.MinTouchTarget
+import com.karan.anuj.core.ui.components.SectionTitle
+import com.karan.anuj.feature.task.settings.TaskSettingsRows
 
 @StringRes
 private fun ThemeMode.labelRes(): Int = when (this) {
@@ -48,7 +51,17 @@ private fun TextScale.labelRes(): Int = when (this) {
 }
 
 /** Which choice sheet is open. Saved across rotation so the sheet does not vanish mid-choice. */
-private enum class OpenSheet { NONE, THEME, TEXT_SIZE }
+private enum class OpenSheet { NONE, THEME, TEXT_SIZE, LOCK_AFTER }
+
+/** "Straight away", "30 seconds", "5 minutes": a delay in the words a person would use. */
+@Composable
+private fun lockAfterLabel(seconds: Int): String = when {
+    seconds <= 0 -> stringResource(R.string.lock_after_now)
+    seconds < SECONDS_PER_MINUTE -> stringResource(R.string.lock_after_seconds, seconds)
+    else -> stringResource(R.string.lock_after_minutes, seconds / SECONDS_PER_MINUTE)
+}
+
+private const val SECONDS_PER_MINUTE = 60
 
 /**
  * Every setting is changed by tapping: a row opens a sheet of chips, or
@@ -77,6 +90,7 @@ fun SettingsScreen(
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
         )
+        SectionTitle(stringResource(R.string.settings_section_display))
 
         ListItem(
             headlineContent = { Text(stringResource(R.string.settings_theme)) },
@@ -117,6 +131,28 @@ fun SettingsScreen(
             },
             modifier = Modifier.heightIn(min = MinTouchTarget),
         )
+        HorizontalDivider()
+        ListItem(
+            headlineContent = { Text(stringResource(R.string.settings_lock_after)) },
+            supportingContent = { Text(lockAfterLabel(settings.lockAfterSeconds)) },
+            modifier = Modifier
+                .heightIn(min = MinTouchTarget)
+                .clickable { openSheet = OpenSheet.LOCK_AFTER },
+        )
+
+        /**
+         * Each feature draws its own rows; this screen only gives them a
+         * heading and a place, so adding a feature's settings never means
+         * editing another feature's.
+         */
+        HorizontalDivider()
+        SectionTitle(stringResource(R.string.settings_section_tasks))
+        TaskSettingsRows()
+
+        HorizontalDivider()
+        SectionTitle(stringResource(R.string.settings_section_backup))
+        BackupSettingsRows()
+        Spacer(Modifier.height(24.dp))
     }
 
     when (openSheet) {
@@ -149,6 +185,19 @@ fun SettingsScreen(
             Text(
                 stringResource(R.string.settings_text_size_preview),
                 style = MaterialTheme.typography.bodyLarge,
+            )
+        }
+
+        OpenSheet.LOCK_AFTER -> AnujBottomSheet(
+            onDismiss = { openSheet = OpenSheet.NONE },
+            title = stringResource(R.string.settings_lock_after),
+        ) {
+            ChoiceChips(
+                /** A delay saved by another version of the app still shows as the selected chip. */
+                options = (AppSettings.LOCK_AFTER_CHOICES + settings.lockAfterSeconds).distinct().sorted(),
+                selected = settings.lockAfterSeconds,
+                label = { lockAfterLabel(it) },
+                onSelect = viewModel::setLockAfter,
             )
         }
     }

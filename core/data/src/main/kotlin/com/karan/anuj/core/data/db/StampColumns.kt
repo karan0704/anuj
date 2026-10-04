@@ -1,6 +1,7 @@
 package com.karan.anuj.core.data.db
 
 import com.karan.anuj.core.domain.record.RecordStamps
+import kotlinx.serialization.Serializable
 
 /**
  * The three record-keeping columns every table carries.
@@ -8,7 +9,10 @@ import com.karan.anuj.core.domain.record.RecordStamps
  * Each entity includes this with `@Embedded val stamps: StampColumns` rather
  * than declaring the columns itself, so the names and types are identical in
  * every table and are defined in exactly one place.
+ *
+ * Serializable because backup files store rows in exactly this shape.
  */
+@Serializable
 data class StampColumns(
     val createdAt: Long,
     val updatedAt: Long,
