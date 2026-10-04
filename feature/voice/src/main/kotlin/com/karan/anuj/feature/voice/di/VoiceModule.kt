@@ -3,6 +3,7 @@ package com.karan.anuj.feature.voice.di
 import com.karan.anuj.core.domain.voice.AddTaskCommand
 import com.karan.anuj.core.domain.voice.ChecklistCommand
 import com.karan.anuj.core.domain.voice.ListTasksCommand
+import com.karan.anuj.core.domain.voice.NameListener
 import com.karan.anuj.core.domain.voice.MarkDoneCommand
 import com.karan.anuj.core.domain.voice.PriorityTasksCommand
 import com.karan.anuj.core.domain.voice.SearchCommand
@@ -17,6 +18,7 @@ import com.karan.anuj.core.domain.voice.VoiceCommand
 import com.karan.anuj.core.domain.voice.WhatNowCommand
 import com.karan.anuj.feature.voice.platform.AndroidSpeaker
 import com.karan.anuj.feature.voice.platform.AndroidTorch
+import com.karan.anuj.feature.voice.platform.PhoneSpeechEngine
 import com.karan.anuj.feature.voice.platform.VoskSpeechEngine
 import dagger.Binds
 import dagger.Module
@@ -33,8 +35,18 @@ import dagger.multibindings.IntoSet
 @InstallIn(SingletonComponent::class)
 abstract class VoiceModule {
 
+    /**
+     * Sentences are taken down by the phone's own recogniser. Before the
+     * first test on a phone this was the bundled model:
+     *
+     *     abstract fun bindSpeechEngine(impl: VoskSpeechEngine): SpeechEngine
+     */
     @Binds
-    abstract fun bindSpeechEngine(impl: VoskSpeechEngine): SpeechEngine
+    abstract fun bindSpeechEngine(impl: PhoneSpeechEngine): SpeechEngine
+
+    /** The bundled model keeps the one job it is good at: hearing the name. */
+    @Binds
+    abstract fun bindNameListener(impl: VoskSpeechEngine): NameListener
 
     @Binds
     abstract fun bindSpeaker(impl: AndroidSpeaker): Speaker

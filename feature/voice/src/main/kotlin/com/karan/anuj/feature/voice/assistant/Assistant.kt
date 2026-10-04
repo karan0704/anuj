@@ -99,6 +99,8 @@ class AssistantViewModel @Inject constructor(
             val unfinished = _state.value.heard
             _state.update { it.copy(listening = false) }
             when {
+                /** The phone's recogniser ends with an empty sentence when it heard only silence. */
+                ended is Speech.Final && ended.text.isBlank() -> _state.update { it.copy(nothingHeard = true) }
                 ended is Speech.Final -> ask(ended.text)
                 ended is Speech.Failed -> _state.update { it.copy(failure = ended.reason) }
                 unfinished.isNotBlank() -> ask(unfinished)

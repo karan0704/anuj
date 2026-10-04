@@ -43,6 +43,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * Where voice work runs so that it finishes even if the sheet that started
@@ -163,33 +164,35 @@ class ListeningService : Service() {
         ListenWhen.WHILE_CHARGING -> getSystemService(BatteryManager::class.java)?.isCharging == true
     }
 
+    /**
+     * Waits for the name with the light listener, then lets go of the
+     * microphone, beeps, and takes the sentence down with the phone's better
+     * recogniser. Only one of the two can hold the microphone at a time,
+     * which is why this is a loop of two steps and not two things running
+     * side by side.
+     *
+     * The first version did both jobs with the bundled model and one open
+     * microphone. On a real phone it misheard the name and the command:
+     *
+     *     talk.listen().collect { heard ->
+     *         if (heard !is Speech.Final || speaking) return@collect
+     *         val found = WakePhrase.find(heard.text, current)
+     *         ...
+     *         talk.say(command)
+     *     }
+     */
     private suspend fun listenForName() {
-        var awakeUntil = 0L
-        var speaking = false
-        talk.listen().collect { heard ->
-            if (heard !is Speech.Final || speaking) return@collect
+        while (true) {
             val current = settings.observe().first()
-            val now = System.currentTimeMillis()
-            val command = when {
-                now < awakeUntil -> heard.text
-                else -> {
-                    val found = WakePhrase.find(heard.text, current)
-                    if (!found.woke) return@collect
-                    if (found.command.isBlank()) {
-                        beep()
-                        awakeUntil = now + current.listenSeconds * MILLIS_PER_SECOND
-                        return@collect
-                    }
-                    found.command
-                }
-            }
-            awakeUntil = 0L
-            speaking = true
-            try {
-                talk.say(command)
-            } finally {
-                speaking = false
-            }
+            talk.listenForName(current.wakePhrases).first { heard ->
+                heard is Speech.Failed || (heard is Speech.Final && WakePhrase.find(heard.text, current).woke)
+            }.let { ended -> if (ended is Speech.Failed) return }
+
+            beep()
+            val wait = current.listenSeconds * MILLIS_PER_SECOND
+            val sentence = withTimeoutOrNull(wait) { talk.listen().first { it !is Speech.Partial } }
+            val command = (sentence as? Speech.Final)?.text.orEmpty()
+            if (command.isNotBlank()) talk.say(command)
         }
     }
 

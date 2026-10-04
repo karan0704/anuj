@@ -56,7 +56,7 @@ class DictationViewModel @Inject constructor(
             val wait = settings.observe().first().listenSeconds * MILLIS_PER_SECOND
             val heard = withTimeoutOrNull(wait) { talk.listen().first { it !is Speech.Partial } }
             _listening.value = false
-            if (heard is Speech.Final) onText(heard.text.replaceFirstChar { it.uppercase() })
+            if (heard is Speech.Final && heard.text.isNotBlank()) onText(heard.text.replaceFirstChar { it.uppercase() })
         }
     }
 

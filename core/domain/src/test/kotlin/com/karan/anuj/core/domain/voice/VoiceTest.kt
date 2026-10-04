@@ -201,6 +201,19 @@ class WakePhraseTest {
     }
 
     @Test
+    fun `a name written a letter or two differently still wakes it`() {
+        val settings = VoiceSettings(soundsLike = setOf("a new j"))
+        assertTrue(WakePhrase.find("a new jay what's next", settings).woke)
+        assertEquals("what's next", WakePhrase.find("a new jay what's next", settings).command)
+        assertTrue(WakePhrase.find("anoj flashlight on", VoiceSettings()).woke)
+    }
+
+    @Test
+    fun `a different word of the same length does not wake it`() {
+        assertFalse(WakePhrase.find("many tasks today", VoiceSettings()).woke)
+    }
+
+    @Test
     fun `speech without the name does not wake it`() {
         assertFalse(WakePhrase.find("what should i do now", VoiceSettings()).woke)
     }

@@ -8,6 +8,7 @@ import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
 import androidx.core.content.ContextCompat
+import com.karan.anuj.core.domain.voice.NameListener
 import com.karan.anuj.core.domain.voice.Speech
 import com.karan.anuj.core.domain.voice.SpeechEngine
 import com.karan.anuj.core.domain.voice.SpeechFailure
@@ -19,11 +20,13 @@ import javax.inject.Singleton
 import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.json.JSONArray
 import org.json.JSONObject
 import org.vosk.Model
 import org.vosk.Recognizer
@@ -39,12 +42,24 @@ import org.vosk.Recognizer
 @Singleton
 class VoskSpeechEngine @Inject constructor(
     @ApplicationContext private val context: Context,
-) : SpeechEngine {
+) : SpeechEngine, NameListener {
 
     private val loading = Mutex()
     private var model: Model? = null
 
-    override fun listen(): Flow<Speech> = flow {
+    override fun listen(): Flow<Speech> = listenWith(grammar = null)
+
+    /**
+     * Told which few phrases to expect, the engine stops guessing among
+     * every word it knows and only decides "one of these, or something
+     * else". That is what makes a small model reliable at hearing a name.
+     */
+    override fun listen(names: List<String>): Flow<Speech> {
+        val phrases = JSONArray(names.filter { it.isNotBlank() } + UNKNOWN)
+        return listenWith(grammar = phrases.toString()).filterNot { it is Speech.Final && it.text.trim() == UNKNOWN }
+    }
+
+    private fun listenWith(grammar: String?): Flow<Speech> = flow {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             emit(Speech.Failed(SpeechFailure.NO_PERMISSION))
             return@flow
@@ -59,7 +74,12 @@ class VoskSpeechEngine @Inject constructor(
             emit(Speech.Failed(SpeechFailure.MICROPHONE_BUSY))
             return@flow
         }
-        val recognizer = Recognizer(loaded, SAMPLE_RATE.toFloat())
+        val recognizer = try {
+            if (grammar == null) Recognizer(loaded, SAMPLE_RATE.toFloat()) else Recognizer(loaded, SAMPLE_RATE.toFloat(), grammar)
+        } catch (unknownWord: IOException) {
+            /** A phrase with a word the model does not know cannot be a grammar; listen for everything instead. */
+            Recognizer(loaded, SAMPLE_RATE.toFloat())
+        }
         try {
             microphone.startRecording()
             val buffer = ShortArray(BUFFER_SAMPLES)
@@ -148,5 +168,7 @@ class VoskSpeechEngine @Inject constructor(
         const val MARKER = "copied-version"
         /** Changed whenever the bundled model changes, so the old copy on the phone is replaced. */
         const val MODEL_VERSION = "small-en-us-0.15"
+        /** The engine's own word for "something I was not told to expect". */
+        const val UNKNOWN = "[unk]"
     }
 }

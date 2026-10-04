@@ -86,6 +86,18 @@ interface SpeechEngine {
     fun listen(): Flow<Speech>
 }
 
+/**
+ * Listens for nothing but the assistant's name, for hours at a time. It is
+ * a separate job from [SpeechEngine] because the two want opposite things:
+ * this one must be light enough to run all day and only has to tell a few
+ * known phrases from everything else, while taking down a whole sentence
+ * needs the best recogniser the phone has.
+ */
+interface NameListener {
+    /** @param names the phrases that count as the name; anything else is reported as unknown or not at all */
+    fun listen(names: List<String>): Flow<Speech>
+}
+
 /** Reads an answer aloud. */
 interface Speaker {
     /** Returns when the speaking has finished, so the microphone is not opened on the assistant's own voice. */

@@ -33,8 +33,45 @@ object WakePhrase {
             val rest = (heard.substring(0, at) + " " + heard.substring(at + phrase.length + 2)).trim()
             return Heard(woke = true, command = rest.removePrefix("hey ").removePrefix("ok ").removePrefix("okay ").trim())
         }
-        return Heard(woke = false, command = heard.trim())
+        return nearly(SpokenText.words(text), settings) ?: Heard(woke = false, command = heard.trim())
     }
+
+    /**
+     * The same name is rarely written the same way twice by the engine: "a
+     * new j" one time, "a new jay" the next. So a run of words that is
+     * within a letter or two of a known phrase counts as the name too.
+     */
+    private fun nearly(words: List<String>, settings: VoiceSettings): Heard? {
+        for (phrase in settings.wakePhrases) {
+            val length = SpokenText.words(phrase).size
+            val allowed = maxOf(1, (phrase.length + LETTERS_PER_SLIP / 2) / LETTERS_PER_SLIP)
+            for (start in 0..words.size - length) {
+                val run = words.subList(start, start + length).joinToString(" ")
+                if (distance(run, phrase) > allowed) continue
+                val rest = (words.take(start) + words.drop(start + length)).joinToString(" ")
+                return Heard(woke = true, command = rest.removePrefix("hey ").removePrefix("ok ").removePrefix("okay ").trim())
+            }
+        }
+        return null
+    }
+
+    /** How many single-letter changes turn [a] into [b]. */
+    private fun distance(a: String, b: String): Int {
+        var previous = IntArray(b.length + 1) { it }
+        for (i in 1..a.length) {
+            val current = IntArray(b.length + 1)
+            current[0] = i
+            for (j in 1..b.length) {
+                val swap = previous[j - 1] + if (a[i - 1] == b[j - 1]) 0 else 1
+                current[j] = minOf(swap, previous[j] + 1, current[j - 1] + 1)
+            }
+            previous = current
+        }
+        return previous[b.length]
+    }
+
+    /** One wrong letter is forgiven for every this many letters of the name. */
+    private const val LETTERS_PER_SLIP = 4
 }
 
 /**
@@ -101,12 +138,16 @@ class TalkUseCase @Inject constructor(
     private val assistant: VoiceAssistant,
     private val settings: VoiceSettingsRepository,
     private val engine: SpeechEngine,
+    private val nameListener: NameListener,
     private val speaker: Speaker,
     private val time: TimeSource,
     private val zone: ZoneSource,
 ) {
     /** Opens the microphone. See [SpeechEngine.listen]. */
     fun listen(): Flow<Speech> = engine.listen()
+
+    /** Keeps the microphone open for the assistant's name only. See [NameListener]. */
+    fun listenForName(names: List<String>): Flow<Speech> = nameListener.listen(names)
 
     suspend fun say(text: String): VoiceReply = spoken(assistant.answer(text, today(), now()))
 
