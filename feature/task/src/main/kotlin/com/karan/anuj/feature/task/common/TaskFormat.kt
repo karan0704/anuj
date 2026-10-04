@@ -7,6 +7,7 @@ import com.karan.anuj.core.domain.task.CarryOverRule
 import com.karan.anuj.core.domain.task.Energy
 import com.karan.anuj.core.domain.task.Priority
 import com.karan.anuj.core.domain.task.Repetition
+import com.karan.anuj.core.ui.components.clockLabel
 import com.karan.anuj.feature.task.R
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -25,9 +26,15 @@ import java.util.Locale
 
 private val DayFormat = DateTimeFormatter.ofPattern("EEE d MMM", Locale.ENGLISH)
 private val DayWithYearFormat = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH)
-private val TimeFormat = DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH)
 
-fun timeLabel(time: LocalTime): String = time.format(TimeFormat).lowercase(Locale.ENGLISH)
+/**
+ * The wording of a clock time is shared with the other features through
+ * `clockLabel` in core:ui. It used to be formatted here:
+ *
+ *     private val TimeFormat = DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH)
+ *     fun timeLabel(time: LocalTime): String = time.format(TimeFormat).lowercase(Locale.ENGLISH)
+ */
+fun timeLabel(time: LocalTime): String = clockLabel(time)
 
 @Composable
 fun dateLabel(date: LocalDate, today: LocalDate): String = when (date) {

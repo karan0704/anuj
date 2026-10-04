@@ -31,6 +31,8 @@ data class DatabaseSnapshot(
     val attachments: List<AttachmentEntity> = emptyList(),
     val occurrences: List<TaskOccurrenceEntity> = emptyList(),
     val changeHistory: List<ChangeHistoryEntity> = emptyList(),
+    val reminders: List<ReminderEntity> = emptyList(),
+    val reminderEvents: List<ReminderEventEntity> = emptyList(),
 )
 
 /**
@@ -67,6 +69,8 @@ abstract class SnapshotDao {
     @Query("SELECT * FROM attachment") abstract suspend fun attachments(): List<AttachmentEntity>
     @Query("SELECT * FROM task_occurrence") abstract suspend fun occurrences(): List<TaskOccurrenceEntity>
     @Query("SELECT * FROM change_history") abstract suspend fun changeHistory(): List<ChangeHistoryEntity>
+    @Query("SELECT * FROM reminder") abstract suspend fun reminders(): List<ReminderEntity>
+    @Query("SELECT * FROM reminder_event") abstract suspend fun reminderEvents(): List<ReminderEventEntity>
 
     @Insert abstract suspend fun insertTasks(rows: List<TaskEntity>)
     @Insert abstract suspend fun insertChecklistItems(rows: List<ChecklistItemEntity>)
@@ -76,10 +80,14 @@ abstract class SnapshotDao {
     @Insert abstract suspend fun insertAttachments(rows: List<AttachmentEntity>)
     @Insert abstract suspend fun insertOccurrences(rows: List<TaskOccurrenceEntity>)
     @Insert abstract suspend fun insertChangeHistory(rows: List<ChangeHistoryEntity>)
+    @Insert abstract suspend fun insertReminders(rows: List<ReminderEntity>)
+    @Insert abstract suspend fun insertReminderEvents(rows: List<ReminderEventEntity>)
 
     @Query("DELETE FROM task") abstract suspend fun clearTasks()
     @Query("DELETE FROM tag") abstract suspend fun clearTags()
     @Query("DELETE FROM change_history") abstract suspend fun clearChangeHistory()
+    @Query("DELETE FROM reminder") abstract suspend fun clearReminders()
+    @Query("DELETE FROM reminder_event") abstract suspend fun clearReminderEvents()
 
     /** All tables are read inside one transaction so the copy is of a single moment. */
     @Transaction
@@ -93,6 +101,8 @@ abstract class SnapshotDao {
         attachments = attachments(),
         occurrences = occurrences(),
         changeHistory = changeHistory(),
+        reminders = reminders(),
+        reminderEvents = reminderEvents(),
     )
 
     /**
@@ -100,13 +110,17 @@ abstract class SnapshotDao {
      * row fails to insert, nothing is changed and the old data is still there.
      *
      * Deleting tasks and tags removes everything hanging off them (checklist,
-     * notes, photos, rounds, tag links) through the foreign keys.
+     * notes, photos, rounds, tag links, a task's reminders) through the
+     * foreign keys. Reminders that stand on their own and the reminder log
+     * hang off nothing, so they are cleared by name.
      */
     @Transaction
     open suspend fun replaceWith(snapshot: DatabaseSnapshot) {
         clearTasks()
         clearTags()
         clearChangeHistory()
+        clearReminders()
+        clearReminderEvents()
 
         insertTags(snapshot.tags)
         insertTasks(snapshot.tasks)
@@ -116,5 +130,7 @@ abstract class SnapshotDao {
         insertAttachments(snapshot.attachments)
         insertOccurrences(snapshot.occurrences)
         insertChangeHistory(snapshot.changeHistory)
+        insertReminders(snapshot.reminders)
+        insertReminderEvents(snapshot.reminderEvents)
     }
 }

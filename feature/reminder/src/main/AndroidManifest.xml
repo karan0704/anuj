@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Exact alarms. USE_EXACT_ALARM is granted on install to alarm and
+        reminder apps from Android 13. Before that, SCHEDULE_EXACT_ALARM is
+        used; on Android 12 it is allowed by default.
+    -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        android:maxSdkVersion="32" />
+
+    <!-- Alarms are forgotten by the phone on a restart; the app sets them again when it boots. -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <!-- The full-screen alarm over the lock screen. On Android 14 and later the user may have to allow it; the reminder check says so. -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <!-- Lets the reminder check offer "do not put this app to sleep" in one tap. -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
+    <application>
+
+        <!-- The alarm itself. Not exported: only this app's own alarm can start it. -->
+        <receiver
+            android:name=".platform.ReminderAlarmReceiver"
+            android:exported="false" />
+
+        <!-- "Done" and "Snooze" on a notification. -->
+        <receiver
+            android:name=".platform.ReminderActionReceiver"
+            android:exported="false" />
+
+        <!-- Sets the next alarm again after anything that makes the phone forget or misplace it. -->
+        <receiver
+            android:name=".platform.ReminderRescheduleReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
+        <!--
+            The full-screen alarm, and the screen behind "Later" on a
+            notification. It shows over the lock screen and wakes the display.
+            It is its own task and stays out of the recent-apps list, so
+            answering a reminder never drags the whole app to the front.
+        -->
+        <activity
+            android:name=".alarm.ReminderActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:showWhenLocked="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.DeviceDefault.NoActionBar"
+            android:turnScreenOn="true" />
+    </application>
+
+</manifest>

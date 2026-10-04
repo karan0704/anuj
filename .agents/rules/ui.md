@@ -39,13 +39,16 @@ The app must be handy: usable one-handed, by taps and by voice, with the user wr
 * **Every full screen sits in `AnujScaffold`** (`core/ui/components/AnujScaffold.kt`). It draws edge to edge, keeps content clear of the status and navigation bars, and lifts content above the keyboard. Do not use a bare `Scaffold` or hand-rolled inset padding in a feature.
 * **Keyboard never covers the focused field or its action button.** The bottom tab bar stays under the keyboard; it does not ride up with it. This is the Compose equivalent of React Native's `KeyboardAvoidingView`.
 * **Short input and choices open in `AnujBottomSheet`** (`core/ui/components/AnujBottomSheet.kt`), the equivalent of an RBSheet: opens fully in one motion, closes on swipe down or tap outside, content moves up with the keyboard.
-* **Shared controls, not one-off ones**: `PrimaryButton`, `SecondaryButton`, `ChoiceChips` and `MinTouchTarget` from `core/ui/components/Controls.kt`, so spacing and sizes match on every screen.
+* **Shared controls, not one-off ones**: `PrimaryButton`, `SecondaryButton`, `ChoiceChips` (one of many), `ToggleChips` (any of many) and `MinTouchTarget` from `core/ui/components/Controls.kt`, so spacing and sizes match on every screen. A chip row is never laid out by hand: the shared ones leave the gap between wrapped rows, and a hand-made one without it shows the rows touching.
 * **Consistent spacing**: 24dp screen side padding, 16dp between groups, 8dp between related items.
 * **Bottom tab bar for top-level areas**; a new area adds one entry to `TopLevelDestination` in `app/.../navigation/AnujApp.kt`. The bar is hidden on pushed screens (one task, search, trash), where the back arrow is the single way out.
-* **Screen titles use `ScreenHeader`**, group labels `SectionTitle`, tap-to-change values `FieldRow`, numbers `Stepper` (all in `core/ui/components`). A feature's settings are a composable of `FieldRow`s that the Settings screen places under a `SectionTitle` — see `TaskSettingsRows`.
+* **Screen titles use `ScreenHeader`**, group labels `SectionTitle`, tap-to-change values `FieldRow`, on/off values `SwitchRow`, numbers `Stepper`, times `ClockDialog` (all in `core/ui/components`). A feature's settings are a composable of `FieldRow`s that the Settings screen places under a `SectionTitle` — see `TaskSettingsRows` and `ReminderSettingsRows`. Settings too long for that screen get their own pushed screen, opened from one row.
 * **One "Undo" host**: `AnujApp` owns the single `SnackbarHostState` and passes it to screens; a screen never creates its own.
 * **Swipe needs a twin**: anything a swipe does must also be a named screen-reader action on the row and reachable by a tap. `SwipeActions` in `feature/task/common/TaskRow.kt` does this; use it rather than a bare `SwipeToDismissBox`.
 * **All user-visible text comes from `strings.xml`**, never a literal in a Composable.
+* **A heading only where there is something under it.** A section with nothing in it shows its "add" control and no heading; the control's own label says what it adds.
+* **A list of choices is edited with chips, not typed.** The user switches candidates on and off (snooze lengths, time estimates, reminder times); the last one cannot be switched off.
+* **A screen one feature draws inside another feature's screen is passed in as a slot** by `AnujApp`, the one place that knows both — see `extraFields` on `TaskDetailScreen`, which is where the reminder row comes from.
 
 ## Calm, Clear Screens
 * One primary action per screen. Focus mode shows exactly one task.

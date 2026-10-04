@@ -19,7 +19,32 @@ object Migrations {
         }
     }
 
-    val ALL: Array<Migration> = arrayOf(FROM_1_TO_2)
+    /** Version 3 adds the reminder table and the reminder log. Nothing existing is altered. */
+    val FROM_2_TO_3 = object : Migration(2, 3) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            VERSION_3_STATEMENTS.forEach(db::execSQL)
+        }
+    }
+
+    /** Until version 3 this was `arrayOf(FROM_1_TO_2)`. */
+    val ALL: Array<Migration> = arrayOf(FROM_1_TO_2, FROM_2_TO_3)
+
+    /** Copied from the exported schema `3.json`. */
+    private val VERSION_3_STATEMENTS = listOf(
+        "CREATE TABLE IF NOT EXISTS `reminder` (`id` TEXT NOT NULL, `taskId` TEXT, `title` TEXT NOT NULL, " +
+            "`schedule` TEXT NOT NULL, `category` TEXT NOT NULL, `style` TEXT NOT NULL, `nagEveryMinutes` INTEGER, " +
+            "`nagTimes` INTEGER NOT NULL, `toneUri` TEXT, `enabled` INTEGER NOT NULL, `lastOccurrenceAt` INTEGER, " +
+            "`lastFiredAt` INTEGER, `nagsSent` INTEGER NOT NULL, `snoozedUntil` INTEGER, `answeredAt` INTEGER, " +
+            "`createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `deletedAt` INTEGER, PRIMARY KEY(`id`), " +
+            "FOREIGN KEY(`taskId`) REFERENCES `task`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED)",
+        "CREATE INDEX IF NOT EXISTS `index_reminder_taskId` ON `reminder` (`taskId`)",
+        "CREATE INDEX IF NOT EXISTS `index_reminder_deletedAt` ON `reminder` (`deletedAt`)",
+        "CREATE TABLE IF NOT EXISTS `reminder_event` (`id` TEXT NOT NULL, `reminderId` TEXT, `taskId` TEXT, " +
+            "`title` TEXT NOT NULL, `kind` TEXT NOT NULL, `at` INTEGER NOT NULL, `minutes` INTEGER, `reason` TEXT, " +
+            "PRIMARY KEY(`id`))",
+        "CREATE INDEX IF NOT EXISTS `index_reminder_event_at` ON `reminder_event` (`at`)",
+        "CREATE INDEX IF NOT EXISTS `index_reminder_event_reminderId` ON `reminder_event` (`reminderId`)",
+    )
 
     /**
      * Copied from the exported schema `2.json`. The search tables' sync triggers are

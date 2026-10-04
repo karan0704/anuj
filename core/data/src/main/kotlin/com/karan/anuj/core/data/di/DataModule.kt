@@ -8,10 +8,13 @@ import com.karan.anuj.core.data.db.ChangeHistoryDao
 import com.karan.anuj.core.data.db.ChecklistDao
 // import com.karan.anuj.core.data.db.Migrations  // used only by provideDatabase, now in DatabaseModule
 import com.karan.anuj.core.data.db.NoteDao
+import com.karan.anuj.core.data.db.ReminderDao
 import com.karan.anuj.core.data.db.SnapshotDao
 import com.karan.anuj.core.data.db.TagDao
 import com.karan.anuj.core.data.db.TaskDao
 import com.karan.anuj.core.data.history.RoomChangeHistoryRepository
+import com.karan.anuj.core.data.reminder.DataStoreReminderSettingsRepository
+import com.karan.anuj.core.data.reminder.RoomReminderRepository
 import com.karan.anuj.core.data.settings.DataStoreSettingsRepository
 import com.karan.anuj.core.data.task.DataStoreTaskPreferencesRepository
 import com.karan.anuj.core.data.task.FileAttachmentStore
@@ -21,6 +24,9 @@ import com.karan.anuj.core.data.task.RoomNoteRepository
 import com.karan.anuj.core.data.task.RoomTagRepository
 import com.karan.anuj.core.data.task.RoomTaskRepository
 import com.karan.anuj.core.domain.history.ChangeHistoryRepository
+import com.karan.anuj.core.domain.reminder.ReminderRepository
+import com.karan.anuj.core.domain.reminder.ReminderSettingsRepository
+import com.karan.anuj.core.domain.reminder.ZoneSource
 import com.karan.anuj.core.domain.settings.SettingsRepository
 import com.karan.anuj.core.domain.task.AttachmentFileStore
 import com.karan.anuj.core.domain.task.AttachmentRepository
@@ -38,6 +44,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 // import dagger.hilt.android.qualifiers.ApplicationContext  // used only by provideDatabase, now in DatabaseModule
 import dagger.hilt.components.SingletonComponent
+import java.time.ZoneId
 import java.util.UUID
 import javax.inject.Qualifier
 import javax.inject.Singleton
@@ -81,6 +88,12 @@ abstract class DataModule {
     @Binds
     abstract fun bindTaskPreferencesRepository(impl: DataStoreTaskPreferencesRepository): TaskPreferencesRepository
 
+    @Binds
+    abstract fun bindReminderRepository(impl: RoomReminderRepository): ReminderRepository
+
+    @Binds
+    abstract fun bindReminderSettingsRepository(impl: DataStoreReminderSettingsRepository): ReminderSettingsRepository
+
     companion object {
 
         @Provides
@@ -90,6 +103,11 @@ abstract class DataModule {
         @Provides
         @Singleton
         fun provideTimeSource(): TimeSource = TimeSource { System.currentTimeMillis() }
+
+        /** Read each time it is asked for, so a trip to another time zone is picked up without a restart. */
+        @Provides
+        @Singleton
+        fun provideZoneSource(): ZoneSource = ZoneSource { ZoneId.systemDefault() }
 
         /** Random ids, so rows made on different phones or restored from a backup can never collide. */
         @Provides
@@ -133,5 +151,8 @@ abstract class DataModule {
 
         @Provides
         fun provideSnapshotDao(database: AnujDatabase): SnapshotDao = database.snapshotDao()
+
+        @Provides
+        fun provideReminderDao(database: AnujDatabase): ReminderDao = database.reminderDao()
     }
 }

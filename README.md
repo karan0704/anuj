@@ -6,9 +6,13 @@ Everything runs on the phone. There is no server, and the core features need no 
 
 ## Status
 
-Phases 0 and 1 are built. Phase 0 is the foundation: first-run setup, fingerprint or screen-lock app lock, light and dark themes, adjustable text size, encrypted database. Phase 1 is tasks: nested tasks with checklists, notes, photos, tags and priority; repeating tasks with days off; carry-over rules for unfinished tasks; an inbox, search and trash; ready-made routines; backup and restore. Phase 2 (reminders) is next.
+Phases 0 to 2 are built.
 
-Neither phase has been run on a phone yet; both are tested on the computer.
+- **Phase 0, foundation**: first-run setup, fingerprint or screen-lock app lock, light and dark themes, adjustable text size, encrypted database.
+- **Phase 1, tasks**: nested tasks with checklists, notes, photos, tags and priority; repeating tasks with days off; carry-over rules for unfinished tasks; an inbox, search and trash; ready-made routines; backup and restore.
+- **Phase 2, reminders**: reminders that go off with the app closed and come back after a restart; repeat-until-done; full-screen alarms; snooze with a reason; quiet hours, a daily limit, calm mode and a summary of what was held back; a tone per kind of reminder and per task; regular reminders for medication, water and meals; routines played one step at a time; a check that the phone lets reminders through.
+
+Phases 0 and 1 have been run on a device by the developer. Phase 2 has only been tested on the computer so far. Phase 3 (tracking and the journal) is next.
 
 ## Build
 

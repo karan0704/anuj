@@ -51,6 +51,7 @@
 
     <string name="settings_section_display">Display and privacy</string>
     <string name="settings_section_tasks">Tasks</string>
+    <string name="settings_section_reminders">Reminders</string>
     <string name="settings_section_backup">Backup</string>
 
     <!-- Backup -->

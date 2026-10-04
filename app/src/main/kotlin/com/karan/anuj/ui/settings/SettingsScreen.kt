@@ -33,6 +33,7 @@ import com.karan.anuj.core.ui.components.AnujBottomSheet
 import com.karan.anuj.core.ui.components.ChoiceChips
 import com.karan.anuj.core.ui.components.MinTouchTarget
 import com.karan.anuj.core.ui.components.SectionTitle
+import com.karan.anuj.feature.reminder.settings.ReminderSettingsRows
 import com.karan.anuj.feature.task.settings.TaskSettingsRows
 
 @StringRes
@@ -70,11 +71,16 @@ private const val SECONDS_PER_MINUTE = 60
  * @param lockAvailable false when the phone has no screen lock to check against
  * @param onAppLockToggled handled by the activity, because switching the lock
  * on first shows the system unlock prompt
+ * @param onOpenNotifications, onOpenRegularReminders, onOpenReminderCheck open
+ * the reminder screens that are too long to sit on this one
  */
 @Composable
 fun SettingsScreen(
     lockAvailable: Boolean,
     onAppLockToggled: (Boolean) -> Unit,
+    onOpenNotifications: () -> Unit = {},
+    onOpenRegularReminders: () -> Unit = {},
+    onOpenReminderCheck: () -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -148,6 +154,14 @@ fun SettingsScreen(
         HorizontalDivider()
         SectionTitle(stringResource(R.string.settings_section_tasks))
         TaskSettingsRows()
+
+        HorizontalDivider()
+        SectionTitle(stringResource(R.string.settings_section_reminders))
+        ReminderSettingsRows(
+            onOpenNotifications = onOpenNotifications,
+            onOpenRegular = onOpenRegularReminders,
+            onOpenCheck = onOpenReminderCheck,
+        )
 
         HorizontalDivider()
         SectionTitle(stringResource(R.string.settings_section_backup))
